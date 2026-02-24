@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.yml:/traefik.yml
+      - ./acme.json:/acme.json
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+
+  eminstaller:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    command: node server.js
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eminstaller.rule=Host(`localhost`) || Host(`eminstaller.local`) || Path(`/`)"
+      - "traefik.http.routers.eminstaller.entrypoints=web"
+      - "traefik.http.services.eminstaller.loadbalancer.server.port=8080"

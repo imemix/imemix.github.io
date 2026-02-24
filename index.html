@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EMInstaller - Arch Linux Terminal Installer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-logo">EMInstaller</div>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#install" class="nav-link">Install</a>
+            <a href="documentation.html" class="nav-link">Docs</a>
+        </div>
+    </div>
+</nav>
+
+<header class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">EMInstaller</h1>
+        <p class="hero-subtitle">The Ultimate Arch Linux Terminal Installer</p>
+        <p class="hero-desc">Simplify your Arch Linux installation with an intuitive command-line interface</p>
+        <button class="cta-button">Get Started</button>
+    </div>
+    <div class="hero-visual">
+        <div class="terminal-preview">
+            <div class="terminal-bar">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+            </div>
+            <pre class="terminal-code">$ curl -s https://imemix.github.io/EMInstaller/install | sudo bash</pre>
+        </div>
+    </div>
+</header>
+
+<section id="features" class="features">
+    <div class="container">
+        <h2 class="section-title">Key Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Lightning Fast</h3>
+                <p>Quick and efficient installation process</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Easy Setup</h3>
+                <p>Intuitive interface for seamless configuration</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3>Customizable</h3>
+                <p>Adjust settings to match your needs</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Real-time Logs</h3>
+                <p>Monitor installation progress live</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="install" class="install-section">
+    <div class="container">
+        <h2 class="section-title">Live Installation Preview</h2>
+        <div class="terminal-container">
+            <div class="terminal-header">
+                <span class="terminal-title">EMInstaller Terminal</span>
+                <span class="terminal-stats">root@installer ~ #</span>
+            </div>
+            <pre class="boot-log" id="boot-log">
+[ OK ] Initializing EMInstaller
+[ OK ] Loading archinstall
+[ OK ] Detecting hardware
+[ OK ] Mounting filesystems
+[ OK ] Configuring network
+[ .. ] Installing packages...</pre>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+                <span class="progress-text" id="progress-text">0%</span>
+            </div>
+            <div class="terminal-command">
+                <span class="prompt">$</span>
+                <span class="command" id="command-text">curl -s https://imemix.github.io/EMInstaller/install | sudo bash</span>
+                <span class="cursor">▋</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container">
+        <h2>Ready to Install?</h2>
+        <p>Run the installation command below to get started</p>
+        <div class="code-block">
+            <code>curl -s https://imemix.github.io/EMInstaller/install | sudo bash</code>
+            <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2024 EMInstaller. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="documentation.html">Documentation</a>
+            <a href="#">GitHub</a>
+            <a href="#">Support</a>
+        </div>
+    </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+function copyToClipboard() {
+    const text = 'curl -s https://imemix.github.io/EMInstaller/install | sudo bash';
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Command copied to clipboard!');
+    });
+}
+</script>
+</body>
+</html>

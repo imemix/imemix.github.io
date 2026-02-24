@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EMInstaller Documentation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/docs.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-logo">EMInstaller</div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="#" class="nav-link active">Docs</a>
+            <a href="index.html#features" class="nav-link">Features</a>
+        </div>
+    </div>
+</nav>
+
+<div class="docs-wrapper">
+    <aside class="docs-sidebar">
+        <nav class="toc">
+            <h3>📑 Contents</h3>
+            <ul>
+                <li><a href="#what-is">What Is EMInstaller?</a></li>
+                <li><a href="#quick-install">Quick Install</a></li>
+                <li><a href="#safe-method">Safe Method</a></li>
+                <li><a href="#what-does">What It Does</a></li>
+                <li><a href="#requirements">Requirements</a></li>
+                <li><a href="#testing">Testing Locally</a></li>
+                <li><a href="#updating">Updating</a></li>
+                <li><a href="#security">Security</a></li>
+                <li><a href="#advanced">Advanced Usage</a></li>
+                <li><a href="#philosophy">Philosophy</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="docs-content">
+
+        <section id="what-is">
+            <h2>📦 What Is EMInstaller?</h2>
+            <p>EMInstaller is a comprehensive Bash script designed to streamline Arch Linux installation. It:</p>
+            <ul>
+                <li>Prepares your system environment</li>
+                <li>Installs required dependencies</li>
+                <li>Downloads the main installer payload</li>
+                <li>Verifies file integrity with checksums</li>
+                <li>Launches the installer safely</li>
+            </ul>
+            <p>Intended for execution on Arch Linux (or compatible systems).</p>
+        </section>
+
+        <section id="quick-install">
+            <h2>🚀 Quick Install</h2>
+            <p>The standard installation method is a single command:</p>
+            <div class="code-block">
+                <pre><code>curl -s https://imemix.github.io/EMInstaller/install | sudo bash</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <p>This will:</p>
+            <ol>
+                <li>Download the installer</li>
+                <li>Verify integrity with checksum validation</li>
+                <li>Execute installation steps automatically</li>
+            </ol>
+        </section>
+
+        <section id="safe-method">
+            <h2>🔐 Recommended Safe Method</h2>
+            <p>For security-sensitive environments, manually inspect the script before execution:</p>
+            <p><strong>Step 1:</strong> Download the file</p>
+            <div class="code-block">
+                <pre><code>curl -O https://imemix.github.io/EMInstaller/install</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <p><strong>Step 2:</strong> Inspect the script</p>
+            <div class="code-block">
+                <pre><code>less install</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <p><strong>Step 3:</strong> Execute if satisfied</p>
+            <div class="code-block">
+                <pre><code>sudo bash install</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <p class="tip">💡 This method ensures you review the script before execution, providing better security.</p>
+        </section>
+
+        <section id="what-does">
+            <h2>⚙️ What the Script Does</h2>
+            <p>A secure install script follows best practices:</p>
+            <div class="code-block">
+                <pre><code>set -euo pipefail</code></pre>
+            </div>
+            <p>This enables:</p>
+            <ul>
+                <li><strong>-e:</strong> Exit immediately on error</li>
+                <li><strong>-u:</strong> Prevent undefined variables from being used</li>
+                <li><strong>-o pipefail:</strong> Fail if any pipe step fails</li>
+            </ul>
+
+            <h3>Typical Installation Flow</h3>
+            <ol>
+                <li>Verify running with root privileges</li>
+                <li>Install required dependencies</li>
+                <li>Download main installer</li>
+                <li>Verify SHA256 checksum</li>
+                <li>Execute installer with Python</li>
+            </ol>
+
+            <h3>Example Secure Pattern</h3>
+            <div class="code-block">
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Please run with sudo."
+    exit 1
+fi
+
+TMP="/tmp/eminstaller.py"
+curl -sL "$RAW_URL" -o "$TMP"
+
+DOWNLOADED_SHA=$(sha256sum "$TMP" | awk '{print $1}')
+
+if [ "$DOWNLOADED_SHA" != "$EXPECTED_SHA" ]; then
+    echo "Checksum mismatch!"
+    exit 1
+fi
+
+python3 "$TMP"</code></pre>
+            </div>
+        </section>
+
+        <section id="requirements">
+            <h2>🛠 Requirements</h2>
+            <p>EMInstaller requires the following on your system:</p>
+            <ul>
+                <li>Arch Linux (or compatible distribution)</li>
+                <li><code>curl</code> - for downloading files</li>
+                <li><code>bash</code> - shell environment</li>
+                <li><code>python3</code> - Python interpreter</li>
+                <li><code>sha256sum</code> - for checksum verification</li>
+            </ul>
+            <p>Install missing dependencies with:</p>
+            <div class="code-block">
+                <pre><code>sudo pacman -S curl python</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+        </section>
+
+        <section id="testing">
+            <h2>🧪 Testing the Script Locally</h2>
+            <p>If you have the installer script file locally:</p>
+            <p><strong>Step 1:</strong> Make it executable</p>
+            <div class="code-block">
+                <pre><code>chmod +x install</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <p><strong>Step 2:</strong> Run the installer</p>
+            <div class="code-block">
+                <pre><code>sudo ./install</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+        </section>
+
+        <section id="updating">
+            <h2>🔄 Updating the Installer</h2>
+            <p>When a new version is released, simply re-run the installation command:</p>
+            <div class="code-block">
+                <pre><code>curl -s https://imemix.github.io/EMInstaller/install | sudo bash</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <p>The script automatically pulls the latest version unless version pinning is configured.</p>
+        </section>
+
+        <section id="security">
+            <h2>🔐 Security Best Practices</h2>
+            <p>When using remote install scripts, follow these guidelines:</p>
+            <div class="security-checklist">
+                <ul>
+                    <li>✅ Always use HTTPS for downloads</li>
+                    <li>✅ Manually inspect scripts in production environments</li>
+                    <li>✅ Verify checksums before execution</li>
+                    <li>✅ Avoid running unknown scripts as root</li>
+                    <li>✅ Audit scripts before distributing to others</li>
+                </ul>
+            </div>
+            <p><strong>❌ Never run untrusted scripts:</strong></p>
+            <div class="code-block warning">
+                <pre><code>curl http://untrusted-source.com/install | bash</code></pre>
+            </div>
+        </section>
+
+        <section id="advanced">
+            <h2>📌 Advanced Usage</h2>
+
+            <h3>Pin a Specific Version</h3>
+            <p>If versioned endpoints are available:</p>
+            <div class="code-block">
+                <pre><code>curl -s https://imemix.github.io/EMInstaller/install/1.0 | sudo bash</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+
+            <h3>Download Without Executing</h3>
+            <div class="code-block">
+                <pre><code>curl -O https://imemix.github.io/EMInstaller/install</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+
+            <h3>Dry Run (If Supported)</h3>
+            <p>Some installers support a dry-run mode:</p>
+            <div class="code-block">
+                <pre><code>bash install --dry-run</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+
+            <h3>Security Notice</h3>
+            <div class="warning-box">
+                <p>⚠️ Running scripts via piping to bash carries inherent security risk:</p>
+                <div class="code-block">
+                    <pre><code>curl | bash</code></pre>
+                </div>
+                <p><strong>Only execute installers from trusted, verified sources.</strong></p>
+                <p>Review the script before execution whenever possible.</p>
+            </div>
+        </section>
+
+        <section id="philosophy">
+            <h2>🧠 Philosophy</h2>
+            <p>EMInstaller is built on these core principles:</p>
+            <ul>
+                <li><strong>Minimal:</strong> Only essential functionality</li>
+                <li><strong>Transparent:</strong> Clear and understandable code</li>
+                <li><strong>Auditable:</strong> Easy to review and verify</li>
+                <li><strong>Deterministic:</strong> Consistent, predictable behavior</li>
+                <li><strong>Secure by Default:</strong> Security first approach</li>
+            </ul>
+            <p>If an install script cannot be easily read and understood, it should not be trusted.</p>
+        </section>
+
+    </main>
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2024 EMInstaller. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="#">GitHub</a>
+            <a href="#">Support</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+function copyCode(button) {
+    const codeBlock = button.previousElementSibling;
+    const code = codeBlock.textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        setTimeout(() => {
+            button.textContent = originalText;
+        }, 2000);
+    });
+}
+</script>
+</body>
+</html>
