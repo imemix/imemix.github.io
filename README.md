@@ -1,4 +1,4 @@
- <font color="red">THIS IS A MASSIVE WIP* NOT EVERYTHING WORKS.</font>
+# $\textrm{\color{red}{THIS IS A MASSIVE WIP* NOT EVERYTHING WORKS.}}$
 
 # EMInstaller
 
