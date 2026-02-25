@@ -3,7 +3,7 @@ set -euo pipefail
 
 VERSION="1.0"
 RAW_INSTALLER="https://raw.githubusercontent.com/YourUsername/EMInstaller/main/eminstaller.py"
-EXPECTED_SHA="66f4e50489477de6875e4b91fe70198cc645313a6b3e5dd3e3bb625b75aea3a5"
+
 
 echo "==========================================="
 echo "        EMInstaller v${VERSION}"
