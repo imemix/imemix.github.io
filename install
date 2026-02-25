@@ -27,17 +27,6 @@ else
     curl -sL "$RAW_INSTALLER" -o "$TMP_SCRIPT"
 fi
 
-echo "[*] Verifying checksum..."
-DOWNLOADED_SHA=$(sha256sum "$TMP_SCRIPT" | awk '{print $1}')
-
-if [ "${DOWNLOADED_SHA,,}" != "${EXPECTED_SHA,,}" ]; then
-    echo "[ERROR] Checksum mismatch!"
-    echo "Expected: $EXPECTED_SHA"
-    echo "Got:      $DOWNLOADED_SHA"
-    exit 1
-fi
-
-echo "[OK] Checksum verified."
 echo "[*] Launching EMInstaller..."
 
 python3 "$TMP_SCRIPT"
