@@ -73,38 +73,60 @@ def detect_gpu():
         pass
     return "none"
 
-def is_interactive():
-    """Check if running in interactive mode"""
-    return sys.stdin.isatty()
-
-def get_input(prompt_text, default=""):
-    """Get user input with default value"""
+def get_input_interactive(prompt_text, default=""):
+    """Get user input with default value from /dev/tty"""
     if default:
-        full_prompt = f"  [cyan]{prompt_text}[/cyan] ({default}): "
+        full_prompt = f"  {prompt_text} ({default}): "
     else:
-        full_prompt = f"  [cyan]{prompt_text}[/cyan]: "
-    console.print(full_prompt, end="")
+        full_prompt = f"  {prompt_text}: "
+    
     try:
+        # Try to read from /dev/tty (terminal) instead of stdin
+        with open("/dev/tty", "r") as tty:
+            sys.stdout.write(full_prompt)
+            sys.stdout.flush()
+            user_input = tty.readline().strip()
+            return user_input if user_input else default
+    except:
+        # Fallback to regular input
+        console.print(full_prompt, end="")
         user_input = input()
         return user_input if user_input else default
-    except EOFError:
-        console.print("[yellow]Using default value[/yellow]")
-        return default
 
-def get_password(prompt_text):
-    """Get password input securely"""
-    console.print(f"  [cyan]{prompt_text}[/cyan]: ", end="")
+def get_password_interactive(prompt_text):
+    """Get password input securely from /dev/tty"""
     try:
+        # Try to read from /dev/tty (terminal)
+        with open("/dev/tty", "r") as tty_in:
+            with open("/dev/tty", "w") as tty_out:
+                tty_out.write(f"  {prompt_text}: ")
+                tty_out.flush()
+                return getpass.getpass(stream=tty_out)
+    except:
+        # Fallback to regular getpass
+        console.print(f"  {prompt_text}: ", end="")
         return getpass.getpass()
-    except EOFError:
-        console.print("[yellow]Using empty password[/yellow]")
-        return ""
 
-def confirm(prompt_text, default=False):
-    """Get yes/no confirmation from user"""
+def confirm_interactive(prompt_text, default=False):
+    """Get yes/no confirmation from user from /dev/tty"""
     default_str = "Y/n" if default else "y/N"
-    console.print(f"  [cyan]{prompt_text}[/cyan] [{default_str}]: ", end="")
+    full_prompt = f"  {prompt_text} [{default_str}]: "
+    
     try:
+        # Try to read from /dev/tty (terminal)
+        with open("/dev/tty", "r") as tty:
+            sys.stdout.write(full_prompt)
+            sys.stdout.flush()
+            response = tty.readline().strip().lower()
+            if response in ['y', 'yes']:
+                return True
+            elif response in ['n', 'no']:
+                return False
+            else:
+                return default
+    except:
+        # Fallback to regular input
+        console.print(full_prompt, end="")
         response = input().lower()
         if response in ['y', 'yes']:
             return True
@@ -112,9 +134,6 @@ def confirm(prompt_text, default=False):
             return False
         else:
             return default
-    except EOFError:
-        console.print("[yellow]Using default value[/yellow]")
-        return default
 
 # ==============================
 # Interactive Configuration
@@ -123,36 +142,30 @@ banner()
 console.print("\n[bold cyan]EMInstaller - Interactive Setup[/bold cyan]")
 console.print("[cyan]Configure your Arch Linux installation.\n[/cyan]")
 
-# Check if running interactively
-if not is_interactive():
-    console.print("[bold yellow]Warning: Running in non-interactive mode[/bold yellow]")
-    console.print("[cyan]Using default values for all options.\n[/cyan]")
-    time.sleep(2)
-
 console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
-hostname = get_input("Hostname", "arch")
-username = get_input("Username", "user")
-userpass = get_password("User Password")
-rootpass = get_password("Root Password")
+hostname = get_input_interactive("Hostname", "arch")
+username = get_input_interactive("Username", "user")
+userpass = get_password_interactive("User Password")
+rootpass = get_password_interactive("Root Password")
 
 console.print("\n[bold yellow]=== System Configuration ===[/bold yellow]\n")
-fs = get_input("Filesystem (ext4/btrfs/xfs)", "ext4")
-use_luks = confirm("Enable LUKS Encryption?", False)
-create_swap = confirm("Create Swapfile?", True)
-kernel = get_input("Kernel (linux/linux-lts/linux-zen)", "linux")
+fs = get_input_interactive("Filesystem (ext4/btrfs/xfs)", "ext4")
+use_luks = confirm_interactive("Enable LUKS Encryption?", False)
+create_swap = confirm_interactive("Create Swapfile?", True)
+kernel = get_input_interactive("Kernel (linux/linux-lts/linux-zen)", "linux")
 
 console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
-console.print("  [cyan]Options: cli-only, gnome, kde, hyprland, xfce, i3[/cyan]")
-desktop = get_input("Desktop Environment", "gnome")
+console.print("  Options: cli-only, gnome, kde, hyprland, xfce, i3")
+desktop = get_input_interactive("Desktop Environment", "gnome")
 
 console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
-gaming = confirm("Install Gaming Stack (Steam, Wine, Lutris)?", False)
-dev_tools = confirm("Install Development Tools (Git, Node, Python)?", False)
-dotfiles = confirm("Install Dotfiles?", False)
+gaming = confirm_interactive("Install Gaming Stack (Steam, Wine, Lutris)?", False)
+dev_tools = confirm_interactive("Install Development Tools (Git, Node, Python)?", False)
+dotfiles = confirm_interactive("Install Dotfiles?", False)
 
 # Auto-detect GPU if not explicitly set
 detected_gpu = detect_gpu()
-gpu = get_input("GPU Driver (none/nvidia/amd/intel)", detected_gpu)
+gpu = get_input_interactive("GPU Driver (none/nvidia/amd/intel)", detected_gpu)
 
 # Display summary
 console.print("\n[bold yellow]=== Installation Configuration ===[/bold yellow]\n")
@@ -169,13 +182,9 @@ console.print(f"  [cyan]Dev Tools:[/cyan] {dev_tools}")
 console.print(f"  [cyan]Dotfiles:[/cyan] {dotfiles}\n")
 
 # Confirm before proceeding
-if is_interactive():
-    if not confirm("[bold red]Proceed with installation?[/bold red]", False):
-        console.print("[yellow]Installation cancelled.[/yellow]")
-        sys.exit(0)
-else:
-    console.print("[bold green]Proceeding with installation (non-interactive mode)...[/bold green]\n")
-    time.sleep(2)
+if not confirm_interactive("[bold red]Proceed with installation?[/bold red]", False):
+    console.print("[yellow]Installation cancelled.[/yellow]")
+    sys.exit(0)
 
 # ==============================
 # Execute Installation
