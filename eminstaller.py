@@ -18,7 +18,7 @@ def banner(text="EMInstaller v1.0"):
 ██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║
 ███████╗██║ ╚═╝ ██║██║██║ ╚████║
 ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
-[/bold cyan]
+
 [bold magenta]{text}[/bold magenta]
 """
     print(ascii_art)
@@ -299,6 +299,9 @@ if gaming:
 if dev_tools:
     packages.extend(["git", "base-devel", "npm", "python"])
 
+# Add package manager (yay - AUR helper)
+packages.extend(["yay"])
+
 run_stage("Installing base packages", f"pacstrap /mnt {' '.join(packages)}", duration=10)
 
 # Generate fstab
@@ -326,7 +329,9 @@ run_stage("Setting root password", f"arch-chroot /mnt bash -c \"echo -e '{rootpa
 # Create user
 run_stage("Creating user", f"arch-chroot /mnt useradd -m -s /bin/bash {username}", duration=1)
 run_stage("Setting user password", f"arch-chroot /mnt bash -c \"echo -e '{userpass}\\n{userpass}' | passwd {username}\"", duration=1)
-run_stage("Adding user to sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL:ALL) ALL' >> /etc/sudoers\"", duration=1)
+
+# Configure sudoers properly
+run_stage("Configuring sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers.d/{username} > /dev/null && chmod 440 /etc/sudoers.d/{username}\"", duration=1)
 
 # Enable display manager
 if desktop == "gnome":
