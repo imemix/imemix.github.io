@@ -21,8 +21,8 @@ TMP_SCRIPT="/tmp/eminstaller.py"
 
 echo "[*] Downloading installer..."
 # Try local copy first (for testing), then fall back to GitHub
-if [ -f "./eminstaller.py" ]; then
-    cp ./eminstaller.py "$TMP_SCRIPT"
+if [ -f "/eminstaller.py" ]; then
+    cp /eminstaller.py "$TMP_SCRIPT"
 else
     curl -sL "$RAW_INSTALLER" -o "$TMP_SCRIPT"
 fi
