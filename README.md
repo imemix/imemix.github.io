@@ -61,16 +61,16 @@ Comprehensive documentation is available at:
 
 ### Documentation Sections
 
-- [What Is EMInstaller?](https://imemix.github.io/EMInstaller/documentation.html#what-is) - Overview and purpose
-- [Quick Install](https://imemix.github.io/EMInstaller/documentation.html#quick-install) - Standard installation method
-- [Safe Method](https://imemix.github.io/EMInstaller/documentation.html#safe-method) - Manual inspection approach
-- [What It Does](https://imemix.github.io/EMInstaller/documentation.html#what-does) - Installation flow and security patterns
-- [Requirements](https://imemix.github.io/EMInstaller/documentation.html#requirements) - System prerequisites
-- [Testing Locally](https://imemix.github.io/EMInstaller/documentation.html#testing) - Local script testing
-- [Updating](https://imemix.github.io/EMInstaller/documentation.html#updating) - Version updates
-- [Security Best Practices](https://imemix.github.io/EMInstaller/documentation.html#security) - Security guidelines
-- [Advanced Usage](https://imemix.github.io/EMInstaller/documentation.html#advanced) - Advanced configurations
-- [Philosophy](https://imemix.github.io/EMInstaller/documentation.html#philosophy) - Design principles
+- [What Is EMInstaller?](https://imemix.github.io/documentation.html#what-is) - Overview and purpose
+- [Quick Install](https://imemix.github.io/documentation.html#quick-install) - Standard installation method
+- [Safe Method](https://imemix.github.io/documentation.html#safe-method) - Manual inspection approach
+- [What It Does](https://imemix.github.io/documentation.html#what-does) - Installation flow and security patterns
+- [Requirements](https://imemix.github.io/documentation.html#requirements) - System prerequisites
+- [Testing Locally](https://imemix.github.io/documentation.html#testing) - Local script testing
+- [Updating](https://imemix.github.io/documentation.html#updating) - Version updates
+- [Security Best Practices](https://imemix.github.io/documentation.html#security) - Security guidelines
+- [Advanced Usage](https://imemix.github.io/documentation.html#advanced) - Advanced configurations
+- [Philosophy](https://imemix.github.io/documentation.html#philosophy) - Design principles
 
 ## 🛠 Requirements
 
