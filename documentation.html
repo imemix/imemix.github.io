@@ -58,7 +58,7 @@
             <h2>🚀 Quick Install</h2>
             <p>The standard installation method is a single command:</p>
             <div class="code-block">
-                <pre><code>curl -s https://imemix.github.io/EMInstaller/install | sudo bash</code></pre>
+                <pre><code>curl -s https://imemix.github.io/install | sudo bash</code></pre>
                 <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
             </div>
             <p>This will:</p>
@@ -74,7 +74,7 @@
             <p>For security-sensitive environments, manually inspect the script before execution:</p>
             <p><strong>Step 1:</strong> Download the file</p>
             <div class="code-block">
-                <pre><code>curl -O https://imemix.github.io/EMInstaller/install</code></pre>
+                <pre><code>curl -O https://imemix.github.io/install</code></pre>
                 <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
             </div>
             <p><strong>Step 2:</strong> Inspect the script</p>
@@ -172,7 +172,7 @@ python3 "$TMP"</code></pre>
             <h2>🔄 Updating the Installer</h2>
             <p>When a new version is released, simply re-run the installation command:</p>
             <div class="code-block">
-                <pre><code>curl -s https://imemix.github.io/EMInstaller/install | sudo bash</code></pre>
+                <pre><code>curl -s https://imemix.github.io/install | sudo bash</code></pre>
                 <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
             </div>
             <p>The script automatically pulls the latest version unless version pinning is configured.</p>
@@ -197,27 +197,6 @@ python3 "$TMP"</code></pre>
         </section>
 
         <section id="advanced">
-            <h2>📌 Advanced Usage</h2>
-
-            <h3>Pin a Specific Version</h3>
-            <p>If versioned endpoints are available:</p>
-            <div class="code-block">
-                <pre><code>curl -s https://imemix.github.io/EMInstaller/install/1.0 | sudo bash</code></pre>
-                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-
-            <h3>Download Without Executing</h3>
-            <div class="code-block">
-                <pre><code>curl -O https://imemix.github.io/EMInstaller/install</code></pre>
-                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-
-            <h3>Dry Run (If Supported)</h3>
-            <p>Some installers support a dry-run mode:</p>
-            <div class="code-block">
-                <pre><code>bash install --dry-run</code></pre>
-                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
-            </div>
 
             <h3>Security Notice</h3>
             <div class="warning-box">
