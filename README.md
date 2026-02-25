@@ -3,18 +3,6 @@
 - GNOME and KDE work
 - HYPRLAND, XFCE and i3 does not work
 
-# Important sudoers
-- to sudo on all managers
-```bash
-$ su -
-```
-```bash
-$ pacman -S sudo
-```
-```bash
-$ exit
-```
-
 
 # EMInstaller
 
