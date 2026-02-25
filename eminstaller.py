@@ -18,7 +18,7 @@ def banner(text="EMInstaller v1.0"):
 ██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║
 ███████╗██║ ╚═╝ ██║██║██║ ╚████║
 ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
-
+[/bold cyan]
 [bold magenta]{text}[/bold magenta]
 """
     print(ascii_art)
@@ -243,7 +243,7 @@ if not confirm_interactive(f"[bold red]⚠️  WARNING: This will erase ALL data
 # ==============================
 # Execute Installation
 # ==============================
-console.print("\n[bold green]Starting installation to {disk}...[/bold green]\n")
+console.print("\n[bold green]Starting installation to disk...[/bold green]\n")
 
 # Determine partition names
 if "nvme" in disk:
@@ -366,7 +366,7 @@ run_stage("Unmounting partitions", f"umount -R /mnt", duration=1)
 # Installation complete
 console.print()
 banner("INSTALLATION COMPLETE! 🚀")
-console.print("[bold green]Arch Linux has been successfully installed on {disk}![/bold green]\n")
+console.print(f"[bold green]Arch Linux has been successfully installed on {disk}![/bold green]\n")
 
 console.print("[bold cyan]Final Configuration Summary:[/bold cyan]")
 console.print(f"  Disk: [green]{disk}[/green]")
