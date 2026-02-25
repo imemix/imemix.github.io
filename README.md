@@ -5,9 +5,9 @@
 - SUDO does not work by default
 
 ```bash
-su -
-pacman -S sudo
-exit
+$ su -
+$ pacman -S sudo
+$ exit
 ```
 - for sudo to work on all managers
 
