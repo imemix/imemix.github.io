@@ -3,6 +3,7 @@ import time
 import subprocess
 import sys
 import getpass
+import os
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
 
@@ -14,7 +15,7 @@ def banner(text="EMInstaller v1.0"):
 ███████╗███╗   ███╗██╗███╗   ██╗
 ██╔════╝████╗ ████║██║████╗  ██║
 █████╗  ██╔████╔██║██║██╔██╗ ██║
-██╔══╝  ██║╚██╔╝██║██║╚██╗██║
+██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║
 ███████╗██║ ╚═╝ ██║██║██║ ╚████║
 ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
 
@@ -72,6 +73,10 @@ def detect_gpu():
         pass
     return "none"
 
+def is_interactive():
+    """Check if running in interactive mode"""
+    return sys.stdin.isatty()
+
 def get_input(prompt_text, default=""):
     """Get user input with default value"""
     if default:
@@ -79,25 +84,36 @@ def get_input(prompt_text, default=""):
     else:
         full_prompt = f"  [cyan]{prompt_text}[/cyan]: "
     console.print(full_prompt, end="")
-    user_input = input()
-    return user_input if user_input else default
+    try:
+        user_input = input()
+        return user_input if user_input else default
+    except EOFError:
+        console.print("[yellow]Using default value[/yellow]")
+        return default
 
 def get_password(prompt_text):
     """Get password input securely"""
     console.print(f"  [cyan]{prompt_text}[/cyan]: ", end="")
-    return getpass.getpass()
+    try:
+        return getpass.getpass()
+    except EOFError:
+        console.print("[yellow]Using empty password[/yellow]")
+        return ""
 
 def confirm(prompt_text, default=False):
     """Get yes/no confirmation from user"""
     default_str = "Y/n" if default else "y/N"
     console.print(f"  [cyan]{prompt_text}[/cyan] [{default_str}]: ", end="")
-    response = input().lower()
-    
-    if response in ['y', 'yes']:
-        return True
-    elif response in ['n', 'no']:
-        return False
-    else:
+    try:
+        response = input().lower()
+        if response in ['y', 'yes']:
+            return True
+        elif response in ['n', 'no']:
+            return False
+        else:
+            return default
+    except EOFError:
+        console.print("[yellow]Using default value[/yellow]")
         return default
 
 # ==============================
@@ -106,6 +122,12 @@ def confirm(prompt_text, default=False):
 banner()
 console.print("\n[bold cyan]EMInstaller - Interactive Setup[/bold cyan]")
 console.print("[cyan]Configure your Arch Linux installation.\n[/cyan]")
+
+# Check if running interactively
+if not is_interactive():
+    console.print("[bold yellow]Warning: Running in non-interactive mode[/bold yellow]")
+    console.print("[cyan]Using default values for all options.\n[/cyan]")
+    time.sleep(2)
 
 console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
 hostname = get_input("Hostname", "arch")
@@ -147,9 +169,13 @@ console.print(f"  [cyan]Dev Tools:[/cyan] {dev_tools}")
 console.print(f"  [cyan]Dotfiles:[/cyan] {dotfiles}\n")
 
 # Confirm before proceeding
-if not confirm("[bold red]Proceed with installation?[/bold red]", False):
-    console.print("[yellow]Installation cancelled.[/yellow]")
-    sys.exit(0)
+if is_interactive():
+    if not confirm("[bold red]Proceed with installation?[/bold red]", False):
+        console.print("[yellow]Installation cancelled.[/yellow]")
+        sys.exit(0)
+else:
+    console.print("[bold green]Proceeding with installation (non-interactive mode)...[/bold green]\n")
+    time.sleep(2)
 
 # ==============================
 # Execute Installation
