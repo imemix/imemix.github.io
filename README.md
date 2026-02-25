@@ -1,3 +1,5 @@
+#THIS IS A MASSIVE WIP* NOT EVEREYTHING WORKS.
+
 # EMInstaller
 
 > **The Ultimate Arch Linux Terminal Installer**
