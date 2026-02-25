@@ -18,7 +18,7 @@ def banner(text="EMInstaller v1.0"):
 ██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║
 ███████╗██║ ╚═╝ ██║██║██║ ╚████║
 ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
-
+[/bold cyan]
 [bold magenta]{text}[/bold magenta]
 """
     print(ascii_art)
