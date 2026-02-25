@@ -31,7 +31,6 @@ curl -O https://imemix.github.io/install
 - 🎯 **Easy Setup** - Intuitive interface for seamless configuration
 - 🔧 **Customizable** - Adjust settings to match your needs
 - 📊 **Real-time Logs** - Monitor installation progress live
-- 🔐 **Secure** - Checksum verification and best security practices
 - 📦 **Dependency Management** - Automatic installation of required packages
 - ✅ **Error Handling** - Robust error detection and reporting
 
@@ -42,13 +41,11 @@ EMInstaller automates the Arch Linux installation process by:
 1. **Preparing the System** - Sets up your system environment
 2. **Installing Dependencies** - Installs required packages (curl, python, etc.)
 3. **Downloading Payload** - Fetches the main installer
-4. **Verifying Integrity** - Validates file checksums for security
-5. **Executing Installation** - Launches the installer with Python
+4. **Executing Installation** - Launches the installer with Python
 
 ### Security Features
 
 - ✅ Mandatory root privilege verification
-
 - ✅ Error-on-failure mode (`set -euo pipefail`)
 - ✅ No execution of undefined variables
 - ✅ Pipe failure detection
@@ -82,7 +79,6 @@ Before running EMInstaller, ensure your system has:
 - **curl** - for downloading files
 - **bash** - shell environment
 - **python3** - Python interpreter
-- **sha256sum** - checksum verification utility
 
 ### Install Missing Dependencies
 
@@ -182,18 +178,6 @@ curl | bash
 **Only execute installers from trusted, verified sources.**
 
 Review the script before execution whenever possible. Use the safe method for production deployments.
-
-## 📖 Local Documentation
-
-If you're running the documentation locally via Docker:
-
-```bash
-docker-compose up -d
-```
-
-Then visit:
-- **Main Site:** http://localhost:8080
-- **Documentation:** http://localhost:8080/documentation.html
 
 ## 🤝 Contributing
 
