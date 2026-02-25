@@ -108,32 +108,10 @@
                 <li>Verify running with root privileges</li>
                 <li>Install required dependencies</li>
                 <li>Download main installer</li>
-                <li>Verify SHA256 checksum</li>
                 <li>Execute installer with Python</li>
             </ol>
 
-            <h3>Example Secure Pattern</h3>
-            <div class="code-block">
-                <pre><code>#!/usr/bin/env bash
-set -euo pipefail
 
-if [ "$(id -u)" -ne 0 ]; then
-    echo "Please run with sudo."
-    exit 1
-fi
-
-TMP="/tmp/eminstaller.py"
-curl -sL "$RAW_URL" -o "$TMP"
-
-DOWNLOADED_SHA=$(sha256sum "$TMP" | awk '{print $1}')
-
-if [ "$DOWNLOADED_SHA" != "$EXPECTED_SHA" ]; then
-    echo "Checksum mismatch!"
-    exit 1
-fi
-
-python3 "$TMP"</code></pre>
-            </div>
         </section>
 
         <section id="requirements">
@@ -227,7 +205,7 @@ python3 "$TMP"</code></pre>
 
 <footer class="footer">
     <div class="container">
-        <p>&copy; 2024 EMInstaller. All rights reserved.</p>
+        <p>&copy; 2026 EMInstaller. All rights reserved.</p>
         <div class="footer-links">
             <a href="index.html">Home</a>
             <a href="#">GitHub</a>
