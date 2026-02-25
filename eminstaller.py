@@ -6,6 +6,8 @@ import getpass
 import os
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
+from rich.panel import Panel
+from rich.align import Align
 
 console = Console()
 
@@ -18,7 +20,7 @@ def banner(text="EMInstaller v1.0"):
 ██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║
 ███████╗██║ ╚═╝ ██║██║██║ ╚████║
 ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
-[/bold cyan]
+
 [bold magenta]{text}[/bold magenta]
 """
     print(ascii_art)
@@ -53,7 +55,6 @@ def run_stage(stage_name, cmd, duration=3):
             progress.update(task, advance=5)
             time.sleep(duration/20)
     
-    # Execute the command
     success, stdout, stderr = run_command(cmd)
     if success or "error" not in stderr.lower():
         console.print(f"[green]✓ {stage_name} completed[/green]")
@@ -93,94 +94,80 @@ def get_available_disks():
     except:
         return []
 
-def display_disks():
-    """Display available disks"""
-    disks = get_available_disks()
-    if not disks:
-        console.print("[yellow]No disks found[/yellow]")
-        return None
+def menu_select(title, options, show_numbers=False):
+    """Display menu and get selection with arrow keys"""
+    selected = 0
     
-    console.print("[bold yellow]Available Disks:[/bold yellow]\n")
-    for i, disk in enumerate(disks, 1):
-        console.print(f"  {i}. {disk}")
-    console.print()
-    return disks
+    while True:
+        console.clear()
+        banner()
+        console.print(f"\n[bold cyan]{title}[/bold cyan]\n")
+        console.print("[yellow]Use ↑↓ arrow keys to navigate, Enter to select[/yellow]\n")
+        
+        for i, option in enumerate(options):
+            if i == selected:
+                if show_numbers:
+                    console.print(f"[bold green]► {i+1}. {option}[/bold green]")
+                else:
+                    console.print(f"[bold green]► {option}[/bold green]")
+            else:
+                if show_numbers:
+                    console.print(f"  {i+1}. {option}")
+                else:
+                    console.print(f"  {option}")
+        
+        # Read single character without Enter
+        import sys, tty, termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+            
+            if ch == '\x1b':  # ESC sequence
+                sys.stdin.read(1)
+                direction = sys.stdin.read(1)
+                if direction == 'A':  # Up arrow
+                    selected = (selected - 1) % len(options)
+                elif direction == 'B':  # Down arrow
+                    selected = (selected + 1) % len(options)
+            elif ch == '\r':  # Enter
+                return selected
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
-def get_input_interactive(prompt_text, default=""):
-    """Get user input with default value from /dev/tty"""
-    if default:
-        full_prompt = f"  {prompt_text} ({default}): "
-    else:
-        full_prompt = f"  {prompt_text}: "
+def text_input(title, default=""):
+    """Get text input"""
+    console.clear()
+    banner()
+    console.print(f"\n[bold cyan]{title}[/bold cyan]\n")
     
     try:
         with open("/dev/tty", "r") as tty:
-            sys.stdout.write(full_prompt)
+            sys.stdout.write(f"  Enter value (default: {default}): ")
             sys.stdout.flush()
             user_input = tty.readline().strip()
             return user_input if user_input else default
     except:
-        console.print(full_prompt, end="")
+        console.print(f"  Enter value (default: {default}): ", end="")
         user_input = input()
         return user_input if user_input else default
 
-def get_disk_selection():
-    """Get disk selection from user"""
-    disks = display_disks()
-    if not disks:
-        console.print("[red]Error: No disks available[/red]")
-        sys.exit(1)
+def password_input(title):
+    """Get password input"""
+    console.clear()
+    banner()
+    console.print(f"\n[bold cyan]{title}[/bold cyan]\n")
     
-    while True:
-        try:
-            choice = get_input_interactive("Select disk number", "1")
-            choice_num = int(choice)
-            if 1 <= choice_num <= len(disks):
-                selected_disk = disks[choice_num - 1].split()[0]
-                console.print(f"[green]Selected: {selected_disk}[/green]\n")
-                return selected_disk
-            else:
-                console.print(f"[red]Invalid choice. Please select 1-{len(disks)}[/red]")
-        except ValueError:
-            console.print("[red]Invalid input. Please enter a number[/red]")
-
-def get_password_interactive(prompt_text):
-    """Get password input securely from /dev/tty"""
     try:
         with open("/dev/tty", "r") as tty_in:
             with open("/dev/tty", "w") as tty_out:
-                tty_out.write(f"  {prompt_text}: ")
+                tty_out.write(f"  Enter password: ")
                 tty_out.flush()
                 return getpass.getpass(stream=tty_out)
     except:
-        console.print(f"  {prompt_text}: ", end="")
+        console.print(f"  Enter password: ", end="")
         return getpass.getpass()
-
-def confirm_interactive(prompt_text, default=False):
-    """Get yes/no confirmation from user from /dev/tty"""
-    default_str = "Y/n" if default else "y/N"
-    full_prompt = f"  {prompt_text} [{default_str}]: "
-    
-    try:
-        with open("/dev/tty", "r") as tty:
-            sys.stdout.write(full_prompt)
-            sys.stdout.flush()
-            response = tty.readline().strip().lower()
-            if response in ['y', 'yes']:
-                return True
-            elif response in ['n', 'no']:
-                return False
-            else:
-                return default
-    except:
-        console.print(full_prompt, end="")
-        response = input().lower()
-        if response in ['y', 'yes']:
-            return True
-        elif response in ['n', 'no']:
-            return False
-        else:
-            return default
 
 # ==============================
 # Interactive Configuration
@@ -188,55 +175,88 @@ def confirm_interactive(prompt_text, default=False):
 banner()
 console.print("\n[bold cyan]EMInstaller - Interactive Setup[/bold cyan]")
 console.print("[cyan]Configure your Arch Linux installation.\n[/cyan]")
+time.sleep(2)
 
-console.print("[bold yellow]=== Disk Selection ===[/bold yellow]\n")
-disk = get_disk_selection()
+# Disk Selection
+disks = get_available_disks()
+if not disks:
+    console.print("[red]Error: No disks found![/red]")
+    sys.exit(1)
 
-console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
-hostname = get_input_interactive("Hostname", "arch")
-username = get_input_interactive("Username", "user")
-userpass = get_password_interactive("User Password")
-rootpass = get_password_interactive("Root Password")
+disk_index = menu_select("Select Installation Disk", disks, show_numbers=True)
+disk = disks[disk_index].split()[0]
 
-console.print("\n[bold yellow]=== System Configuration ===[/bold yellow]\n")
-fs = get_input_interactive("Filesystem (ext4/btrfs/xfs)", "ext4")
-use_luks = confirm_interactive("Enable LUKS Encryption?", False)
-create_swap = confirm_interactive("Create Swapfile?", True)
-kernel = get_input_interactive("Kernel (linux/linux-lts/linux-zen)", "linux")
+# Hostname
+hostname = text_input("Enter Hostname", "arch")
 
-console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
-console.print("  Options: cli-only, gnome, kde, hyprland, xfce, i3")
-desktop = get_input_interactive("Desktop Environment", "gnome")
+# Username
+username = text_input("Enter Username", "user")
 
-console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
-gaming = confirm_interactive("Install Gaming Stack (Steam, Wine, Lutris)?", False)
-dev_tools = confirm_interactive("Install Development Tools (Git, Node, Python)?", False)
-dotfiles = confirm_interactive("Install Dotfiles?", False)
+# User Password
+userpass = password_input("Enter User Password")
 
+# Root Password
+rootpass = password_input("Enter Root Password")
+
+# Filesystem
+fs_index = menu_select("Select Filesystem", ["ext4", "btrfs", "xfs"])
+fs = ["ext4", "btrfs", "xfs"][fs_index]
+
+# LUKS Encryption
+luks_index = menu_select("Enable LUKS Encryption?", ["No", "Yes"])
+use_luks = luks_index == 1
+
+# Swapfile
+swap_index = menu_select("Create Swapfile?", ["No", "Yes"])
+create_swap = swap_index == 1
+
+# Kernel
+kernel_index = menu_select("Select Kernel", ["linux", "linux-lts", "linux-zen"])
+kernel = ["linux", "linux-lts", "linux-zen"][kernel_index]
+
+# Desktop Environment
+desktop_index = menu_select("Select Desktop Environment", ["cli-only", "gnome", "kde", "hyprland", "xfce", "i3"])
+desktops = ["cli-only", "gnome", "kde", "hyprland", "xfce", "i3"]
+desktop = desktops[desktop_index]
+
+# Gaming Stack
+gaming_index = menu_select("Install Gaming Stack?", ["No", "Yes"])
+gaming = gaming_index == 1
+
+# Development Tools
+dev_index = menu_select("Install Development Tools?", ["No", "Yes"])
+dev_tools = dev_index == 1
+
+# GPU Selection
 detected_gpu = detect_gpu()
-console.print("\n[bold yellow]=== GPU/Virtualization ===[/bold yellow]\n")
-console.print("  GPU Options: none, nvidia, amd, intel")
-console.print("  VM Graphics: qemu, vmware, virtualbox, hyper-v\n")
-gpu = get_input_interactive("GPU Driver (none/nvidia/amd/intel)", detected_gpu)
-vm_graphics = get_input_interactive("VM Graphics (none/qemu/vmware/virtualbox/hyper-v)", "none")
+gpu_index = menu_select("Select GPU Driver", ["none", "nvidia", "amd", "intel"])
+gpus = ["none", "nvidia", "amd", "intel"]
+gpu = gpus[gpu_index]
 
-# Display summary
+# VM Graphics
+vm_index = menu_select("Select VM Graphics", ["none", "qemu", "vmware", "virtualbox", "hyper-v"])
+vms = ["none", "qemu", "vmware", "virtualbox", "hyper-v"]
+vm_graphics = vms[vm_index]
+
+# Review Configuration
+console.clear()
+banner()
 console.print("\n[bold yellow]=== Installation Configuration ===[/bold yellow]\n")
 console.print(f"  [cyan]Disk:[/cyan] {disk}")
 console.print(f"  [cyan]Hostname:[/cyan] {hostname}")
 console.print(f"  [cyan]Username:[/cyan] {username}")
 console.print(f"  [cyan]Filesystem:[/cyan] {fs}")
-console.print(f"  [cyan]LUKS Encryption:[/cyan] {use_luks}")
-console.print(f"  [cyan]Swapfile:[/cyan] {create_swap}")
+console.print(f"  [cyan]LUKS Encryption:[/cyan] {'Yes' if use_luks else 'No'}")
+console.print(f"  [cyan]Swapfile:[/cyan] {'Yes' if create_swap else 'No'}")
 console.print(f"  [cyan]Kernel:[/cyan] {kernel}")
 console.print(f"  [cyan]Desktop:[/cyan] {desktop}")
+console.print(f"  [cyan]Gaming Stack:[/cyan] {'Yes' if gaming else 'No'}")
+console.print(f"  [cyan]Dev Tools:[/cyan] {'Yes' if dev_tools else 'No'}")
 console.print(f"  [cyan]GPU Driver:[/cyan] {gpu}")
-console.print(f"  [cyan]VM Graphics:[/cyan] {vm_graphics}")
-console.print(f"  [cyan]Gaming Stack:[/cyan] {gaming}")
-console.print(f"  [cyan]Dev Tools:[/cyan] {dev_tools}")
-console.print(f"  [cyan]Dotfiles:[/cyan] {dotfiles}\n")
+console.print(f"  [cyan]VM Graphics:[/cyan] {vm_graphics}\n")
 
-if not confirm_interactive(f"[bold red]⚠️  WARNING: This will erase ALL data on {disk}. Proceed?[/bold red]", False):
+confirm_index = menu_select(f"[bold red]⚠️  WARNING: This will erase ALL data on {disk}. Proceed?[/bold red]", ["Cancel", "Proceed"])
+if confirm_index == 0:
     console.print("[yellow]Installation cancelled.[/yellow]")
     sys.exit(0)
 
@@ -245,7 +265,6 @@ if not confirm_interactive(f"[bold red]⚠️  WARNING: This will erase ALL data
 # ==============================
 console.print("\n[bold green]Starting installation to disk...[/bold green]\n")
 
-# Determine partition names
 if "nvme" in disk:
     efi_part = f"{disk}p1"
     root_part = f"{disk}p2"
@@ -253,45 +272,35 @@ else:
     efi_part = f"{disk}1"
     root_part = f"{disk}2"
 
-# Wipe disk
 run_stage("Wiping disk", f"wipefs -af {disk}", duration=2)
-
-# Create partition table
 run_stage("Creating GPT partition table", f"parted -s {disk} mklabel gpt", duration=1)
-
-# Create partitions
 run_stage("Creating EFI partition (512MB)", f"parted -s {disk} mkpart primary fat32 1MiB 513MiB", duration=1)
 run_stage("Setting EFI boot flag", f"parted -s {disk} set 1 esp on", duration=1)
 run_stage("Creating root partition", f"parted -s {disk} mkpart primary {fs} 513MiB 100%", duration=1)
-
-# Format partitions
 run_stage("Formatting EFI partition", f"mkfs.fat -F32 -n EFI {efi_part}", duration=1)
 run_stage(f"Formatting root partition ({fs})", f"mkfs.{fs} -L arch {root_part}", duration=3)
 
-# Mount partitions
 run_stage("Creating mount directories", f"mkdir -p /mnt/boot /mnt", duration=1)
 run_stage("Mounting root partition", f"mount {root_part} /mnt", duration=1)
 run_stage("Mounting EFI partition", f"mkdir -p /mnt/boot/efi && mount {efi_part} /mnt/boot/efi", duration=1)
 
-# Create swapfile if requested
 if create_swap:
     run_stage("Creating swapfile (2GB)", f"dd if=/dev/zero of=/mnt/swapfile bs=1M count=2048 && chmod 600 /mnt/swapfile && mkswap /mnt/swapfile", duration=3)
 
-# Install base system
 packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmanager", "vim", "sudo"]
 
 if desktop != "cli-only":
     packages.append("xorg")
     if desktop == "gnome":
-        packages.extend(["gnome", "gnome-extra", "gdm", "networkmanager", "network-manager-applet"])
+        packages.extend(["gnome", "gnome-extra", "gdm", "network-manager-applet"])
     elif desktop == "kde":
-        packages.extend(["plasma", "kde-applications", "sddm", "networkmanager"])
+        packages.extend(["plasma", "kde-applications", "sddm"])
     elif desktop == "hyprland":
-        packages.extend(["hyprland", "hyprpaper", "waybar", "greetd", "greetd-tuigreet", "kitty", "wofi", "dolphin", "networkmanager"])
+        packages.extend(["hyprland", "hyprpaper", "waybar", "greetd", "greetd-tuigreet", "kitty", "wofi", "dolphin"])
     elif desktop == "xfce":
-        packages.extend(["xfce4", "xfce4-goodies", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
+        packages.extend(["xfce4", "xfce4-goodies", "lightdm", "lightdm-gtk-greeter", "network-manager-applet"])
     elif desktop == "i3":
-        packages.extend(["i3-wm", "i3status", "dmenu", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
+        packages.extend(["i3-wm", "i3status", "dmenu", "lightdm", "lightdm-gtk-greeter", "network-manager-applet"])
 
 if gaming:
     packages.extend(["steam", "wine", "lutris"])
@@ -299,63 +308,39 @@ if gaming:
 if dev_tools:
     packages.extend(["git", "base-devel", "npm", "python"])
 
-# Don't add yay to packages list - we'll install it after chroot
-
 run_stage("Installing base packages", f"pacstrap /mnt {' '.join(packages)}", duration=10)
-
-# Generate fstab
 run_stage("Generating fstab", f"genfstab -U /mnt >> /mnt/etc/fstab", duration=1)
 
-# Chroot and configure system
 console.print("\n[bold green]Configuring system in chroot...[/bold green]\n")
 
-# Set timezone
 run_stage("Setting timezone", f"arch-chroot /mnt ln -sf /usr/share/zoneinfo/UTC /etc/localtime", duration=1)
-
-# Set locale
 run_stage("Generating locale", f"arch-chroot /mnt bash -c \"echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen\"", duration=2)
 run_stage("Setting LANG", f"arch-chroot /mnt bash -c \"echo 'LANG=en_US.UTF-8' > /etc/locale.conf\"", duration=1)
-
-# Set hostname
 run_stage("Setting hostname", f"arch-chroot /mnt bash -c \"echo '{hostname}' > /etc/hostname\"", duration=1)
-
-# Configure hosts
 run_stage("Configuring hosts", f"arch-chroot /mnt bash -c \"echo '127.0.0.1 localhost' >> /etc/hosts && echo '::1 localhost' >> /etc/hosts && echo '127.0.1.1 {hostname}.localdomain {hostname}' >> /etc/hosts\"", duration=1)
 
-# Set root password
 run_stage("Setting root password", f"arch-chroot /mnt bash -c \"echo -e '{rootpass}\\n{rootpass}' | passwd\"", duration=1)
-
-# Create user
 run_stage("Creating user", f"arch-chroot /mnt useradd -m -s /bin/bash {username}", duration=1)
 run_stage("Setting user password", f"arch-chroot /mnt bash -c \"echo -e '{userpass}\\n{userpass}' | passwd {username}\"", duration=1)
 
-# Enable NetworkManager
-run_stage("Enabling NetworkManager", f"arch-chroot /mnt systemctl enable NetworkManager", duration=1)
-
-# Configure sudoers - create sudoers.d directory and add user
 run_stage("Creating sudoers directory", f"arch-chroot /mnt mkdir -p /etc/sudoers.d", duration=1)
 run_stage("Configuring sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL) ALL' > /etc/sudoers.d/{username} && chmod 0440 /etc/sudoers.d/{username}\"", duration=1)
 
-# Verify sudoers was created
-run_stage("Verifying sudoers configuration", f"arch-chroot /mnt test -f /etc/sudoers.d/{username} && echo 'sudoers configured'", duration=1)
+run_stage("Enabling NetworkManager", f"arch-chroot /mnt systemctl enable NetworkManager", duration=1)
 
-# Enable display manager
 if desktop == "gnome":
     run_stage("Enabling GNOME Display Manager (GDM)", f"arch-chroot /mnt systemctl enable gdm", duration=1)
 elif desktop == "kde":
     run_stage("Enabling Simple Desktop Display Manager (SDDM)", f"arch-chroot /mnt systemctl enable sddm", duration=1)
 elif desktop == "hyprland":
     run_stage("Enabling Greetd Display Manager", f"arch-chroot /mnt systemctl enable greetd", duration=1)
-    # Configure greetd for hyprland
     run_stage("Configuring greetd for Hyprland", f"arch-chroot /mnt bash -c \"mkdir -p /home/{username}/.config/hypr && echo 'exec-once = waybar' > /home/{username}/.config/hypr/hyprland.conf && chown -R {username}:{username} /home/{username}/.config\"", duration=1)
 elif desktop in ["xfce", "i3"]:
     run_stage("Enabling LightDM Display Manager", f"arch-chroot /mnt systemctl enable lightdm", duration=1)
 
-# Install bootloader
 run_stage("Installing GRUB", f"arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB", duration=2)
 run_stage("Generating GRUB config", f"arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg", duration=1)
 
-# Install GPU drivers
 if gpu == "nvidia":
     run_stage("Installing NVIDIA drivers", f"arch-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils", duration=5)
 elif gpu == "amd":
@@ -363,7 +348,6 @@ elif gpu == "amd":
 elif gpu == "intel":
     run_stage("Installing Intel drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-intel", duration=3)
 
-# Install VM graphics drivers
 if vm_graphics == "qemu":
     run_stage("Installing QEMU graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-qxl spice-vdagent", duration=3)
 elif vm_graphics == "vmware":
@@ -373,11 +357,9 @@ elif vm_graphics == "virtualbox":
 elif vm_graphics == "hyper-v":
     run_stage("Installing Hyper-V graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-fbdev", duration=3)
 
-# Unmount partitions
 run_stage("Unmounting partitions", f"umount -R /mnt", duration=1)
 
-# Installation complete
-console.print()
+console.clear()
 banner("INSTALLATION COMPLETE! 🚀")
 console.print(f"[bold green]Arch Linux has been successfully installed on {disk}![/bold green]\n")
 
