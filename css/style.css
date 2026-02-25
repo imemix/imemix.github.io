@@ -10,7 +10,7 @@
     --card-bg: #414141;
     --text-primary: #ffffff;
     --text-secondary: #475569;
-    --border-color: #e2e8f0;
+    --border-color: #2563eb;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
@@ -105,7 +105,7 @@ body {
     align-items: center;
     gap: 4rem;
     padding: 5rem 1.5rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    background: linear-gradient(135deg, #242424 0%, #0f172a 100%);
 }
 
 .hero-content h1 {
@@ -125,12 +125,12 @@ body {
 
 .hero-desc {
     font-size: 1.1rem;
-    color: var(--text-secondary);
+    color: #fff;
     margin-bottom: 2rem;
     line-height: 1.8;
 }
 
-a.cta-button {
+.cta-button {
     padding: 0.9rem 2rem;
     font-size: 1rem;
     font-weight: 600;
@@ -246,7 +246,7 @@ a.cta-button {
 }
 
 .feature-card p {
-    color: var(--text-secondary);
+    color: var(--primary-color);
     font-size: 0.95rem;
 }
 
@@ -316,7 +316,7 @@ a.cta-button {
 
 /* PROGRESS BAR */
 .progress-container {
-    background-color: #e2e8f0;
+    background-color: var(--light-bg);
     padding: 1.5rem;
     display: flex;
     align-items: center;
@@ -336,7 +336,7 @@ a.cta-button {
 .progress-text {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #fff;
     min-width: 40px;
     text-align: right;
 }
@@ -425,8 +425,8 @@ a.cta-button {
 
 /* FOOTER */
 .footer {
-    background-color: var(--text-primary);
-    color: #cbd5e1;
+    background-color: var(--light-bg);
+    color: #fff;
     padding: 3rem 1.5rem;
     text-align: center;
 }
