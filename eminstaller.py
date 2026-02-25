@@ -11,7 +11,7 @@ console = Console()
 
 def banner(text="EMInstaller v1.0"):
     ascii_art = f"""
-
+[bold cyan]
 ███████╗███╗   ███╗██╗███╗   ██╗
 ██╔════╝████╗ ████║██║████╗  ██║
 █████╗  ██╔████╔██║██║██╔██╗ ██║
@@ -19,7 +19,7 @@ def banner(text="EMInstaller v1.0"):
 ███████╗██║ ╚═╝ ██║██║██║ ╚████║
 ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
 
-{text}
+[bold magenta]{text}[/bold magenta]
 """
     print(ascii_art)
 
@@ -283,15 +283,15 @@ packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmana
 if desktop != "cli-only":
     packages.append("xorg")
     if desktop == "gnome":
-        packages.extend(["gnome", "gnome-extra"])
+        packages.extend(["gnome", "gnome-extra", "gdm"])
     elif desktop == "kde":
-        packages.extend(["plasma", "kde-applications"])
+        packages.extend(["plasma", "kde-applications", "sddm"])
     elif desktop == "hyprland":
-        packages.extend(["hyprland", "hyprpaper", "waybar"])
+        packages.extend(["hyprland", "hyprpaper", "waybar", "ly"])
     elif desktop == "xfce":
-        packages.extend(["xfce4", "xfce4-goodies"])
+        packages.extend(["xfce4", "xfce4-goodies", "lightdm", "lightdm-gtk-greeter"])
     elif desktop == "i3":
-        packages.extend(["i3-wm", "i3status", "dmenu"])
+        packages.extend(["i3-wm", "i3status", "dmenu", "lightdm", "lightdm-gtk-greeter"])
 
 if gaming:
     packages.extend(["steam", "wine", "lutris"])
@@ -328,8 +328,15 @@ run_stage("Creating user", f"arch-chroot /mnt useradd -m -s /bin/bash {username}
 run_stage("Setting user password", f"arch-chroot /mnt bash -c \"echo -e '{userpass}\\n{userpass}' | passwd {username}\"", duration=1)
 run_stage("Adding user to sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL:ALL) ALL' >> /etc/sudoers\"", duration=1)
 
-# Enable NetworkManager
-run_stage("Enabling NetworkManager", f"arch-chroot /mnt systemctl enable NetworkManager", duration=1)
+# Enable display manager
+if desktop == "gnome":
+    run_stage("Enabling GNOME Display Manager (GDM)", f"arch-chroot /mnt systemctl enable gdm", duration=1)
+elif desktop == "kde":
+    run_stage("Enabling Simple Desktop Display Manager (SDDM)", f"arch-chroot /mnt systemctl enable sddm", duration=1)
+elif desktop == "hyprland":
+    run_stage("Enabling Ly Display Manager", f"arch-chroot /mnt systemctl enable ly", duration=1)
+elif desktop in ["xfce", "i3"]:
+    run_stage("Enabling LightDM Display Manager", f"arch-chroot /mnt systemctl enable lightdm", duration=1)
 
 # Install bootloader
 run_stage("Installing GRUB", f"arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB", duration=2)
