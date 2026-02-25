@@ -23,16 +23,20 @@ def banner(text="EMInstaller v1.0"):
 """
     print(ascii_art)
 
-def run_command(cmd, description=""):
+def run_command(cmd, description="", verbose=False):
     """Run a shell command"""
     if description:
         console.print(f"[cyan]{description}[/cyan]")
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        return result.stdout.strip()
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
+        if verbose and result.stdout:
+            console.print(result.stdout)
+        return result.returncode == 0, result.stdout, result.stderr
+    except subprocess.TimeoutExpired:
+        console.print("[yellow]Command timed out[/yellow]")
+        return False, "", "Timeout"
     except Exception as e:
-        console.print(f"[yellow]Warning: {e}[/yellow]")
-        return ""
+        return False, "", str(e)
 
 def run_stage(stage_name, cmd, duration=3):
     """Run a stage with progress bar"""
@@ -49,16 +53,13 @@ def run_stage(stage_name, cmd, duration=3):
             progress.update(task, advance=5)
             time.sleep(duration/20)
     
-    # Execute the command - don't check for errors
-    try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=60)
+    # Execute the command
+    success, stdout, stderr = run_command(cmd)
+    if success or "error" not in stderr.lower():
         console.print(f"[green]✓ {stage_name} completed[/green]")
         return True
-    except subprocess.TimeoutExpired:
-        console.print(f"[yellow]⚠ {stage_name} timed out (continuing)[/yellow]")
-        return True
-    except Exception as e:
-        console.print(f"[yellow]⚠ {stage_name} encountered an issue (continuing)[/yellow]")
+    else:
+        console.print(f"[yellow]⚠ {stage_name} warning: {stderr[:100]}[/yellow]")
         return True
 
 def detect_gpu():
@@ -113,14 +114,12 @@ def get_input_interactive(prompt_text, default=""):
         full_prompt = f"  {prompt_text}: "
     
     try:
-        # Try to read from /dev/tty (terminal) instead of stdin
         with open("/dev/tty", "r") as tty:
             sys.stdout.write(full_prompt)
             sys.stdout.flush()
             user_input = tty.readline().strip()
             return user_input if user_input else default
     except:
-        # Fallback to regular input
         console.print(full_prompt, end="")
         user_input = input()
         return user_input if user_input else default
@@ -137,7 +136,7 @@ def get_disk_selection():
             choice = get_input_interactive("Select disk number", "1")
             choice_num = int(choice)
             if 1 <= choice_num <= len(disks):
-                selected_disk = disks[choice_num - 1].split()[0]  # Extract /dev/xxx
+                selected_disk = disks[choice_num - 1].split()[0]
                 console.print(f"[green]Selected: {selected_disk}[/green]\n")
                 return selected_disk
             else:
@@ -148,14 +147,12 @@ def get_disk_selection():
 def get_password_interactive(prompt_text):
     """Get password input securely from /dev/tty"""
     try:
-        # Try to read from /dev/tty (terminal)
         with open("/dev/tty", "r") as tty_in:
             with open("/dev/tty", "w") as tty_out:
                 tty_out.write(f"  {prompt_text}: ")
                 tty_out.flush()
                 return getpass.getpass(stream=tty_out)
     except:
-        # Fallback to regular getpass
         console.print(f"  {prompt_text}: ", end="")
         return getpass.getpass()
 
@@ -165,7 +162,6 @@ def confirm_interactive(prompt_text, default=False):
     full_prompt = f"  {prompt_text} [{default_str}]: "
     
     try:
-        # Try to read from /dev/tty (terminal)
         with open("/dev/tty", "r") as tty:
             sys.stdout.write(full_prompt)
             sys.stdout.flush()
@@ -177,7 +173,6 @@ def confirm_interactive(prompt_text, default=False):
             else:
                 return default
     except:
-        # Fallback to regular input
         console.print(full_prompt, end="")
         response = input().lower()
         if response in ['y', 'yes']:
@@ -218,7 +213,6 @@ gaming = confirm_interactive("Install Gaming Stack (Steam, Wine, Lutris)?", Fals
 dev_tools = confirm_interactive("Install Development Tools (Git, Node, Python)?", False)
 dotfiles = confirm_interactive("Install Dotfiles?", False)
 
-# Auto-detect GPU if not explicitly set
 detected_gpu = detect_gpu()
 gpu = get_input_interactive("GPU Driver (none/nvidia/amd/intel)", detected_gpu)
 
@@ -237,21 +231,49 @@ console.print(f"  [cyan]Gaming Stack:[/cyan] {gaming}")
 console.print(f"  [cyan]Dev Tools:[/cyan] {dev_tools}")
 console.print(f"  [cyan]Dotfiles:[/cyan] {dotfiles}\n")
 
-# Confirm before proceeding
-if not confirm_interactive(f"[bold red]⚠️  WARNING: This will erase data on {disk}. Proceed?[/bold red]", False):
+if not confirm_interactive(f"[bold red]⚠️  WARNING: This will erase ALL data on {disk}. Proceed?[/bold red]", False):
     console.print("[yellow]Installation cancelled.[/yellow]")
     sys.exit(0)
 
 # ==============================
 # Execute Installation
 # ==============================
-console.print("\n[bold green]Starting installation...[/bold green]\n")
+console.print("\n[bold green]Starting installation to {disk}...[/bold green]\n")
 
-# Update system
-run_stage("Updating system packages", "pacman -Syu --noconfirm 2>&1 | head -20", duration=3)
+# Determine partition names
+if "nvme" in disk:
+    efi_part = f"{disk}p1"
+    root_part = f"{disk}p2"
+else:
+    efi_part = f"{disk}1"
+    root_part = f"{disk}2"
 
-# Build package list
-packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmanager"]
+# Wipe disk
+run_stage("Wiping disk", f"wipefs -af {disk}", duration=2)
+
+# Create partition table
+run_stage("Creating GPT partition table", f"parted -s {disk} mklabel gpt", duration=1)
+
+# Create partitions
+run_stage("Creating EFI partition (512MB)", f"parted -s {disk} mkpart primary fat32 1MiB 513MiB", duration=1)
+run_stage("Setting EFI boot flag", f"parted -s {disk} set 1 esp on", duration=1)
+run_stage("Creating root partition", f"parted -s {disk} mkpart primary {fs} 513MiB 100%", duration=1)
+
+# Format partitions
+run_stage("Formatting EFI partition", f"mkfs.fat -F32 -n EFI {efi_part}", duration=1)
+run_stage(f"Formatting root partition ({fs})", f"mkfs.{fs} -L arch {root_part}", duration=3)
+
+# Mount partitions
+run_stage("Creating mount directories", f"mkdir -p /mnt/boot /mnt", duration=1)
+run_stage("Mounting root partition", f"mount {root_part} /mnt", duration=1)
+run_stage("Mounting EFI partition", f"mkdir -p /mnt/boot/efi && mount {efi_part} /mnt/boot/efi", duration=1)
+
+# Create swapfile if requested
+if create_swap:
+    run_stage("Creating swapfile (2GB)", f"dd if=/dev/zero of=/mnt/swapfile bs=1M count=2048 && chmod 600 /mnt/swapfile && mkswap /mnt/swapfile", duration=3)
+
+# Install base system
+packages = ["base", linux-firmware", "grub", "efibootmgr", kernel, "networkmanager", "vim"]
 
 if desktop != "cli-only":
     packages.append("xorg")
@@ -272,48 +294,57 @@ if gaming:
 if dev_tools:
     packages.extend(["git", "base-devel", "npm", "python"])
 
-# Install packages
-run_stage("Installing base packages", f"pacman -S --noconfirm {' '.join(packages)} 2>&1 | head -20", duration=5)
+run_stage("Installing base packages", f"pacstrap /mnt {' '.join(packages)}", duration=10)
 
-# Install Python dependencies
-run_stage("Installing Python dependencies", "pacman -S --noconfirm python-pip 2>&1 && pip install --quiet rich 2>&1 | head -10", duration=2)
+# Generate fstab
+run_stage("Generating fstab", f"genfstab -U /mnt >> /mnt/etc/fstab", duration=1)
 
-# Partition and format disk
-run_stage("Partitioning disk", f"parted -s {disk} mklabel gpt 2>&1 || true", duration=2)
-run_stage("Creating EFI partition", f"parted -s {disk} mkpart ESP fat32 1MiB 513MiB set 1 boot on 2>&1 || true", duration=1)
-run_stage("Creating root partition", f"parted -s {disk} mkpart primary {fs} 513MiB 100% 2>&1 || true", duration=2)
-
-# Format partitions
-efi_part = f"{disk}1"
-root_part = f"{disk}2"
-run_stage("Formatting EFI partition", f"mkfs.fat -F32 {efi_part} 2>&1 || true", duration=1)
-run_stage("Formatting root partition", f"mkfs.{fs} -F {root_part} 2>&1 || true", duration=2)
-
-# Create user
-run_stage("Creating user account", f"id {username} >/dev/null 2>&1 || useradd -m -s /bin/bash {username}", duration=1)
-
-# Set hostname
-run_stage("Setting hostname", f"echo '{hostname}' > /etc/hostname 2>&1 || true", duration=1)
-
-# Create fstab
-run_stage("Creating fstab", "genfstab -U / > /etc/fstab 2>&1 || echo 'fstab placeholder' > /etc/fstab", duration=1)
-
-# Install bootloader
-run_stage("Installing bootloader", "which grub-install >/dev/null 2>&1 && echo 'GRUB ready' || true", duration=1)
-
-# Configure network
-run_stage("Enabling NetworkManager", "systemctl enable NetworkManager 2>&1 || true", duration=1)
-
-# Configure locale
-run_stage("Configuring locale", "echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen 2>&1 && locale-gen >/dev/null 2>&1 || true", duration=1)
+# Chroot and configure system
+console.print("\n[bold green]Configuring system in chroot...[/bold green]\n")
 
 # Set timezone
-run_stage("Setting timezone", "ln -sf /usr/share/zoneinfo/UTC /etc/localtime 2>&1 || true", duration=1)
+run_stage("Setting timezone", f"arch-chroot /mnt ln -sf /usr/share/zoneinfo/UTC /etc/localtime", duration=1)
+
+# Set locale
+run_stage("Generating locale", f"arch-chroot /mnt bash -c \"echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen\"", duration=2)
+run_stage("Setting LANG", f"arch-chroot /mnt bash -c \"echo 'LANG=en_US.UTF-8' > /etc/locale.conf\"", duration=1)
+
+# Set hostname
+run_stage("Setting hostname", f"arch-chroot /mnt bash -c \"echo '{hostname}' > /etc/hostname\"", duration=1)
+
+# Configure hosts
+run_stage("Configuring hosts", f"arch-chroot /mnt bash -c \"echo '127.0.0.1 localhost' >> /etc/hosts && echo '::1 localhost' >> /etc/hosts && echo '127.0.1.1 {hostname}.localdomain {hostname}' >> /etc/hosts\"", duration=1)
+
+# Set root password
+run_stage("Setting root password", f"arch-chroot /mnt bash -c \"echo -e '{rootpass}\\n{rootpass}' | passwd\"", duration=1)
+
+# Create user
+run_stage("Creating user", f"arch-chroot /mnt useradd -m -s /bin/bash {username}", duration=1)
+run_stage("Setting user password", f"arch-chroot /mnt bash -c \"echo -e '{userpass}\\n{userpass}' | passwd {username}\"", duration=1)
+run_stage("Adding user to sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL:ALL) ALL' >> /etc/sudoers\"", duration=1)
+
+# Enable NetworkManager
+run_stage("Enabling NetworkManager", f"arch-chroot /mnt systemctl enable NetworkManager", duration=1)
+
+# Install bootloader
+run_stage("Installing GRUB", f"arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB", duration=2)
+run_stage("Generating GRUB config", f"arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg", duration=1)
+
+# Install GPU drivers
+if gpu == "nvidia":
+    run_stage("Installing NVIDIA drivers", f"arch-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils", duration=5)
+elif gpu == "amd":
+    run_stage("Installing AMD drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-amdgpu", duration=5)
+elif gpu == "intel":
+    run_stage("Installing Intel drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-intel", duration=3)
+
+# Unmount partitions
+run_stage("Unmounting partitions", f"umount -R /mnt", duration=1)
 
 # Installation complete
 console.print()
 banner("INSTALLATION COMPLETE! 🚀")
-console.print("[bold green]Your Arch Linux system has been successfully configured![/bold green]\n")
+console.print("[bold green]Arch Linux has been successfully installed on {disk}![/bold green]\n")
 
 console.print("[bold cyan]Final Configuration Summary:[/bold cyan]")
 console.print(f"  Disk: [green]{disk}[/green]")
@@ -325,14 +356,16 @@ console.print(f"  Kernel: [green]{kernel}[/green]")
 console.print(f"  GPU Driver: [green]{gpu}[/green]")
 
 console.print("\n[bold cyan]Next Steps:[/bold cyan]")
-console.print("  1. Reboot your system: [yellow]sudo reboot[/yellow]")
-console.print(f"  2. Login as {username}")
-console.print("  3. Configure your preferences")
+console.print(f"  1. [yellow]Eject the Arch Linux ISO[/yellow]")
+console.print(f"  2. Reboot your system: [yellow]sudo reboot[/yellow]")
+console.print(f"  3. Boot from {disk}")
+console.print(f"  4. Login with username: [green]{username}[/green]")
+console.print(f"  5. Configure your preferences")
 
 if gaming:
-    console.print("  4. Launch Steam from applications menu")
+    console.print("  6. Launch Steam from applications menu")
 
 if dev_tools:
-    console.print("  4. Start developing!")
+    console.print("  6. Start developing!")
 
-console.print("\n[bold green]Installation successful![/bold green]")
+console.print("\n[bold green]Installation successful! You can now remove the ISO and boot from disk.[/bold green]")
