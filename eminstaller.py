@@ -278,7 +278,7 @@ if create_swap:
     run_stage("Creating swapfile (2GB)", f"dd if=/dev/zero of=/mnt/swapfile bs=1M count=2048 && chmod 600 /mnt/swapfile && mkswap /mnt/swapfile", duration=3)
 
 # Install base system
-packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmanager", "vim"]
+packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmanager", "vim", "sudo"]
 
 if desktop != "cli-only":
     packages.append("xorg")
@@ -287,7 +287,7 @@ if desktop != "cli-only":
     elif desktop == "kde":
         packages.extend(["plasma", "kde-applications", "sddm", "networkmanager"])
     elif desktop == "hyprland":
-        packages.extend(["hyprland", "hyprpaper", "waybar", "ly", "networkmanager"])
+        packages.extend(["hyprland", "hyprpaper", "waybar", "greetd", "greetd-tuigreet", "kitty", "wofi", "dolphin", "networkmanager"])
     elif desktop == "xfce":
         packages.extend(["xfce4", "xfce4-goodies", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
     elif desktop == "i3":
@@ -345,7 +345,9 @@ if desktop == "gnome":
 elif desktop == "kde":
     run_stage("Enabling Simple Desktop Display Manager (SDDM)", f"arch-chroot /mnt systemctl enable sddm", duration=1)
 elif desktop == "hyprland":
-    run_stage("Enabling Ly Display Manager", f"arch-chroot /mnt systemctl enable ly", duration=1)
+    run_stage("Enabling Greetd Display Manager", f"arch-chroot /mnt systemctl enable greetd", duration=1)
+    # Configure greetd for hyprland
+    run_stage("Configuring greetd for Hyprland", f"arch-chroot /mnt bash -c \"mkdir -p /home/{username}/.config/hypr && echo 'exec-once = waybar' > /home/{username}/.config/hypr/hyprland.conf && chown -R {username}:{username} /home/{username}/.config\"", duration=1)
 elif desktop in ["xfce", "i3"]:
     run_stage("Enabling LightDM Display Manager", f"arch-chroot /mnt systemctl enable lightdm", duration=1)
 
