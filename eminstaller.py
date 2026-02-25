@@ -103,8 +103,9 @@ def get_available_disks():
 def menu_select(title, options, show_numbers=False):
     """Display menu and get selection with arrow keys"""
     selected = 0
+    console.clear()
     
-    while True:
+    def draw_menu():
         console.clear()
         banner()
         console.print(f"\n[bold cyan]{title}[/bold cyan]\n")
@@ -121,9 +122,13 @@ def menu_select(title, options, show_numbers=False):
                     console.print(f"  {i+1}. {option}")
                 else:
                     console.print(f"  {option}")
-        
+    
+    draw_menu()
+    
+    while True:
         # Simple arrow key input without termios issues
         ch = sys.stdin.read(1)
+        redraw = False
         
         if ch == '\x1b':  # ESC sequence
             try:
@@ -131,16 +136,23 @@ def menu_select(title, options, show_numbers=False):
                 direction = sys.stdin.read(1)
                 if direction == 'A':  # Up arrow
                     selected = (selected - 1) % len(options)
+                    redraw = True
                 elif direction == 'B':  # Down arrow
                     selected = (selected + 1) % len(options)
+                    redraw = True
             except:
                 pass
         elif ch == '\r' or ch == '\n':  # Enter
             return selected
         elif ch in ['k', 'K']:  # k for up (vim style)
             selected = (selected - 1) % len(options)
+            redraw = True
         elif ch in ['j', 'J']:  # j for down (vim style)
             selected = (selected + 1) % len(options)
+            redraw = True
+        
+        if redraw:
+            draw_menu()
 
 def text_input(title, default=""):
     """Get text input"""
