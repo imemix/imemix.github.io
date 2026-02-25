@@ -4,10 +4,16 @@ import subprocess
 import sys
 import getpass
 import os
+
+# Try to import curses for better terminal control
+try:
+    import curses
+    HAVE_CURSES = True
+except ImportError:
+    HAVE_CURSES = False
+
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
-from rich.panel import Panel
-from rich.align import Align
 
 console = Console()
 
@@ -116,25 +122,25 @@ def menu_select(title, options, show_numbers=False):
                 else:
                     console.print(f"  {option}")
         
-        # Read single character without Enter
-        import sys, tty, termios
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(fd)
-            ch = sys.stdin.read(1)
-            
-            if ch == '\x1b':  # ESC sequence
+        # Simple arrow key input without termios issues
+        ch = sys.stdin.read(1)
+        
+        if ch == '\x1b':  # ESC sequence
+            try:
                 sys.stdin.read(1)
                 direction = sys.stdin.read(1)
                 if direction == 'A':  # Up arrow
                     selected = (selected - 1) % len(options)
                 elif direction == 'B':  # Down arrow
                     selected = (selected + 1) % len(options)
-            elif ch == '\r':  # Enter
-                return selected
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            except:
+                pass
+        elif ch == '\r' or ch == '\n':  # Enter
+            return selected
+        elif ch in ['k', 'K']:  # k for up (vim style)
+            selected = (selected - 1) % len(options)
+        elif ch in ['j', 'J']:  # j for down (vim style)
+            selected = (selected + 1) % len(options)
 
 def text_input(title, default=""):
     """Get text input"""
@@ -149,7 +155,8 @@ def text_input(title, default=""):
             user_input = tty.readline().strip()
             return user_input if user_input else default
     except:
-        console.print(f"  Enter value (default: {default}): ", end="")
+        sys.stdout.write(f"  Enter value (default: {default}): ")
+        sys.stdout.flush()
         user_input = input()
         return user_input if user_input else default
 
@@ -166,7 +173,8 @@ def password_input(title):
                 tty_out.flush()
                 return getpass.getpass(stream=tty_out)
     except:
-        console.print(f"  Enter password: ", end="")
+        sys.stdout.write(f"  Enter password: ")
+        sys.stdout.flush()
         return getpass.getpass()
 
 # ==============================
