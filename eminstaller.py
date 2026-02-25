@@ -4,13 +4,8 @@ import subprocess
 import sys
 import getpass
 import os
-
-# Try to import curses for better terminal control
-try:
-    import curses
-    HAVE_CURSES = True
-except ImportError:
-    HAVE_CURSES = False
+import tty
+import termios
 
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
@@ -100,10 +95,20 @@ def get_available_disks():
     except:
         return []
 
+def getch():
+    """Read a single character from stdin"""
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch = sys.stdin.read(1)
+        return ch
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
 def menu_select(title, options, show_numbers=False):
     """Display menu and get selection with arrow keys"""
     selected = 0
-    console.clear()
     
     def draw_menu():
         console.clear()
@@ -126,32 +131,28 @@ def menu_select(title, options, show_numbers=False):
     draw_menu()
     
     while True:
-        # Simple arrow key input without termios issues
-        ch = sys.stdin.read(1)
-        redraw = False
+        ch = getch()
         
         if ch == '\x1b':  # ESC sequence
             try:
-                sys.stdin.read(1)
-                direction = sys.stdin.read(1)
+                getch()  # consume '['
+                direction = getch()
                 if direction == 'A':  # Up arrow
                     selected = (selected - 1) % len(options)
-                    redraw = True
+                    draw_menu()
                 elif direction == 'B':  # Down arrow
                     selected = (selected + 1) % len(options)
-                    redraw = True
+                    draw_menu()
             except:
                 pass
         elif ch == '\r' or ch == '\n':  # Enter
+            console.clear()
             return selected
         elif ch in ['k', 'K']:  # k for up (vim style)
             selected = (selected - 1) % len(options)
-            redraw = True
+            draw_menu()
         elif ch in ['j', 'J']:  # j for down (vim style)
             selected = (selected + 1) % len(options)
-            redraw = True
-        
-        if redraw:
             draw_menu()
 
 def text_input(title, default=""):
@@ -160,17 +161,10 @@ def text_input(title, default=""):
     banner()
     console.print(f"\n[bold cyan]{title}[/bold cyan]\n")
     
-    try:
-        with open("/dev/tty", "r") as tty:
-            sys.stdout.write(f"  Enter value (default: {default}): ")
-            sys.stdout.flush()
-            user_input = tty.readline().strip()
-            return user_input if user_input else default
-    except:
-        sys.stdout.write(f"  Enter value (default: {default}): ")
-        sys.stdout.flush()
-        user_input = input()
-        return user_input if user_input else default
+    sys.stdout.write(f"  Enter value (default: {default}): ")
+    sys.stdout.flush()
+    user_input = input()
+    return user_input if user_input else default
 
 def password_input(title):
     """Get password input"""
@@ -178,16 +172,9 @@ def password_input(title):
     banner()
     console.print(f"\n[bold cyan]{title}[/bold cyan]\n")
     
-    try:
-        with open("/dev/tty", "r") as tty_in:
-            with open("/dev/tty", "w") as tty_out:
-                tty_out.write(f"  Enter password: ")
-                tty_out.flush()
-                return getpass.getpass(stream=tty_out)
-    except:
-        sys.stdout.write(f"  Enter password: ")
-        sys.stdout.flush()
-        return getpass.getpass()
+    sys.stdout.write(f"  Enter password: ")
+    sys.stdout.flush()
+    return getpass.getpass()
 
 # ==============================
 # Interactive Configuration
