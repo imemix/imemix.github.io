@@ -299,8 +299,7 @@ if gaming:
 if dev_tools:
     packages.extend(["git", "base-devel", "npm", "python"])
 
-# Add package manager (yay - AUR helper)
-packages.extend(["yay"])
+# Don't add yay to packages list - we'll install it after chroot
 
 run_stage("Installing base packages", f"pacstrap /mnt {' '.join(packages)}", duration=10)
 
@@ -331,7 +330,10 @@ run_stage("Creating user", f"arch-chroot /mnt useradd -m -s /bin/bash {username}
 run_stage("Setting user password", f"arch-chroot /mnt bash -c \"echo -e '{userpass}\\n{userpass}' | passwd {username}\"", duration=1)
 
 # Configure sudoers properly
-run_stage("Configuring sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL:ALL) ALL' | sudo tee -a /etc/sudoers.d/{username} > /dev/null && chmod 440 /etc/sudoers.d/{username}\"", duration=1)
+run_stage("Configuring sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL:ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/{username} > /dev/null && chmod 440 /etc/sudoers.d/{username}\"", duration=1)
+
+# Install yay (AUR helper) - must be done after user is created
+run_stage("Installing yay (AUR helper)", f"arch-chroot /mnt bash -c \"cd /tmp && sudo -u {username} git clone https://aur.archlinux.org/yay.git && cd yay && sudo -u {username} makepkg -si --noconfirm\"", duration=10)
 
 # Enable display manager
 if desktop == "gnome":
