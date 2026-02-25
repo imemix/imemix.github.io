@@ -11,7 +11,7 @@ console = Console()
 
 def banner(text="EMInstaller v1.0"):
     ascii_art = f"""
-[bold cyan]
+
 ███████╗███╗   ███╗██╗███╗   ██╗
 ██╔════╝████╗ ████║██║████╗  ██║
 █████╗  ██╔████╔██║██║██╔██╗ ██║
@@ -19,7 +19,7 @@ def banner(text="EMInstaller v1.0"):
 ███████╗██║ ╚═╝ ██║██║██║ ╚████║
 ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
 
-[bold magenta]{text}[/bold magenta]
+{text}
 """
     print(ascii_art)
 
