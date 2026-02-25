@@ -1,4 +1,4 @@
-# THIS IS A MASSIVE WIP* NOT EVERYTHING WORKS.
+# <font color="red">THIS IS A MASSIVE WIP* NOT EVERYTHING WORKS.</font>
 
 # EMInstaller
 
