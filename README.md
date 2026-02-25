@@ -11,7 +11,7 @@ A comprehensive Bash script designed to streamline and simplify Arch Linux insta
 Run the installer with a single command:
 
 ```bash
-curl -s https://imemix.github.io/EMInstaller/install | sudo bash
+curl -s https://imemix.github.io/install | sudo bash
 ```
 
 ### Safe Method (Recommended for Production)
@@ -20,13 +20,7 @@ For security-sensitive environments, download and inspect the script before exec
 
 ```bash
 # Download the installer
-curl -O https://imemix.github.io/EMInstaller/install
-
-# Inspect the script
-less install
-
-# Execute if satisfied
-sudo bash install
+curl -O https://imemix.github.io/install
 ```
 
 ## ✨ Features
@@ -52,7 +46,7 @@ EMInstaller automates the Arch Linux installation process by:
 ### Security Features
 
 - ✅ Mandatory root privilege verification
-- ✅ SHA256 checksum validation
+
 - ✅ Error-on-failure mode (`set -euo pipefail`)
 - ✅ No execution of undefined variables
 - ✅ Pipe failure detection
@@ -113,7 +107,7 @@ sudo ./install
 To update to the latest version, simply re-run the installation command:
 
 ```bash
-curl -s https://imemix.github.io/EMInstaller/install | sudo bash
+curl -s https://imemix.github.io/install | sudo bash
 ```
 
 The script automatically fetches the latest version.
@@ -162,25 +156,6 @@ fi
 python3 "$TMP"
 ```
 
-## 📌 Advanced Usage
-
-### Pin a Specific Version
-
-```bash
-curl -s https://imemix.github.io/EMInstaller/install/1.0 | sudo bash
-```
-
-### Download Without Executing
-
-```bash
-curl -O https://imemix.github.io/EMInstaller/install
-```
-
-### Dry Run Mode (If Supported)
-
-```bash
-bash install --dry-run
-```
 
 ## 🧠 Design Philosophy
 
@@ -235,14 +210,14 @@ EMInstaller is provided as-is for Arch Linux installation purposes.
 
 For issues, questions, or documentation clarifications:
 
-1. Check the [online documentation](https://imemix.github.io/EMInstaller/documentation.html)
+1. Check the [online documentation](https://imemix.github.io/documentation.html)
 2. Review the [FAQ section](#faq) below
 3. Open an issue on GitHub
 
 ## ❓ FAQ
 
 **Q: Is it safe to pipe the script directly to bash?**
-A: While we implement security best practices, the recommended safe method is to download and inspect first. See [Safe Method](https://imemix.github.io/EMInstaller/documentation.html#safe-method).
+A: While we implement security best practices, the recommended safe method is to download and inspect first. See [Safe Method](https://imemix.github.io/documentation.html#safe-method).
 
 **Q: What if the download fails?**
 A: The script uses `set -euo pipefail`, which will exit on any error. Check your internet connection and try again.
@@ -251,7 +226,7 @@ A: The script uses `set -euo pipefail`, which will exit on any error. Check your
 A: EMInstaller is designed for Arch Linux. Compatibility with derivatives is not guaranteed.
 
 **Q: How do I verify the checksum?**
-A: The script automatically verifies checksums. Manual verification details are in the [documentation](https://imemix.github.io/EMInstaller/documentation.html#security).
+A: The script automatically verifies checksums. Manual verification details are in the [documentation](https://imemix.github.io/documentation.html#security).
 
 **Q: Can I run the installer offline?**
 A: No, EMInstaller requires internet connectivity to download dependencies and the main payload.
@@ -260,4 +235,4 @@ A: No, EMInstaller requires internet connectivity to download dependencies and t
 
 **Made with ❤️ for the Arch Linux community**
 
-For more information, visit: [EMInstaller Documentation](https://imemix.github.io/EMInstaller/documentation.html)
+For more information, visit: [EMInstaller Documentation](https://imemix.github.io/documentation.html)
