@@ -2,6 +2,7 @@
 import time
 import subprocess
 import sys
+import getpass
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
 from rich.prompt import Prompt, Confirm
@@ -72,6 +73,11 @@ def detect_gpu():
         pass
     return "none"
 
+def get_password(prompt_text):
+    """Get password input securely"""
+    console.print(f"  [cyan]{prompt_text}[/cyan]", end=" ")
+    return getpass.getpass()
+
 # ==============================
 # Interactive Configuration
 # ==============================
@@ -82,8 +88,8 @@ console.print("[cyan]Configure your Arch Linux installation.\n[/cyan]")
 console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
 hostname = Prompt.ask("  [cyan]Hostname[/cyan]", default="arch")
 username = Prompt.ask("  [cyan]Username[/cyan]", default="user")
-userpass = Prompt.ask("  [cyan]User Password[/cyan]", password=True)
-rootpass = Prompt.ask("  [cyan]Root Password[/cyan]", password=True)
+userpass = get_password("[cyan]User Password[/cyan]")
+rootpass = get_password("[cyan]Root Password[/cyan]")
 
 console.print("\n[bold yellow]=== System Configuration ===[/bold yellow]\n")
 fs = Prompt.ask("  [cyan]Filesystem (ext4/btrfs/xfs)[/cyan]", default="ext4")
@@ -92,7 +98,7 @@ create_swap = Confirm.ask("  [cyan]Create Swapfile?[/cyan]", default=True)
 kernel = Prompt.ask("  [cyan]Kernel (linux/linux-lts/linux-zen)[/cyan]", default="linux")
 
 console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
-console.print("  Options: cli-only, gnome, kde, hyprland, xfce, i3")
+console.print("  [cyan]Options: cli-only, gnome, kde, hyprland, xfce, i3[/cyan]")
 desktop = Prompt.ask("  [cyan]Desktop Environment[/cyan]", default="gnome")
 
 console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
