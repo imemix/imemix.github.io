@@ -133,24 +133,31 @@ def get_available_disks():
 
 def getch():
     """Read a single character from stdin"""
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
     try:
-        tty.setraw(fd)
-        ch = sys.stdin.read(1)
-        return ch
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+            return ch
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    except (termios.error, OSError, ValueError):
+        # Fallback for non-interactive environments
+        return sys.stdin.read(1)
 
 def menu_select(title, options, show_numbers=False):
-    """Display menu and get selection with arrow keys"""
+    """Display menu and get selection with arrow keys or number input"""
     selected = 0
     
     def draw_menu():
         console.clear()
         banner()
         console.print(f"\n[bold cyan]{title}[/bold cyan]\n")
-        console.print("[yellow]Use ↑↓ arrow keys to navigate, Enter to select[/yellow]\n")
+        if show_numbers:
+            console.print("[yellow]Enter number to select or use ↑↓ arrow keys[/yellow]\n")
+        else:
+            console.print("[yellow]Use ↑↓ arrow keys to navigate, Enter to select[/yellow]\n")
         
         for i, option in enumerate(options):
             if i == selected:
@@ -167,7 +174,22 @@ def menu_select(title, options, show_numbers=False):
     draw_menu()
     
     while True:
-        ch = getch()
+        try:
+            ch = getch()
+        except Exception:
+            console.print("[yellow]Error reading input. Enter selection number:[/yellow]")
+            try:
+                num_input = input().strip()
+                if num_input.isdigit():
+                    idx = int(num_input) - 1
+                    if 0 <= idx < len(options):
+                        console.clear()
+                        return idx
+                console.print("[red]Invalid selection. Try again.[/red]\n")
+                draw_menu()
+            except:
+                continue
+            continue
         
         if ch == '\x1b':  # ESC sequence
             try:
@@ -179,7 +201,7 @@ def menu_select(title, options, show_numbers=False):
                 elif direction == 'B':  # Down arrow
                     selected = (selected + 1) % len(options)
                     draw_menu()
-            except:
+            except Exception:
                 pass
         elif ch == '\r' or ch == '\n':  # Enter
             console.clear()
@@ -190,6 +212,11 @@ def menu_select(title, options, show_numbers=False):
         elif ch in ['j', 'J']:  # j for down (vim style)
             selected = (selected + 1) % len(options)
             draw_menu()
+        elif show_numbers and ch.isdigit():  # Direct number input
+            num = int(ch)
+            if 1 <= num <= len(options):
+                console.clear()
+                return num - 1
 
 def text_input(title, default="", validator=None):
     """Get text input with optional validation"""
