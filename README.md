@@ -2,7 +2,6 @@
 
 - GNOME and KDE work
 - HYPRLAND, XFCE and i3 does not work
-- SUDO does not work by default
 
 # Important sudoers
 - to sudo on all managers
