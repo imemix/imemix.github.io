@@ -2,7 +2,7 @@
 set -euo pipefail
 
 VERSION="1.0"
-RAW_INSTALLER="https://raw.githubusercontent.com/YourUsername/EMInstaller/main/eminstaller.py"
+RAW_INSTALLER="https://imemix.github.io/eminstaller.py"
 
 
 echo "==========================================="
