@@ -214,7 +214,11 @@ dev_tools = confirm_interactive("Install Development Tools (Git, Node, Python)?"
 dotfiles = confirm_interactive("Install Dotfiles?", False)
 
 detected_gpu = detect_gpu()
+console.print("\n[bold yellow]=== GPU/Virtualization ===[/bold yellow]\n")
+console.print("  GPU Options: none, nvidia, amd, intel")
+console.print("  VM Graphics: qemu, vmware, virtualbox, hyper-v\n")
 gpu = get_input_interactive("GPU Driver (none/nvidia/amd/intel)", detected_gpu)
+vm_graphics = get_input_interactive("VM Graphics (none/qemu/vmware/virtualbox/hyper-v)", "none")
 
 # Display summary
 console.print("\n[bold yellow]=== Installation Configuration ===[/bold yellow]\n")
@@ -227,6 +231,7 @@ console.print(f"  [cyan]Swapfile:[/cyan] {create_swap}")
 console.print(f"  [cyan]Kernel:[/cyan] {kernel}")
 console.print(f"  [cyan]Desktop:[/cyan] {desktop}")
 console.print(f"  [cyan]GPU Driver:[/cyan] {gpu}")
+console.print(f"  [cyan]VM Graphics:[/cyan] {vm_graphics}")
 console.print(f"  [cyan]Gaming Stack:[/cyan] {gaming}")
 console.print(f"  [cyan]Dev Tools:[/cyan] {dev_tools}")
 console.print(f"  [cyan]Dotfiles:[/cyan] {dotfiles}\n")
@@ -337,6 +342,16 @@ elif gpu == "amd":
     run_stage("Installing AMD drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-amdgpu", duration=5)
 elif gpu == "intel":
     run_stage("Installing Intel drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-intel", duration=3)
+
+# Install VM graphics drivers
+if vm_graphics == "qemu":
+    run_stage("Installing QEMU graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-qxl spice-vdagent", duration=3)
+elif vm_graphics == "vmware":
+    run_stage("Installing VMware graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-vmware open-vm-tools", duration=3)
+elif vm_graphics == "virtualbox":
+    run_stage("Installing VirtualBox graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm virtualbox-guest-utils", duration=3)
+elif vm_graphics == "hyper-v":
+    run_stage("Installing Hyper-V graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-fbdev", duration=3)
 
 # Unmount partitions
 run_stage("Unmounting partitions", f"umount -R /mnt", duration=1)
