@@ -5,7 +5,6 @@ import sys
 import getpass
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
-from rich.prompt import Prompt, Confirm
 
 console = Console()
 
@@ -15,7 +14,7 @@ def banner(text="EMInstaller v1.0"):
 ███████╗███╗   ███╗██╗███╗   ██╗
 ██╔════╝████╗ ████║██║████╗  ██║
 █████╗  ██╔████╔██║██║██╔██╗ ██║
-██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║
+██╔══╝  ██║╚██╔╝██║██║╚██╗██║
 ███████╗██║ ╚═╝ ██║██║██║ ╚████║
 ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
 
@@ -73,10 +72,33 @@ def detect_gpu():
         pass
     return "none"
 
+def get_input(prompt_text, default=""):
+    """Get user input with default value"""
+    if default:
+        full_prompt = f"  [cyan]{prompt_text}[/cyan] ({default}): "
+    else:
+        full_prompt = f"  [cyan]{prompt_text}[/cyan]: "
+    console.print(full_prompt, end="")
+    user_input = input()
+    return user_input if user_input else default
+
 def get_password(prompt_text):
     """Get password input securely"""
-    console.print(f"  [cyan]{prompt_text}[/cyan]", end=" ")
+    console.print(f"  [cyan]{prompt_text}[/cyan]: ", end="")
     return getpass.getpass()
+
+def confirm(prompt_text, default=False):
+    """Get yes/no confirmation from user"""
+    default_str = "Y/n" if default else "y/N"
+    console.print(f"  [cyan]{prompt_text}[/cyan] [{default_str}]: ", end="")
+    response = input().lower()
+    
+    if response in ['y', 'yes']:
+        return True
+    elif response in ['n', 'no']:
+        return False
+    else:
+        return default
 
 # ==============================
 # Interactive Configuration
@@ -86,29 +108,29 @@ console.print("\n[bold cyan]EMInstaller - Interactive Setup[/bold cyan]")
 console.print("[cyan]Configure your Arch Linux installation.\n[/cyan]")
 
 console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
-hostname = Prompt.ask("  [cyan]Hostname[/cyan]", default="arch")
-username = Prompt.ask("  [cyan]Username[/cyan]", default="user")
-userpass = get_password("[cyan]User Password[/cyan]")
-rootpass = get_password("[cyan]Root Password[/cyan]")
+hostname = get_input("Hostname", "arch")
+username = get_input("Username", "user")
+userpass = get_password("User Password")
+rootpass = get_password("Root Password")
 
 console.print("\n[bold yellow]=== System Configuration ===[/bold yellow]\n")
-fs = Prompt.ask("  [cyan]Filesystem (ext4/btrfs/xfs)[/cyan]", default="ext4")
-use_luks = Confirm.ask("  [cyan]Enable LUKS Encryption?[/cyan]", default=False)
-create_swap = Confirm.ask("  [cyan]Create Swapfile?[/cyan]", default=True)
-kernel = Prompt.ask("  [cyan]Kernel (linux/linux-lts/linux-zen)[/cyan]", default="linux")
+fs = get_input("Filesystem (ext4/btrfs/xfs)", "ext4")
+use_luks = confirm("Enable LUKS Encryption?", False)
+create_swap = confirm("Create Swapfile?", True)
+kernel = get_input("Kernel (linux/linux-lts/linux-zen)", "linux")
 
 console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
 console.print("  [cyan]Options: cli-only, gnome, kde, hyprland, xfce, i3[/cyan]")
-desktop = Prompt.ask("  [cyan]Desktop Environment[/cyan]", default="gnome")
+desktop = get_input("Desktop Environment", "gnome")
 
 console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
-gaming = Confirm.ask("  [cyan]Install Gaming Stack (Steam, Wine, Lutris)?[/cyan]", default=False)
-dev_tools = Confirm.ask("  [cyan]Install Development Tools (Git, Node, Python)?[/cyan]", default=False)
-dotfiles = Confirm.ask("  [cyan]Install Dotfiles?[/cyan]", default=False)
+gaming = confirm("Install Gaming Stack (Steam, Wine, Lutris)?", False)
+dev_tools = confirm("Install Development Tools (Git, Node, Python)?", False)
+dotfiles = confirm("Install Dotfiles?", False)
 
 # Auto-detect GPU if not explicitly set
 detected_gpu = detect_gpu()
-gpu = Prompt.ask("  [cyan]GPU Driver (none/nvidia/amd/intel)[/cyan]", default=detected_gpu)
+gpu = get_input("GPU Driver (none/nvidia/amd/intel)", detected_gpu)
 
 # Display summary
 console.print("\n[bold yellow]=== Installation Configuration ===[/bold yellow]\n")
@@ -125,7 +147,7 @@ console.print(f"  [cyan]Dev Tools:[/cyan] {dev_tools}")
 console.print(f"  [cyan]Dotfiles:[/cyan] {dotfiles}\n")
 
 # Confirm before proceeding
-if not Confirm.ask("[bold red]Proceed with installation?[/bold red]", default=False):
+if not confirm("[bold red]Proceed with installation?[/bold red]", False):
     console.print("[yellow]Installation cancelled.[/yellow]")
     sys.exit(0)
 
