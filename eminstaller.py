@@ -4,6 +4,7 @@ import subprocess
 import sys
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
+from rich.prompt import Prompt, Confirm
 
 console = Console()
 
@@ -72,28 +73,39 @@ def detect_gpu():
     return "none"
 
 # ==============================
-# Configuration (Test Mode)
+# Interactive Configuration
 # ==============================
-hostname = "emarch"
-username = "testuser"
-userpass = "password123"
-rootpass = "password123"
-fs = "ext4"
-use_luks = False
-create_swap = True
-kernel = "linux"
-desktop = "gnome"
-gpu = "none"
-gaming = False
-dev_tools = False
-dotfiles = False
-
 banner()
-console.print("\n[bold cyan]EMInstaller - Full Version Test[/bold cyan]")
-console.print("[cyan]Running in test mode with pre-configured settings.\n[/cyan]")
+console.print("\n[bold cyan]EMInstaller - Interactive Setup[/bold cyan]")
+console.print("[cyan]Configure your Arch Linux installation.\n[/cyan]")
+
+console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
+hostname = Prompt.ask("  [cyan]Hostname[/cyan]", default="arch")
+username = Prompt.ask("  [cyan]Username[/cyan]", default="user")
+userpass = Prompt.ask("  [cyan]User Password[/cyan]", password=True)
+rootpass = Prompt.ask("  [cyan]Root Password[/cyan]", password=True)
+
+console.print("\n[bold yellow]=== System Configuration ===[/bold yellow]\n")
+fs = Prompt.ask("  [cyan]Filesystem (ext4/btrfs/xfs)[/cyan]", default="ext4")
+use_luks = Confirm.ask("  [cyan]Enable LUKS Encryption?[/cyan]", default=False)
+create_swap = Confirm.ask("  [cyan]Create Swapfile?[/cyan]", default=True)
+kernel = Prompt.ask("  [cyan]Kernel (linux/linux-lts/linux-zen)[/cyan]", default="linux")
+
+console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
+console.print("  Options: cli-only, gnome, kde, hyprland, xfce, i3")
+desktop = Prompt.ask("  [cyan]Desktop Environment[/cyan]", default="gnome")
+
+console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
+gaming = Confirm.ask("  [cyan]Install Gaming Stack (Steam, Wine, Lutris)?[/cyan]", default=False)
+dev_tools = Confirm.ask("  [cyan]Install Development Tools (Git, Node, Python)?[/cyan]", default=False)
+dotfiles = Confirm.ask("  [cyan]Install Dotfiles?[/cyan]", default=False)
+
+# Auto-detect GPU if not explicitly set
+detected_gpu = detect_gpu()
+gpu = Prompt.ask("  [cyan]GPU Driver (none/nvidia/amd/intel)[/cyan]", default=detected_gpu)
 
 # Display summary
-console.print("[bold yellow]=== Installation Configuration ===[/bold yellow]\n")
+console.print("\n[bold yellow]=== Installation Configuration ===[/bold yellow]\n")
 console.print(f"  [cyan]Hostname:[/cyan] {hostname}")
 console.print(f"  [cyan]Username:[/cyan] {username}")
 console.print(f"  [cyan]Filesystem:[/cyan] {fs}")
@@ -106,10 +118,15 @@ console.print(f"  [cyan]Gaming Stack:[/cyan] {gaming}")
 console.print(f"  [cyan]Dev Tools:[/cyan] {dev_tools}")
 console.print(f"  [cyan]Dotfiles:[/cyan] {dotfiles}\n")
 
+# Confirm before proceeding
+if not Confirm.ask("[bold red]Proceed with installation?[/bold red]", default=False):
+    console.print("[yellow]Installation cancelled.[/yellow]")
+    sys.exit(0)
+
 # ==============================
 # Execute Installation
 # ==============================
-console.print("[bold green]Starting full installation...[/bold green]\n")
+console.print("\n[bold green]Starting installation...[/bold green]\n")
 
 # Update system
 run_stage("Updating system packages", "pacman -Syu --noconfirm >/dev/null 2>&1", duration=3)
