@@ -1,7 +1,7 @@
 # $\textrm{\color{red}{THIS IS A MASSIVE WIP* NOT EVERYTHING WORKS.}}$
 
 - GNOME and KDE work
-- HYPRLAND and XFCE does not
+- HYPRLAND, XFCE and i3 does not work
 - SUDO does not work by default
 
 ```bash
