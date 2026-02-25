@@ -87,7 +87,7 @@
             </div>
             <div class="terminal-command">
                 <span class="prompt">$</span>
-                <span class="command" id="command-text">curl -s https://imemix.github.io/EMInstaller/install | sudo bash</span>
+                <span class="command" id="command-text">curl -s https://imemix.github.io/install | sudo bash</span>
                 <span class="cursor">▋</span>
             </div>
         </div>
@@ -110,8 +110,8 @@
         <p>&copy; 2026 EMInstaller. All rights reserved.</p>
         <div class="footer-links">
             <a href="documentation.html">Documentation</a>
-            <a href="#">GitHub</a>
-            <a href="#">Support</a>
+            <a href="https://github.com/imemix/imemix.github.io">GitHub</a>
+            <a href="https://github.com/imemix/imemix.github.io/issues">Support</a>
         </div>
     </div>
 </footer>
@@ -119,7 +119,7 @@
 <script src="js/main.js"></script>
 <script>
 function copyToClipboard() {
-    const text = 'curl -s https://imemix.github.io/EMInstaller/install | sudo bash';
+    const text = 'curl -s https://imemix.github.io/install | sudo bash';
     navigator.clipboard.writeText(text).then(() => {
         alert('Command copied to clipboard!');
     });
