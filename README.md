@@ -6,7 +6,11 @@
 
 ```bash
 $ su -
+```
+```bash
 $ pacman -S sudo
+```
+```bash
 $ exit
 ```
 - for sudo to work on all managers
