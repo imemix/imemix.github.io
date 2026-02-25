@@ -1,5 +1,15 @@
 # $\textrm{\color{red}{THIS IS A MASSIVE WIP* NOT EVERYTHING WORKS.}}$
 
+GNOME KDE WORK
+HYPRLAND DOES NOT
+SUDO DOES NOT WORK
+```bash
+su -
+pacman -S sudo
+exit
+```
+for sudo to work on all managers
+
 # EMInstaller
 
 > **The Ultimate Arch Linux Terminal Installer**
