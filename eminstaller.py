@@ -6,6 +6,8 @@ import getpass
 import os
 import tty
 import termios
+import re
+from pathlib import Path
 
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
@@ -26,12 +28,19 @@ def banner(text="EMInstaller v1.0"):
 """
     print(ascii_art)
 
-def run_command(cmd, description="", verbose=False):
-    """Run a shell command"""
+def run_command(cmd, description="", verbose=False, stdin_data=None):
+    """Run a shell command with optional stdin"""
     if description:
         console.print(f"[cyan]{description}[/cyan]")
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
+        result = subprocess.run(
+            cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=300,
+            input=stdin_data
+        )
         if verbose and result.stdout:
             console.print(result.stdout)
         return result.returncode == 0, result.stdout, result.stderr
@@ -41,9 +50,15 @@ def run_command(cmd, description="", verbose=False):
     except Exception as e:
         return False, "", str(e)
 
-def run_stage(stage_name, cmd, duration=3):
-    """Run a stage with progress bar"""
+def run_stage(stage_name, cmd, duration=3, stdin_data=None):
+    """Run a stage with progress bar reflecting actual execution"""
     console.print(f"\n[bold yellow]==> {stage_name}[/bold yellow]")
+    
+    start_time = time.time()
+    success = False
+    stdout = ""
+    stderr = ""
+    
     with Progress(
         TextColumn("[progress.description]{task.description}"),
         BarColumn(),
@@ -52,17 +67,38 @@ def run_stage(stage_name, cmd, duration=3):
         console=console
     ) as progress:
         task = progress.add_task(stage_name, total=100)
-        for i in range(0, 101, 5):
-            progress.update(task, advance=5)
-            time.sleep(duration/20)
+        
+        # Run command in background while updating progress
+        proc = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            stdin=subprocess.PIPE if stdin_data else None
+        )
+        
+        # Send stdin if provided and wait for completion
+        try:
+            stdout, stderr = proc.communicate(input=stdin_data, timeout=duration * 10)
+            success = proc.returncode == 0
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            stdout, stderr = proc.communicate()
+            success = False
+        
+        # Update progress to 100%
+        progress.update(task, completed=100)
     
-    success, stdout, stderr = run_command(cmd)
-    if success or "error" not in stderr.lower():
-        console.print(f"[green]✓ {stage_name} completed[/green]")
+    elapsed = time.time() - start_time
+    
+    if success:
+        console.print(f"[green]✓ {stage_name} completed ({elapsed:.1f}s)[/green]")
         return True
     else:
-        console.print(f"[yellow]⚠ {stage_name} warning: {stderr[:100]}[/yellow]")
-        return True
+        error_msg = stderr.strip()[:100] if stderr.strip() else "Unknown error"
+        console.print(f"[red]✗ {stage_name} failed: {error_msg}[/red]")
+        return False
 
 def detect_gpu():
     """Detect GPU in system"""
@@ -155,26 +191,59 @@ def menu_select(title, options, show_numbers=False):
             selected = (selected + 1) % len(options)
             draw_menu()
 
-def text_input(title, default=""):
-    """Get text input"""
+def text_input(title, default="", validator=None):
+    """Get text input with optional validation"""
     console.clear()
     banner()
     console.print(f"\n[bold cyan]{title}[/bold cyan]\n")
     
-    sys.stdout.write(f"  Enter value (default: {default}): ")
-    sys.stdout.flush()
-    user_input = input()
-    return user_input if user_input else default
+    while True:
+        sys.stdout.write(f"  Enter value (default: {default}): ")
+        sys.stdout.flush()
+        user_input = input()
+        result = user_input if user_input else default
+        
+        if validator and not validator(result):
+            console.print(f"[red]Invalid input. Please try again.[/red]\n")
+            continue
+        
+        return result
 
-def password_input(title):
-    """Get password input"""
+def password_input(title, confirm=False):
+    """Get password input with optional confirmation"""
     console.clear()
     banner()
     console.print(f"\n[bold cyan]{title}[/bold cyan]\n")
     
-    sys.stdout.write(f"  Enter password: ")
-    sys.stdout.flush()
-    return getpass.getpass()
+    while True:
+        sys.stdout.write(f"  Enter password: ")
+        sys.stdout.flush()
+        password = getpass.getpass()
+        
+        if not password:
+            console.print("[red]Password cannot be empty.[/red]\n")
+            continue
+        
+        if confirm:
+            sys.stdout.write(f"  Confirm password: ")
+            sys.stdout.flush()
+            password_confirm = getpass.getpass()
+            
+            if password != password_confirm:
+                console.print("[red]Passwords do not match. Please try again.[/red]\n")
+                continue
+        
+        return password
+
+def validate_hostname(hostname):
+    """Validate hostname format"""
+    pattern = r'^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$'
+    return bool(re.match(pattern, hostname)) and len(hostname) <= 63
+
+def validate_username(username):
+    """Validate username format"""
+    pattern = r'^[a-z_][a-z0-9_-]{0,31}$'
+    return bool(re.match(pattern, username))
 
 # ==============================
 # Interactive Configuration
@@ -194,16 +263,24 @@ disk_index = menu_select("Select Installation Disk", disks, show_numbers=True)
 disk = disks[disk_index].split()[0]
 
 # Hostname
-hostname = text_input("Enter Hostname", "arch")
+hostname = text_input(
+    "Enter Hostname",
+    "arch",
+    validator=validate_hostname
+)
 
 # Username
-username = text_input("Enter Username", "user")
+username = text_input(
+    "Enter Username",
+    "user",
+    validator=validate_username
+)
 
 # User Password
-userpass = password_input("Enter User Password")
+userpass = password_input("Enter User Password", confirm=True)
 
 # Root Password
-rootpass = password_input("Enter Root Password")
+rootpass = password_input("Enter Root Password", confirm=True)
 
 # Filesystem
 fs_index = menu_select("Select Filesystem", ["ext4", "btrfs", "xfs"])
@@ -212,6 +289,9 @@ fs = ["ext4", "btrfs", "xfs"][fs_index]
 # LUKS Encryption
 luks_index = menu_select("Enable LUKS Encryption?", ["No", "Yes"])
 use_luks = luks_index == 1
+luks_password = None
+if use_luks:
+    luks_password = password_input("Enter LUKS Encryption Password", confirm=True)
 
 # Swapfile
 swap_index = menu_select("Create Swapfile?", ["No", "Yes"])
@@ -279,22 +359,78 @@ else:
     efi_part = f"{disk}1"
     root_part = f"{disk}2"
 
-run_stage("Wiping disk", f"wipefs -af {disk}", duration=2)
-run_stage("Creating GPT partition table", f"parted -s {disk} mklabel gpt", duration=1)
-run_stage("Creating EFI partition (512MB)", f"parted -s {disk} mkpart primary fat32 1MiB 513MiB", duration=1)
-run_stage("Setting EFI boot flag", f"parted -s {disk} set 1 esp on", duration=1)
-run_stage("Creating root partition", f"parted -s {disk} mkpart primary {fs} 513MiB 100%", duration=1)
-run_stage("Formatting EFI partition", f"mkfs.fat -F32 -n EFI {efi_part}", duration=1)
-run_stage(f"Formatting root partition ({fs})", f"mkfs.{fs} -L arch {root_part}", duration=3)
+# Partition disk
+if not run_stage("Wiping disk", f"wipefs -af {disk}", duration=5):
+    console.print("[red]Failed to wipe disk. Aborting.[/red]")
+    sys.exit(1)
 
-run_stage("Creating mount directories", f"mkdir -p /mnt/boot /mnt", duration=1)
-run_stage("Mounting root partition", f"mount {root_part} /mnt", duration=1)
-run_stage("Mounting EFI partition", f"mkdir -p /mnt/boot/efi && mount {efi_part} /mnt/boot/efi", duration=1)
+if not run_stage("Creating GPT partition table", f"parted -s {disk} mklabel gpt", duration=2):
+    console.print("[red]Failed to create partition table. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Creating EFI partition (512MB)", f"parted -s {disk} mkpart primary fat32 1MiB 513MiB", duration=2):
+    console.print("[red]Failed to create EFI partition. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Setting EFI boot flag", f"parted -s {disk} set 1 esp on", duration=1):
+    console.print("[red]Failed to set EFI flag. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Creating root partition", f"parted -s {disk} mkpart primary {fs} 513MiB 100%", duration=2):
+    console.print("[red]Failed to create root partition. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Formatting EFI partition", f"mkfs.fat -F32 -n EFI {efi_part}", duration=2):
+    console.print("[red]Failed to format EFI partition. Aborting.[/red]")
+    sys.exit(1)
+
+# Handle LUKS encryption
+root_device = root_part
+if use_luks:
+    if not run_stage(
+        "Setting up LUKS encryption",
+        f"cryptsetup -q luksFormat --type luks2 {root_part}",
+        duration=5,
+        stdin_data=f"{luks_password}\n{luks_password}\n"
+    ):
+        console.print("[red]Failed to setup LUKS. Aborting.[/red]")
+        sys.exit(1)
+    
+    if not run_stage(
+        "Opening LUKS volume",
+        f"cryptsetup open {root_part} arch_crypt",
+        duration=3,
+        stdin_data=f"{luks_password}\n"
+    ):
+        console.print("[red]Failed to open LUKS volume. Aborting.[/red]")
+        sys.exit(1)
+    
+    root_device = "/dev/mapper/arch_crypt"
+
+if not run_stage(f"Formatting root partition ({fs})", f"mkfs.{fs} -L arch {root_device}", duration=5):
+    console.print("[red]Failed to format root partition. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Creating mount directories", f"mkdir -p /mnt/boot /mnt", duration=1):
+    console.print("[red]Failed to create mount directories. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Mounting root partition", f"mount {root_device} /mnt", duration=2):
+    console.print("[red]Failed to mount root partition. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Mounting EFI partition", f"mkdir -p /mnt/boot/efi && mount {efi_part} /mnt/boot/efi", duration=2):
+    console.print("[red]Failed to mount EFI partition. Aborting.[/red]")
+    sys.exit(1)
 
 if create_swap:
-    run_stage("Creating swapfile (2GB)", f"dd if=/dev/zero of=/mnt/swapfile bs=1M count=2048 && chmod 600 /mnt/swapfile && mkswap /mnt/swapfile", duration=3)
+    if not run_stage("Creating swapfile (2GB)", f"dd if=/dev/zero of=/mnt/swapfile bs=1M count=2048 && chmod 600 /mnt/swapfile && mkswap /mnt/swapfile", duration=5):
+        console.print("[yellow]Warning: Failed to create swapfile. Continuing anyway.[/yellow]")
 
 packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmanager", "vim", "sudo"]
+
+if use_luks:
+    packages.extend(["cryptsetup", "lvm2"])
 
 if desktop != "cli-only":
     packages.append("xorg")
@@ -315,56 +451,116 @@ if gaming:
 if dev_tools:
     packages.extend(["git", "base-devel", "npm", "python"])
 
-run_stage("Installing base packages", f"pacstrap /mnt {' '.join(packages)}", duration=10)
-run_stage("Generating fstab", f"genfstab -U /mnt >> /mnt/etc/fstab", duration=1)
+if not run_stage("Installing base packages", f"pacstrap /mnt {' '.join(packages)}", duration=30):
+    console.print("[red]Failed to install base packages. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Generating fstab", f"genfstab -U /mnt >> /mnt/etc/fstab", duration=2):
+    console.print("[red]Failed to generate fstab. Aborting.[/red]")
+    sys.exit(1)
 
 console.print("\n[bold green]Configuring system in chroot...[/bold green]\n")
 
-run_stage("Setting timezone", f"arch-chroot /mnt ln -sf /usr/share/zoneinfo/UTC /etc/localtime", duration=1)
-run_stage("Generating locale", f"arch-chroot /mnt bash -c \"echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen\"", duration=2)
-run_stage("Setting LANG", f"arch-chroot /mnt bash -c \"echo 'LANG=en_US.UTF-8' > /etc/locale.conf\"", duration=1)
-run_stage("Setting hostname", f"arch-chroot /mnt bash -c \"echo '{hostname}' > /etc/hostname\"", duration=1)
-run_stage("Configuring hosts", f"arch-chroot /mnt bash -c \"echo '127.0.0.1 localhost' >> /etc/hosts && echo '::1 localhost' >> /etc/hosts && echo '127.0.1.1 {hostname}.localdomain {hostname}' >> /etc/hosts\"", duration=1)
+if not run_stage("Setting timezone", f"arch-chroot /mnt ln -sf /usr/share/zoneinfo/UTC /etc/localtime", duration=1):
+    console.print("[yellow]Warning: Failed to set timezone. Continuing anyway.[/yellow]")
 
-run_stage("Setting root password", f"arch-chroot /mnt bash -c \"echo -e '{rootpass}\\n{rootpass}' | passwd\"", duration=1)
-run_stage("Creating user", f"arch-chroot /mnt useradd -m -s /bin/bash {username}", duration=1)
-run_stage("Setting user password", f"arch-chroot /mnt bash -c \"echo -e '{userpass}\\n{userpass}' | passwd {username}\"", duration=1)
+if not run_stage("Generating locale", f"arch-chroot /mnt bash -c \"echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen\"", duration=3):
+    console.print("[yellow]Warning: Failed to generate locale. Continuing anyway.[/yellow]")
 
-run_stage("Creating sudoers directory", f"arch-chroot /mnt mkdir -p /etc/sudoers.d", duration=1)
-run_stage("Configuring sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL) ALL' > /etc/sudoers.d/{username} && chmod 0440 /etc/sudoers.d/{username}\"", duration=1)
+if not run_stage("Setting LANG", f"arch-chroot /mnt bash -c \"echo 'LANG=en_US.UTF-8' > /etc/locale.conf\"", duration=1):
+    console.print("[yellow]Warning: Failed to set LANG. Continuing anyway.[/yellow]")
 
-run_stage("Enabling NetworkManager", f"arch-chroot /mnt systemctl enable NetworkManager", duration=1)
+if not run_stage("Setting hostname", f"arch-chroot /mnt bash -c \"echo '{hostname}' > /etc/hostname\"", duration=1):
+    console.print("[yellow]Warning: Failed to set hostname. Continuing anyway.[/yellow]")
+
+if not run_stage("Configuring hosts", f"arch-chroot /mnt bash -c \"echo '127.0.0.1 localhost' >> /etc/hosts && echo '::1 localhost' >> /etc/hosts && echo '127.0.1.1 {hostname}.localdomain {hostname}' >> /etc/hosts\"", duration=1):
+    console.print("[yellow]Warning: Failed to configure hosts. Continuing anyway.[/yellow]")
+
+# Set passwords securely using stdin
+if not run_stage(
+    "Setting root password",
+    f"arch-chroot /mnt passwd",
+    duration=2,
+    stdin_data=f"{rootpass}\n{rootpass}\n"
+):
+    console.print("[red]Failed to set root password. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Creating user", f"arch-chroot /mnt useradd -m -s /bin/bash {username}", duration=1):
+    console.print("[red]Failed to create user. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage(
+    "Setting user password",
+    f"arch-chroot /mnt passwd {username}",
+    duration=2,
+    stdin_data=f"{userpass}\n{userpass}\n"
+):
+    console.print("[red]Failed to set user password. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Configuring sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL) ALL' | sudo tee /etc/sudoers.d/{username} > /dev/null && chmod 0440 /etc/sudoers.d/{username}\"", duration=1):
+    console.print("[yellow]Warning: Failed to configure sudoers. Continuing anyway.[/yellow]")
+
+if not run_stage("Enabling NetworkManager", f"arch-chroot /mnt systemctl enable NetworkManager", duration=1):
+    console.print("[yellow]Warning: Failed to enable NetworkManager. Continuing anyway.[/yellow]")
+
+if use_luks:
+    if not run_stage("Installing LUKS support in initramfs", f"arch-chroot /mnt bash -c \"sed -i 's/HOOKS=.*/HOOKS=(base udev autodetect keyboard keymap consolefont modconf block encrypt filesystems fsck)/' /etc/mkinitcpio.conf && mkinitcpio -p {kernel}\"", duration=5):
+        console.print("[yellow]Warning: Failed to configure LUKS in initramfs. Continuing anyway.[/yellow]")
 
 if desktop == "gnome":
-    run_stage("Enabling GNOME Display Manager (GDM)", f"arch-chroot /mnt systemctl enable gdm", duration=1)
+    if not run_stage("Enabling GNOME Display Manager (GDM)", f"arch-chroot /mnt systemctl enable gdm", duration=1):
+        console.print("[yellow]Warning: Failed to enable GDM. Continuing anyway.[/yellow]")
 elif desktop == "kde":
-    run_stage("Enabling Simple Desktop Display Manager (SDDM)", f"arch-chroot /mnt systemctl enable sddm", duration=1)
+    if not run_stage("Enabling Simple Desktop Display Manager (SDDM)", f"arch-chroot /mnt systemctl enable sddm", duration=1):
+        console.print("[yellow]Warning: Failed to enable SDDM. Continuing anyway.[/yellow]")
 elif desktop == "hyprland":
-    run_stage("Enabling Greetd Display Manager", f"arch-chroot /mnt systemctl enable greetd", duration=1)
-    run_stage("Configuring greetd for Hyprland", f"arch-chroot /mnt bash -c \"mkdir -p /home/{username}/.config/hypr && echo 'exec-once = waybar' > /home/{username}/.config/hypr/hyprland.conf && chown -R {username}:{username} /home/{username}/.config\"", duration=1)
+    if not run_stage("Enabling Greetd Display Manager", f"arch-chroot /mnt systemctl enable greetd", duration=1):
+        console.print("[yellow]Warning: Failed to enable greetd. Continuing anyway.[/yellow]")
 elif desktop in ["xfce", "i3"]:
-    run_stage("Enabling LightDM Display Manager", f"arch-chroot /mnt systemctl enable lightdm", duration=1)
+    if not run_stage("Enabling LightDM Display Manager", f"arch-chroot /mnt systemctl enable lightdm", duration=1):
+        console.print("[yellow]Warning: Failed to enable lightdm. Continuing anyway.[/yellow]")
 
-run_stage("Installing GRUB", f"arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB", duration=2)
-run_stage("Generating GRUB config", f"arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg", duration=1)
+if not run_stage("Installing GRUB", f"arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB", duration=3):
+    console.print("[red]Failed to install GRUB. Aborting.[/red]")
+    sys.exit(1)
+
+if not run_stage("Generating GRUB config", f"arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg", duration=2):
+    console.print("[red]Failed to generate GRUB config. Aborting.[/red]")
+    sys.exit(1)
 
 if gpu == "nvidia":
-    run_stage("Installing NVIDIA drivers", f"arch-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils", duration=5)
+    if not run_stage("Installing NVIDIA drivers", f"arch-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils", duration=10):
+        console.print("[yellow]Warning: Failed to install NVIDIA drivers. Continuing anyway.[/yellow]")
 elif gpu == "amd":
-    run_stage("Installing AMD drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-amdgpu", duration=5)
+    if not run_stage("Installing AMD drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-amdgpu", duration=8):
+        console.print("[yellow]Warning: Failed to install AMD drivers. Continuing anyway.[/yellow]")
 elif gpu == "intel":
-    run_stage("Installing Intel drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-intel", duration=3)
+    if not run_stage("Installing Intel drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-intel", duration=5):
+        console.print("[yellow]Warning: Failed to install Intel drivers. Continuing anyway.[/yellow]")
 
 if vm_graphics == "qemu":
-    run_stage("Installing QEMU graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-qxl spice-vdagent", duration=3)
+    if not run_stage("Installing QEMU graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-qxl spice-vdagent", duration=5):
+        console.print("[yellow]Warning: Failed to install QEMU graphics drivers. Continuing anyway.[/yellow]")
 elif vm_graphics == "vmware":
-    run_stage("Installing VMware graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-vmware open-vm-tools", duration=3)
+    if not run_stage("Installing VMware graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-vmware open-vm-tools", duration=5):
+        console.print("[yellow]Warning: Failed to install VMware graphics drivers. Continuing anyway.[/yellow]")
 elif vm_graphics == "virtualbox":
-    run_stage("Installing VirtualBox graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm virtualbox-guest-utils", duration=3)
+    if not run_stage("Installing VirtualBox graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm virtualbox-guest-utils", duration=5):
+        console.print("[yellow]Warning: Failed to install VirtualBox graphics drivers. Continuing anyway.[/yellow]")
 elif vm_graphics == "hyper-v":
-    run_stage("Installing Hyper-V graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-fbdev", duration=3)
+    if not run_stage("Installing Hyper-V graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-fbdev", duration=3):
+        console.print("[yellow]Warning: Failed to install Hyper-V graphics drivers. Continuing anyway.[/yellow]")
 
-run_stage("Unmounting partitions", f"umount -R /mnt", duration=1)
+if not run_stage("Unmounting partitions", f"umount -R /mnt", duration=2):
+    console.print("[yellow]Warning: Failed to unmount cleanly. Continuing anyway.[/yellow]")
+
+if use_luks:
+    try:
+        subprocess.run(["cryptsetup", "close", "arch_crypt"], timeout=5)
+    except:
+        pass
 
 console.clear()
 banner("INSTALLATION COMPLETE! 🚀")
@@ -378,13 +574,20 @@ console.print(f"  Desktop: [green]{desktop}[/green]")
 console.print(f"  Filesystem: [green]{fs}[/green]")
 console.print(f"  Kernel: [green]{kernel}[/green]")
 console.print(f"  GPU Driver: [green]{gpu}[/green]")
+if use_luks:
+    console.print(f"  LUKS Encryption: [green]Enabled[/green]")
 
 console.print("\n[bold cyan]Next Steps:[/bold cyan]")
 console.print(f"  1. [yellow]Eject the Arch Linux ISO[/yellow]")
 console.print(f"  2. Reboot your system: [yellow]sudo reboot[/yellow]")
 console.print(f"  3. Boot from {disk}")
-console.print(f"  4. Login with username: [green]{username}[/green]")
-console.print(f"  5. Configure your preferences")
+if use_luks:
+    console.print(f"  4. Enter LUKS password when prompted")
+    console.print(f"  5. Login with username: [green]{username}[/green]")
+    console.print(f"  6. Configure your preferences")
+else:
+    console.print(f"  4. Login with username: [green]{username}[/green]")
+    console.print(f"  5. Configure your preferences")
 
 if gaming:
     console.print("  6. Launch Steam from applications menu")
