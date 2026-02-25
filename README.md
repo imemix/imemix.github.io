@@ -1,8 +1,9 @@
 # $\textrm{\color{red}{THIS IS A MASSIVE WIP* NOT EVERYTHING WORKS.}}$
 
-- GNOME KDE WORK
-- HYPRLAND DOES NOT
-- SUDO DOES NOT WORK
+- GNOME and KDE work
+- HYPRLAND does not
+- SUDO does not work by default
+
 ```bash
 su -
 pacman -S sudo
