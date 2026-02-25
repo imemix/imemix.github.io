@@ -4,6 +4,8 @@
 - HYPRLAND, XFCE and i3 does not work
 - SUDO does not work by default
 
+# Important sudoers
+- to sudo on all managers
 ```bash
 $ su -
 ```
@@ -13,7 +15,7 @@ $ pacman -S sudo
 ```bash
 $ exit
 ```
-- for sudo to work on all managers
+
 
 # EMInstaller
 
