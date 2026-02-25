@@ -273,7 +273,7 @@ if create_swap:
     run_stage("Creating swapfile (2GB)", f"dd if=/dev/zero of=/mnt/swapfile bs=1M count=2048 && chmod 600 /mnt/swapfile && mkswap /mnt/swapfile", duration=3)
 
 # Install base system
-packages = ["base", linux-firmware", "grub", "efibootmgr", kernel, "networkmanager", "vim"]
+packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmanager", "vim"]
 
 if desktop != "cli-only":
     packages.append("xorg")
