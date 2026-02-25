@@ -283,15 +283,15 @@ packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmana
 if desktop != "cli-only":
     packages.append("xorg")
     if desktop == "gnome":
-        packages.extend(["gnome", "gnome-extra", "gdm"])
+        packages.extend(["gnome", "gnome-extra", "gdm", "networkmanager", "network-manager-applet"])
     elif desktop == "kde":
-        packages.extend(["plasma", "kde-applications", "sddm"])
+        packages.extend(["plasma", "kde-applications", "sddm", "networkmanager"])
     elif desktop == "hyprland":
-        packages.extend(["hyprland", "hyprpaper", "waybar", "ly"])
+        packages.extend(["hyprland", "hyprpaper", "waybar", "ly", "networkmanager"])
     elif desktop == "xfce":
-        packages.extend(["xfce4", "xfce4-goodies", "lightdm", "lightdm-gtk-greeter"])
+        packages.extend(["xfce4", "xfce4-goodies", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
     elif desktop == "i3":
-        packages.extend(["i3-wm", "i3status", "dmenu", "lightdm", "lightdm-gtk-greeter"])
+        packages.extend(["i3-wm", "i3status", "dmenu", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
 
 if gaming:
     packages.extend(["steam", "wine", "lutris"])
@@ -329,11 +329,15 @@ run_stage("Setting root password", f"arch-chroot /mnt bash -c \"echo -e '{rootpa
 run_stage("Creating user", f"arch-chroot /mnt useradd -m -s /bin/bash {username}", duration=1)
 run_stage("Setting user password", f"arch-chroot /mnt bash -c \"echo -e '{userpass}\\n{userpass}' | passwd {username}\"", duration=1)
 
-# Configure sudoers properly
-run_stage("Configuring sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL:ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers.d/{username} > /dev/null && chmod 440 /etc/sudoers.d/{username}\"", duration=1)
+# Enable NetworkManager
+run_stage("Enabling NetworkManager", f"arch-chroot /mnt systemctl enable NetworkManager", duration=1)
 
-# Install yay (AUR helper) - must be done after user is created
-run_stage("Installing yay (AUR helper)", f"arch-chroot /mnt bash -c \"cd /tmp && sudo -u {username} git clone https://aur.archlinux.org/yay.git && cd yay && sudo -u {username} makepkg -si --noconfirm\"", duration=10)
+# Configure sudoers - create sudoers.d directory and add user
+run_stage("Creating sudoers directory", f"arch-chroot /mnt mkdir -p /etc/sudoers.d", duration=1)
+run_stage("Configuring sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL) ALL' > /etc/sudoers.d/{username} && chmod 0440 /etc/sudoers.d/{username}\"", duration=1)
+
+# Verify sudoers was created
+run_stage("Verifying sudoers configuration", f"arch-chroot /mnt test -f /etc/sudoers.d/{username} && echo 'sudoers configured'", duration=1)
 
 # Enable display manager
 if desktop == "gnome":
