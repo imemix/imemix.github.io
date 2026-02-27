@@ -346,8 +346,6 @@ elif desktop == "kde":
     run_stage("Enabling Simple Desktop Display Manager (SDDM)", f"arch-chroot /mnt systemctl enable sddm", duration=1)
 elif desktop == "hyprland":
     run_stage("Enabling Greetd Display Manager", f"arch-chroot /mnt systemctl enable greetd", duration=1)
-    # Configure greetd for hyprland
-    run_stage("Configuring greetd for Hyprland", f"arch-chroot /mnt bash -c \"mkdir -p /home/{username}/.config/hypr && echo 'exec-once = waybar' > /home/{username}/.config/hypr/hyprland.conf && chown -R {username}:{username} /home/{username}/.config\"", duration=1)
 elif desktop in ["xfce", "i3"]:
     run_stage("Enabling LightDM Display Manager", f"arch-chroot /mnt systemctl enable lightdm", duration=1)
 
