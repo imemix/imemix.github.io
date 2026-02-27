@@ -5,13 +5,9 @@
 Use this section to tell people about which versions of your project are
 currently being supported with security updates.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| v1.0    | Supported          |
-| v1.1    | Supported*         |
-
-*Major Changes
-
+| Version-- | Supported          |
+| --------- | ------------------ |
+| Archlinux | Supported          |
 
 ## Reporting a Vulnerability
 
