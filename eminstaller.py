@@ -335,8 +335,8 @@ def main():
         run_stage("Formatting EFI partition", ["mkfs.fat", "-F32", "-n", "EFI", efi_part])
         run_stage(f"Formatting root partition ({fs})", filesystem_mkfs_cmd(fs, root_part))
 
-        run_stage("Creating mount directories", ["mkdir", "-p", "/mnt/boot/efi"])
         run_stage("Mounting root partition", ["mount", root_part, "/mnt"])
+        run_stage("Creating mount directories", ["mkdir", "-p", "/mnt/boot/efi"])
         run_stage("Mounting EFI partition", ["mount", efi_part, "/mnt/boot/efi"])
 
         if create_swap:
