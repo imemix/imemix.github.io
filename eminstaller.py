@@ -21,7 +21,7 @@ def banner(text="EMInstaller v1.0"):
 [/cyan]
 [magenta]{text}[/magenta]
 """
-    print(ascii_art)
+    console.print(ascii_art)
 
 def run_command(cmd, description="", verbose=False):
     """Run a shell command"""
