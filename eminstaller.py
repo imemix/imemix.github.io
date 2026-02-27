@@ -236,7 +236,7 @@ console.print(f"  [cyan]Gaming Stack:[/cyan] {gaming}")
 console.print(f"  [cyan]Dev Tools:[/cyan] {dev_tools}")
 console.print(f"  [cyan]Dotfiles:[/cyan] {dotfiles}\n")
 
-if not confirm_interactive(f"[bold red]⚠️  WARNING: This will erase ALL data on {disk}. Proceed?[/bold red]", False):
+if not confirm_interactive(f"[bold red]⚠️  WARNING: This will erase ALL data on {disk}.[bold red] Proceed?[/bold red]", False):
     console.print("[yellow]Installation cancelled.[/yellow]")
     sys.exit(0)
 
@@ -283,16 +283,17 @@ packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmana
 if desktop != "cli-only":
     packages.append("xorg")
     if desktop == "gnome":
-        packages.extend(["gnome", "gnome-extra", "gdm", "networkmanager", "network-manager-applet"])
+        packages.extend(["gnome", "gdm", "networkmanager", "network-manager-applet"])
     elif desktop == "kde":
-        packages.extend(["plasma", "kde-applications", "sddm", "networkmanager"])
+        packages.extend(["plasma", "sddm", "networkmanager"])
     elif desktop == "hyprland":
-        packages.extend(["hyprland", "hyprpaper", "waybar", "greetd", "greetd-tuigreet", "kitty", "wofi", "dolphin", "networkmanager"])
+        packages.extend(["hyprland", "hyprlauncher", "hyprpaper", "waybar", "greetd", "greetd-tuigreet", "kitty", "wofi", "dolphin", "networkmanager"])
     elif desktop == "xfce":
-        packages.extend(["xfce4", "xfce4-goodies", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
+        packages.extend(["xfce4", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
     elif desktop == "i3":
         packages.extend(["i3-wm", "i3status", "dmenu", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
 
+    
 if gaming:
     packages.extend(["steam", "wine", "lutris"])
 
