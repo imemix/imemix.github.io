@@ -9,7 +9,7 @@ from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
 
 console = Console()
 
-def banner(text="EMInstaller v1.0"):
+def banner(text="EMInstaller v1.1"):
     ascii_art = f"""
                     [cyan]
                     ███████╗███╗   ███╗██╗███╗   ██╗
