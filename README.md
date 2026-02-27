@@ -12,7 +12,11 @@
 
 A comprehensive Bash script designed to streamline and simplify Arch Linux installation with an intuitive command-line interface.
 
-## 🚀 Quick Start
+##  Quick Start
+
+### BIOS settings
+ - UEFI mode.
+ - Secure boot disabled.
 
 ### Installation
 
@@ -31,16 +35,16 @@ For security-sensitive environments, download and inspect the script before exec
 curl -O https://imemix.github.io/install
 ```
 
-## ✨ Features
+##  Features
 
-- ⚡ **Lightning Fast** - Quick and efficient installation process
-- 🎯 **Easy Setup** - Intuitive interface for seamless configuration
-- 🔧 **Customizable** - Adjust settings to match your needs
-- 📊 **Real-time Logs** - Monitor installation progress live
-- 📦 **Dependency Management** - Automatic installation of required packages
-- ✅ **Error Handling** - Robust error detection and reporting
+-  **Lightning Fast** - Quick and efficient installation process
+-  **Easy Setup** - Intuitive interface for seamless configuration
+-  **Customizable** - Adjust settings to match your needs
+-  **Real-time Logs** - Monitor installation progress live
+-  **Dependency Management** - Automatic installation of required packages
+-  **Error Handling** - Robust error detection and reporting
 
-## 📋 What It Does
+##  What It Does
 
 EMInstaller automates the Arch Linux installation process by:
 
@@ -56,7 +60,7 @@ EMInstaller automates the Arch Linux installation process by:
 - ✅ No execution of undefined variables
 - ✅ Pipe failure detection
 
-## 📚 Documentation
+##  Documentation
 
 Comprehensive documentation is available at:
 
@@ -92,7 +96,7 @@ Before running EMInstaller, ensure your system has:
 sudo pacman -S curl python
 ```
 
-## 🧪 Testing Locally
+##  Testing Locally
 
 ### Make the Script Executable
 
@@ -106,7 +110,7 @@ chmod +x install
 sudo ./install
 ```
 
-## 🔄 Updating
+##  Updating
 
 To update to the latest version, simply re-run the installation command:
 
@@ -116,7 +120,7 @@ curl -s https://imemix.github.io/install | sudo bash
 
 The script automatically fetches the latest version.
 
-## 🔐 Security Best Practices
+##  Security Best Practices
 
 When using remote install scripts:
 
@@ -161,7 +165,7 @@ python3 "$TMP"
 ```
 
 
-## 🧠 Design Philosophy
+##  Design Philosophy
 
 EMInstaller is built on these core principles:
 
