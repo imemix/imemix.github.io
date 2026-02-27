@@ -195,8 +195,8 @@ disk = get_disk_selection()
 console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
 hostname = get_input_interactive("Hostname", "arch")
 username = get_input_interactive("Username", "user")
-userpass = get_password_interactive("User Password")
-rootpass = get_password_interactive("Root Password")
+userpass = get_password_interactive("Make a secure User password")
+rootpass = get_password_interactive("Make a secure Root password and write it down")
 
 console.print("\n[bold yellow]=== System Configuration ===[/bold yellow]\n")
 fs = get_input_interactive("Filesystem (ext4/btrfs/xfs)", "ext4")
@@ -246,7 +246,7 @@ console.print(f"  [cyan]Gaming Stack:[/cyan] {gaming}")
 console.print(f"  [cyan]Dev Tools:[/cyan] {dev_tools}")
 console.print(f"  [cyan]Dotfiles:[/cyan] {dotfiles}\n")
 
-if not confirm_interactive(f"[bold red]⚠️  WARNING: This will erase ALL data on {disk}.[bold red] Proceed?[/bold red]", False):
+if not confirm_interactive(f"[bold red]⚠️  WARNING: This will erase ALL data on {disk}. [red]Proceed?[/red]", False):
     console.print("[yellow]Installation cancelled.[/yellow]")
     sys.exit(0)
 
@@ -297,7 +297,7 @@ if desktop != "cli-only":
     elif desktop == "kde":
         packages.extend(["plasma", "sddm", "networkmanager"])
     elif desktop == "hyprland":
-        packages.extend(["hyprland", "hyprlauncher", "hyprpaper", "waybar", "greetd", "greetd-tuigreet", "kitty", "wofi", "dolphin", "networkmanager"])
+        packages.extend(["hyprland", "hyprpaper", "waybar", "greetd", "greetd-tuigreet", "wofi", "konsole", "dolphin", "networkmanager"])
     elif desktop == "xfce":
         packages.extend(["xfce4", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
     elif desktop == "i3":
@@ -391,7 +391,7 @@ console.print()
 banner("INSTALLATION COMPLETE! 🚀")
 console.print(f"[bold green]Arch Linux has been successfully installed on {disk}![/bold green]\n")
 
-console.print("[bold cyan]Final Configuration Summary:[/bold cyan]")
+console.print("[cyan]Final Configuration Summary:[/cyan]")
 console.print(f"  Disk: [green]{disk}[/green]")
 console.print(f"  Hostname: [green]{hostname}[/green]")
 console.print(f"  User: [green]{username}[/green]")
