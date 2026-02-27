@@ -11,16 +11,16 @@ console = Console()
 
 def banner(text="EMInstaller v1.0"):
     ascii_art = f"""
-[cyan]
-███████╗███╗   ███╗██╗███╗   ██╗
-██╔════╝████╗ ████║██║████╗  ██║
-█████╗  ██╔████╔██║██║██╔██╗ ██║
-██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║
-███████╗██║ ╚═╝ ██║██║██║ ╚████║
-╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
-[/cyan]
-[magenta]{text}[/magenta]
-"""
+                    [cyan]
+                    ███████╗███╗   ███╗██╗███╗   ██╗
+                    ██╔════╝████╗ ████║██║████╗  ██║
+                    █████╗  ██╔████╔██║██║██╔██╗ ██║
+                    ██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║
+                    ███████╗██║ ╚═╝ ██║██║██║ ╚████║
+                    ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
+                    [/cyan]
+                    [magenta]{text}[/magenta]
+                """
     console.print(ascii_art)
 
 def run_command(cmd, description="", verbose=False):
@@ -214,6 +214,13 @@ dev_tools = confirm_interactive("Install Development Tools (Git, Node, Python)?"
 dotfiles = confirm_interactive("Install Dotfiles?", False)
 
 detected_gpu = detect_gpu()
+console.print("\n[bold yellow]=== Localization ===[/bold yellow]\n")
+console.print("  Timezone Examples: UTC, America/New_York, Europe/London, Asia/Tokyo")
+console.print("  Language Codes: en_US, de_DE, fr_FR, es_ES, ja_JP, zh_CN, etc.\n")
+timezone = get_input_interactive("Timezone", "UTC")
+language = get_input_interactive("Language Code (e.g., en_US)", "en_US")
+locale_encoding = get_input_interactive("Locale Encoding (UTF-8/ISO-8859-1)", "UTF-8")
+
 console.print("\n[bold yellow]=== GPU/Virtualization ===[/bold yellow]\n")
 console.print("  GPU Options: none, nvidia, amd, intel")
 console.print("  VM Graphics: qemu, vmware, virtualbox, hyper-v\n")
@@ -230,6 +237,9 @@ console.print(f"  [cyan]LUKS Encryption:[/cyan] {use_luks}")
 console.print(f"  [cyan]Swapfile:[/cyan] {create_swap}")
 console.print(f"  [cyan]Kernel:[/cyan] {kernel}")
 console.print(f"  [cyan]Desktop:[/cyan] {desktop}")
+console.print(f"  [cyan]Timezone:[/cyan] {timezone}")
+console.print(f"  [cyan]Language:[/cyan] {language}")
+console.print(f"  [cyan]Locale Encoding:[/cyan] {locale_encoding}")
 console.print(f"  [cyan]GPU Driver:[/cyan] {gpu}")
 console.print(f"  [cyan]VM Graphics:[/cyan] {vm_graphics}")
 console.print(f"  [cyan]Gaming Stack:[/cyan] {gaming}")
@@ -311,11 +321,12 @@ run_stage("Generating fstab", f"genfstab -U /mnt >> /mnt/etc/fstab", duration=1)
 console.print("\n[bold green]Configuring system in chroot...[/bold green]\n")
 
 # Set timezone
-run_stage("Setting timezone", f"arch-chroot /mnt ln -sf /usr/share/zoneinfo/UTC /etc/localtime", duration=1)
+run_stage("Setting timezone", f"arch-chroot /mnt ln -sf /usr/share/zoneinfo/{timezone} /etc/localtime", duration=1)
 
 # Set locale
-run_stage("Generating locale", f"arch-chroot /mnt bash -c \"echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen\"", duration=2)
-run_stage("Setting LANG", f"arch-chroot /mnt bash -c \"echo 'LANG=en_US.UTF-8' > /etc/locale.conf\"", duration=1)
+locale_string = f"{language}.{locale_encoding}"
+run_stage("Generating locale", f"arch-chroot /mnt bash -c \"echo '{locale_string} {locale_encoding}' >> /etc/locale.gen && locale-gen\"", duration=2)
+run_stage("Setting LANG", f"arch-chroot /mnt bash -c \"echo 'LANG={locale_string}' > /etc/locale.conf\"", duration=1)
 
 # Set hostname
 run_stage("Setting hostname", f"arch-chroot /mnt bash -c \"echo '{hostname}' > /etc/hostname\"", duration=1)
@@ -387,6 +398,9 @@ console.print(f"  User: [green]{username}[/green]")
 console.print(f"  Desktop: [green]{desktop}[/green]")
 console.print(f"  Filesystem: [green]{fs}[/green]")
 console.print(f"  Kernel: [green]{kernel}[/green]")
+console.print(f"  Timezone: [green]{timezone}[/green]")
+console.print(f"  Language: [green]{language}[/green]")
+console.print(f"  Locale Encoding: [green]{locale_encoding}[/green]")
 console.print(f"  GPU Driver: [green]{gpu}[/green]")
 
 console.print("\n[bold cyan]Next Steps:[/bold cyan]")
