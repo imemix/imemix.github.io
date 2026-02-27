@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
+
 :root {
     --primary-color: #2563eb;
     --primary-dark: #1e40af;
@@ -7,10 +8,10 @@
     --accent-color: #f59e0b;
     --dark-bg: #0f172a;
     --light-bg: #1b1b1b;
-    --card-bg: #414141;
+    --card-bg: #252525;
     --text-primary: #ffffff;
-    --text-secondary: #475569;
-    --border-color: #2563eb;
+    --text-secondary: #ffffff;
+    --border-color: #e2e8f0;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
