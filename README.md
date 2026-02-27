@@ -59,8 +59,8 @@ EMInstaller automates the Arch Linux installation process by:
 Comprehensive documentation is available at:
 
 ### Online Documentation
-- **Full Docs:** [EMInstaller Documentation](https://imemix.github.io/EMInstaller/documentation.html)
-- **Website:** [EMInstaller Home](https://imemix.github.io/EMInstaller/)
+- **Full Docs:** [EMInstaller Documentation](https://imemix.github.io/documentation.html)
+- **Website:** [EMInstaller Home](https://imemix.github.io/)
 
 ### Documentation Sections
 
