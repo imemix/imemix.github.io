@@ -145,16 +145,11 @@ def get_disk_selection():
             console.print("[red]Invalid input. Please enter a number[/red]")
 
 def get_password_interactive(prompt_text):
-    """Get password input securely from /dev/tty"""
     try:
-        with open("/dev/tty", "r") as tty_in:
-            with open("/dev/tty", "w") as tty_out:
-                tty_out.write(f"  {prompt_text}: ")
-                tty_out.flush()
-                return getpass.getpass(stream=tty_out)
+        with open("/dev/tty", "w") as tty_out:
+            return getpass.getpass(prompt=f"  {prompt_text}: ", stream=tty_out)
     except:
-        console.print(f"  {prompt_text}: ", end="")
-        return getpass.getpass()
+        return getpass.getpass(prompt=f"  {prompt_text}: ")
 
 def confirm_interactive(prompt_text, default=False):
     """Get yes/no confirmation from user from /dev/tty"""
