@@ -221,9 +221,6 @@ A: The script uses `set -euo pipefail`, which will exit on any error. Check your
 **Q: Can I use this on distributions other than Arch?**
 A: EMInstaller is designed for Arch Linux. Compatibility with derivatives is not guaranteed.
 
-**Q: How do I verify the checksum?**
-A: The script automatically verifies checksums. Manual verification details are in the [documentation](https://imemix.github.io/documentation.html#security).
-
 **Q: Can I run the installer offline?**
 A: No, EMInstaller requires internet connectivity to download dependencies and the main payload.
 
