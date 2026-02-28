@@ -14,6 +14,7 @@ Contributions may involve installer logic, documentation, website content, or se
 
 # ⚠️ Safety First
 
+
 EMInstaller performs:
 
 - Disk wiping via `wipefs`\
