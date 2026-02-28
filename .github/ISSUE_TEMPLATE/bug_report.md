@@ -1,23 +1,45 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+Name: Bug report
+About: Create a report to help us improve
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+Please note
+- If the bug has nothing to do with the installer, I will be deleting the issue.
+- If the issue is towards a certain window manager, then please go to them.
+- If you think I have missed a vital part of the window manager, please explain below what I may have missed.
+
+**Describe the bug.**
+<br>
+
+ - A clear and concise description of what the bug is.
 
 **To Reproduce**
-Steps to reproduce the behavior:
+<br>
+
+Steps to reproduce the behaviour:
+
 1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
+2. Click on '...'.
+3. Scroll down to '...'.
 4. See error
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Window manager core components missing?**
+<br>
+
+ - i.e., the main thing that could be missing from the core package download when selecting the desktop environment
+
+**Expected behaviour**
+<br>
+
+ - A clear and concise description of what you expected to happen.
 
 **Screenshots**
-If applicable, add screenshots to help explain your problem.
+<br>
+
+ - If applicable, add screenshots to help explain your problem.
 
 **Additional context**
-Add any other context about the problem here.
+<br>
+
+ - Add any other context about the problem here.
+
