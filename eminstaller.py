@@ -200,7 +200,7 @@ create_swap = confirm_interactive("Create Swapfile?", True)
 kernel = get_input_interactive("Kernel (linux/linux-lts/linux-zen)", "linux")
 
 console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
-console.print("  Options: cli-only, gnome, kde, hyprland, xfce, i3")
+console.print("  Options: cli-only, gnome, kde")
 desktop = get_input_interactive("Desktop Environment", "gnome")
 
 console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
@@ -291,12 +291,12 @@ if desktop != "cli-only":
         packages.extend(["gnome", "gdm", "networkmanager", "network-manager-applet"])
     elif desktop == "kde":
         packages.extend(["plasma", "sddm", "networkmanager"])
-    elif desktop == "hyprland":
-        packages.extend(["hyprland", "hyprpaper", "waybar", "greetd", "greetd-tuigreet", "wofi", "konsole", "dolphin", "networkmanager"])
-    elif desktop == "xfce":
-        packages.extend(["xfce4", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
-    elif desktop == "i3":
-        packages.extend(["i3-wm", "i3status", "dmenu", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
+    #elif desktop == "hyprland":
+        #packages.extend(["hyprland", "hyprpaper", "waybar", "greetd", "greetd-tuigreet", "wofi", "konsole", "dolphin", "networkmanager"])
+    #elif desktop == "xfce":
+        #packages.extend(["xfce4", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
+    #elif desktop == "i3":
+        #packages.extend(["i3-wm", "i3status", "dmenu", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
 
     
 if gaming:
