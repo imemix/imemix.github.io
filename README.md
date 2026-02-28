@@ -34,7 +34,7 @@ For security-sensitive environments, download and inspect the script before exec
 # Download the installer
 curl -O https://imemix.github.io/install
 ```
-
+see [Docs/#Safe- method](https://imemix.github.io/documentation.html#safe-method)
 ##  Features
 
 -  **Lightning Fast** - Quick and efficient installation process
