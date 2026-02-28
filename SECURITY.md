@@ -12,4 +12,4 @@ These are the only tested and supported distros that support Eminstaller. If you
 
 Use this section to tell people how to report a vulnerability.
 
-Please make a issue and raise the flag about what the vulenerability you have discorvered.
+please contact me on discord imemix or reddit imemixx  (yes two x's) for reporting vulnerabilitys.
