@@ -7,6 +7,7 @@ This repository (`https://github.com/imemix/imemix.github.io`) serves two primar
 1\. It hosts the **EMInstaller** Arch Linux installation script (`eminstaller.py`).\
 2\. It powers the **GitHub Pages website and documentation** for the project.
 
+
 Contributions may involve installer logic, documentation, website content, or security improvements. Because this project performs destructive system operations, changes must prioritize safety, clarity, and correctness.
 
 ---
