@@ -374,12 +374,3 @@ Every contribution should assume someone's only machine may depend on it.
 
 Contribute carefully.\
 ---
-
-If you'd like, I can now generate:
-
-- A matching `SECURITY.md` tuned to the installer\
-- Issue templates (`bug_report.md`, `feature_request.md`)\
-- A PR checklist\
-- Or a hardened review workflow configuration
-
-This kind of project sits at the fascinating edge between automation and irreversible action --- which is exactly why contribution discipline matters.
