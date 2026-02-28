@@ -1,6 +1,6 @@
 ---
-Name: Bug report
-About: Create a report to help us improve
+name: Bug report
+about: Create a report to help us improve
 ---
 
 Please note
@@ -10,8 +10,7 @@ Please note
 
 **Describe the bug.**
 <br>
-
- - A clear and concise description of what the bug is.
+A clear and concise description of what the bug is.
 
 **To Reproduce**
 <br>
@@ -25,8 +24,7 @@ Steps to reproduce the behaviour:
 
 **Window manager core components missing?**
 <br>
-
- - i.e., the main thing that could be missing from the core package download when selecting the desktop environment
+i.e., the main thing that could be missing from the core package download when selecting the desktop environment
 
 **Expected behaviour**
 <br>
