@@ -4,6 +4,7 @@ import subprocess
 import sys
 import getpass
 import os
+import re
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
 
@@ -203,6 +204,15 @@ console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
 console.print("  Options: cli-only, gnome, kde")
 desktop = get_input_interactive("Desktop Environment", "gnome")
 
+console.print("\n[bold yellow]=== Custom Packages ===[/bold yellow]\n")
+console.print("  Enter additional packages separated by spaces.")
+console.print("  Example: firefox neovim htop docker\n")
+
+custom_packages_input = get_input_interactive(
+    "Additional packages (leave blank for none)",
+    ""
+)
+
 console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
 gaming = confirm_interactive("Install Gaming Stack (Steam, Wine, Lutris)?", False)
 dev_tools = confirm_interactive("Install Development Tools (Git, Node, Python)?", False)
@@ -219,7 +229,7 @@ locale_encoding = get_input_interactive("Locale Encoding (UTF-8/ISO-8859-1)", "U
 console.print("\n[bold yellow]=== GPU/Virtualization ===[/bold yellow]\n")
 console.print("  GPU Options: none, nvidia, amd, intel")
 console.print("  VM Graphics: qemu, vmware, virtualbox, hyper-v\n")
-gpu = get_input_interactive("GPU Driver (none/nvidia/amd/intel)", detected_gpu)
+gpu = get_input_interactive("GPU Driver (none/nvidia/nvidia-legacy/amd/intel)", detected_gpu)
 vm_graphics = get_input_interactive("VM Graphics (none/qemu/vmware/virtualbox/hyper-v)", "none")
 
 # Display summary
@@ -284,6 +294,14 @@ if create_swap:
 
 # Install base system
 packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmanager", "vim", "sudo"]
+custom_packages = []
+
+if custom_packages_input.strip():
+    for pkg in custom_packages_input.split():
+        if re.match(r'^[a-zA-Z0-9@._+-]+$', pkg):
+            custom_packages.append(pkg)
+        else:
+            console.print(f"[red]Invalid package name ignored: {pkg}[/red]")
 
 if desktop != "cli-only":
     packages.append("xorg")
@@ -304,7 +322,9 @@ if gaming:
 
 if dev_tools:
     packages.extend(["git", "base-devel", "npm", "python"])
-
+    
+if custom_packages:
+    packages.extend(custom_packages)
 # Don't add yay to packages list - we'll install it after chroot
 
 run_stage("Installing base packages", f"pacstrap /mnt {' '.join(packages)}", duration=10)
@@ -348,25 +368,59 @@ run_stage("Verifying sudoers configuration", f"arch-chroot /mnt test -f /etc/sud
 
 # Enable display manager
 if desktop == "gnome":
-    run_stage("Enabling GNOME Display Manager (GDM)", f"arch-chroot /mnt systemctl enable gdm", duration=1)
+    run_stage(
+        "Enabling GNOME Display Manager (GDM)",
+        f"arch-chroot /mnt systemctl enable gdm",
+        duration=1
+    )
 elif desktop == "kde":
-    run_stage("Enabling Simple Desktop Display Manager (SDDM)", f"arch-chroot /mnt systemctl enable sddm", duration=1)
-elif desktop == "hyprland":
-    run_stage("Enabling Greetd Display Manager", f"arch-chroot /mnt systemctl enable greetd", duration=1)
-elif desktop in ["xfce", "i3"]:
-    run_stage("Enabling LightDM Display Manager", f"arch-chroot /mnt systemctl enable lightdm", duration=1)
+    run_stage(
+        "Enabling Simple Desktop Display Manager (SDDM)",
+        f"arch-chroot /mnt systemctl enable sddm",
+        duration=1
+    )
+#elif desktop == "hyprland":
+    #run_stage("Enabling Greetd Display Manager", f"arch-chroot /mnt systemctl enable greetd", duration=1)
+#elif desktop in ["xfce", "i3"]:
+    #run_stage("Enabling LightDM Display Manager", f"arch-chroot /mnt systemctl enable lightdm", duration=1)
 
 # Install bootloader
-run_stage("Installing GRUB", f"arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB", duration=2)
-run_stage("Generating GRUB config", f"arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg", duration=1)
+run_stage(
+    "Installing GRUB",
+    f"arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB",
+    duration=2
+)
+run_stage(
+    "Generating GRUB config",
+    f"arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg",
+    duration=1
+)
 
 # Install GPU drivers
 if gpu == "nvidia":
-    run_stage("Installing NVIDIA drivers", f"arch-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils", duration=5)
+    run_stage(
+        "Installing NVIDIA drivers",
+        f"arch-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils",
+        duration=5
+    )
+elif gpu == "nvidia-legacy":
+    run_stage(
+        "Installing Nouveau (Legacy NVIDIA fallback)",
+        f"arch-chroot /mnt pacman -S --noconfirm xf86-video-nouveau",
+        duration=3
+    )
 elif gpu == "amd":
-    run_stage("Installing AMD drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-amdgpu", duration=5)
+    run_stage(
+        "Installing AMD drivers",
+        f"arch-chroot /mnt pacman -S --noconfirm xf86-video-amdgpu",
+        duration=5
+    )
 elif gpu == "intel":
-    run_stage("Installing Intel drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-intel", duration=3)
+    run_stage(
+        "Installing Intel drivers",
+        f"arch-chroot /mnt pacman -S --noconfirm xf86-video-intel",
+        duration=3
+    )
 
 # Install VM graphics drivers
 if vm_graphics == "qemu":
@@ -410,5 +464,8 @@ if gaming:
 
 if dev_tools:
     console.print("  6. Start developing!")
-
+    
+if custom_packages:
+    console.print(f"  [cyan]Custom Packages:[/cyan] {' '.join(custom_packages)}")
+    
 console.print("\n[bold green]Installation successful! You can now remove the ISO and boot from disk.[/bold green]")
