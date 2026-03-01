@@ -95,7 +95,7 @@ body {
 }
 
 .nav-link:hover {
-    color: var(--primary-color);
+    color: var(--text-primary);
 }
 
 .nav-link:hover::after {
