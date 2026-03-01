@@ -15,7 +15,9 @@
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
-
+body{
+    background-color: var(--background);
+}
 .docs-wrapper {
     background-color: var(--background);
     display: grid;
