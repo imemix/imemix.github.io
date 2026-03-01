@@ -69,7 +69,6 @@ Contributions may target:
 
 - Installer behavior\
 - Documentation clarity\
-- Website improvements\
 - Security hardening\
 - User experience improvements
 
