@@ -5,17 +5,19 @@
     --primary-dark: #1e40af;
     --secondary-color: #10b981;
     --accent-color: #f59e0b;
-    --dark-bg: #0f172a;
-    --light-bg: #1b1b1b;
-    --card-bg: #252525;
-    --text-primary: #ffffff;
-    --text-secondary: #ffffff;
-    --border-color: #e2e8f0;
+    --dark-bg: #301B3F;
+    --background: #151515;
+    --light-bg: #301B3F;
+    --card-bg: #301B3F;
+    --text-primary: #fff;
+    --text-secondary: #fff;
+    --border-color: #301B3F;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 .docs-wrapper {
+    background-color: var(--background);
     display: grid;
     grid-template-columns: 280px 1fr;
     gap: 2rem;
@@ -33,8 +35,8 @@
 }
 
 .toc {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
+    background-color: var(--background);
+    border: 2px solid var(--primary-color);
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow);
@@ -67,16 +69,16 @@
 }
 
 .toc a:hover {
-    background-color: var(--light-bg);
+    background-color: var(--background);
     color: var(--primary-color);
-    border-left: 3px solid var(--primary-color);
+    border-left: 2px solid var(--primary-color);
     padding-left: 0.6rem;
 }
 
 /* MAIN CONTENT */
 .docs-content {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
+    background-color: var(--background);
+    border: 2px solid var(--primary-color);
     border-radius: 12px;
     padding: 3rem;
     box-shadow: var(--shadow-lg);
@@ -85,7 +87,7 @@
 .docs-content section {
     margin-bottom: 3rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--primary-color);
 }
 
 .docs-content section:last-child {
@@ -148,13 +150,13 @@
 
 /* CODE BLOCKS */
 .code-block {
-    background-color: #0f172a;
-    color: #10b981;
+    background-color: var(--primary-dark);
+    color: var(--text-primary);
     padding: 1.5rem;
     border-radius: 8px;
     overflow-x: auto;
     margin: 1.5rem 0;
-    border: 1px solid #1e293b;
+    border: 2px solid var(--primary-color);
     position: relative;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.9rem;
@@ -169,15 +171,15 @@
 
 .code-block code {
     background: none;
-    color: var(--accent-color);
+    color: var(--text-primary);
     padding: 0;
     border-radius: 0;
 }
 
 .code-block.warning {
     background-color: #fef3c7;
-    border: 1px solid #fcd34d;
-    color: #92400e;
+    border: 2px solid red;
+    color: var(--secondary-color);
 }
 
 .code-block.warning code {
@@ -186,7 +188,7 @@
 
 /* COPY BUTTON */
 .copy-code-btn {
-    position: absolute;
+  
     top: 1rem;
     right: 1rem;
     background-color: rgba(255, 255, 255, 0.1);
@@ -219,7 +221,7 @@
 
 /* SECURITY CHECKLIST */
 .security-checklist {
-    background-color: var(--light-bg);
+    background-color: var(--primary-dark);
     border-left: 4px solid var(--secondary-color);
     padding: 1.5rem;
     border-radius: 8px;
