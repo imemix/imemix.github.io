@@ -1,17 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-
 :root {
     --primary-color: #2563eb;
     --primary-dark: #1e40af;
     --secondary-color: #10b981;
     --accent-color: #f59e0b;
-    --dark-bg: #0f172a;
-    --light-bg: #1b1b1b;
-    --card-bg: #252525;
-    --text-primary: #ffffff;
-    --text-secondary: #ffffff;
-    --border-color: #e2e8f0;
+    --dark-bg: #301B3F;
+    --background: #151515;
+    --light-bg: #301B3F;
+    --card-bg: #301B3F;
+    --text-primary: #fff;
+    --text-secondary: #fff;
+    --border-color: #301B3F;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
@@ -42,9 +42,9 @@ body {
 
 /* NAVBAR */
 .navbar {
-    background-color: var(--card-bg);
+    background-color: var(--background);
     padding: 1rem 0;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--primary-color);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -63,7 +63,7 @@ body {
 .nav-logo {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--text-primary);
     letter-spacing: -0.5px;
 }
 
@@ -106,7 +106,7 @@ body {
     align-items: center;
     gap: 4rem;
     padding: 5rem 1.5rem;
-    background: linear-gradient(135deg, #242424 0%, #0f172a 100%);
+    background: var(--background)
 }
 
 .hero-content h1 {
@@ -159,7 +159,7 @@ body {
 .terminal-preview {
     width: 100%;
     max-width: 500px;
-    background-color: var(--dark-bg);
+    background-color: var(--primary-dark);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-lg);
@@ -191,7 +191,7 @@ body {
 }
 
 .terminal-code {
-    color: #10b981;
+    color: var(--text-primary);
     padding: 1.5rem;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.95rem;
@@ -202,7 +202,10 @@ body {
 /* FEATURES SECTION */
 .features {
     padding: 5rem 1.5rem;
-    background-color: var(--card-bg);
+    border-top: 2px solid var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    background: var(--background);
+    color: var(--text-primary);
 }
 
 .section-title {
@@ -220,12 +223,13 @@ body {
 }
 
 .feature-card {
-    background-color: var(--light-bg);
+    background-color: var(--primary-color);
     padding: 2rem;
     border-radius: 12px;
     border: 1px solid var(--border-color);
     text-align: center;
     transition: all 0.3s ease;
+    
 }
 
 .feature-card:hover {
@@ -247,18 +251,18 @@ body {
 }
 
 .feature-card p {
-    color: var(--primary-color);
+    color: var(--text-primary);
     font-size: 0.95rem;
 }
 
 /* INSTALL SECTION */
 .install-section {
     padding: 5rem 1.5rem;
-    background-color: var(--light-bg);
+    background: var(--background)
 }
 
 .terminal-container {
-    background-color: var(--card-bg);
+    background-color: var(--primary-color);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     overflow: hidden;
@@ -286,8 +290,8 @@ body {
 }
 
 .boot-log {
-    background-color: #0f172a;
-    color: #10b981;
+    background-color: var(--primary-color);
+    color: var(--text-primary);
     padding: 1.5rem;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.9rem;
@@ -317,7 +321,7 @@ body {
 
 /* PROGRESS BAR */
 .progress-container {
-    background-color: var(--light-bg);
+    background-color: var(--primary-dark);
     padding: 1.5rem;
     display: flex;
     align-items: center;
@@ -327,7 +331,7 @@ body {
 .progress-bar {
     flex: 1;
     height: 8px;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(90deg, #ef4444, #eab308, #22c55e);
     border-radius: 4px;
     width: 0%;
     transition: width 0.4s ease;
@@ -344,12 +348,12 @@ body {
 
 /* TERMINAL COMMAND */
 .terminal-command {
-    background-color: #0f172a;
-    color: #10b981;
+    background-color: var(--primary-dark);
+    color: var(--text-primary);
     padding: 1rem 1.5rem;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.95rem;
-    border-top: 1px solid #1e293b;
+    border-top: 1px solid var(--background);
 }
 
 .prompt {
@@ -358,11 +362,11 @@ body {
 }
 
 .command {
-    color: #10b981;
+    color: var(--text-primary);
 }
 
 .cursor {
-    color: #10b981;
+    color: var(--text-primary);
     animation: blink 1.2s ease-in-out infinite;
 }
 
@@ -374,7 +378,8 @@ body {
 /* CTA SECTION */
 .cta-section {
     padding: 5rem 1.5rem;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    background: var(--background);
+    border-top: 2px solid #1e40af;
     color: white;
     text-align: center;
 }
@@ -394,7 +399,7 @@ body {
 .code-block {
     display: inline-flex;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--primary-dark);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 8px;
     padding: 1rem 1.5rem;
@@ -426,7 +431,8 @@ body {
 
 /* FOOTER */
 .footer {
-    background-color: var(--light-bg);
+    background-color: var(--background);
+    border-top: 2px solid var(--primary-dark);
     color: #fff;
     padding: 3rem 1.5rem;
     text-align: center;
