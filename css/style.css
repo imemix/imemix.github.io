@@ -24,11 +24,12 @@
 
 html {
     scroll-behavior: smooth;
+    scrollbar-color: var(--primary-color);
 }
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: var(--background);
+    background-color: var(--light-bg);
     color: var(--text-primary);
     line-height: 1.6;
     overflow-x: hidden;
@@ -71,9 +72,6 @@ body {
     display: flex;
     gap: 2rem;
 }
-.nav-logo a {
-    color: var(--text-primary)
-}
 
 .nav-link {
     color: #fff;
@@ -95,7 +93,7 @@ body {
 }
 
 .nav-link:hover {
-    color: var(--text-primary);
+    color: var(--primary-color);
 }
 
 .nav-link:hover::after {
@@ -161,15 +159,16 @@ body {
 
 .terminal-preview {
     width: 100%;
-    max-width: 550px;
+    max-width: 500px;
     background-color: var(--primary-dark);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-lg);
+    border: 1px solid var(--primary-color);
 }
 
 .terminal-bar {
-    background-color: #1e293b;
+    background-color: var(--background);
     padding: 0.75rem 1rem;
     display: flex;
     gap: 0.75rem;
@@ -229,7 +228,7 @@ body {
     background-color: var(--primary-color);
     padding: 2rem;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--background);
     text-align: center;
     transition: all 0.3s ease;
     
@@ -238,7 +237,7 @@ body {
 .feature-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
-    border-color: var(--primary-color);
+    border-color: var(--background);
 }
 
 .feature-icon {
@@ -266,7 +265,7 @@ body {
 
 .terminal-container {
     background-color: var(--primary-color);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--primary-color);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-lg);
@@ -274,7 +273,7 @@ body {
 }
 
 .terminal-header {
-    background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+    background: var(--background);
     color: #e2e8f0;
     padding: 1rem 1.5rem;
     display: flex;
@@ -306,25 +305,26 @@ body {
 }
 
 .boot-log::-webkit-scrollbar {
+    
     width: 6px;
 }
 
 .boot-log::-webkit-scrollbar-track {
-    background: #1e293b;
+    background: var(--primary-color);
 }
 
 .boot-log::-webkit-scrollbar-thumb {
-    background: #475569;
+    background: var(--background);
     border-radius: 3px;
 }
 
 .boot-log::-webkit-scrollbar-thumb:hover {
-    background: #64748b;
+    background: var(--primary-dark);
 }
 
 /* PROGRESS BAR */
 .progress-container {
-    background-color: var(--primary-dark);
+    /* background-color: var(--primary-dark); */
     padding: 1.5rem;
     display: flex;
     align-items: center;
@@ -351,7 +351,7 @@ body {
 
 /* TERMINAL COMMAND */
 .terminal-command {
-    background-color: var(--primary-dark);
+    background-color: var(--background);
     color: var(--text-primary);
     padding: 1rem 1.5rem;
     font-family: 'JetBrains Mono', monospace;
@@ -473,7 +473,7 @@ body {
     }
 
     .hero-content h1 {
-        font-size: 2rem;
+        font-size: 2.5rem;
     }
 
     .hero-subtitle {
