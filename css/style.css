@@ -68,6 +68,10 @@ body {
     letter-spacing: -0.5px;
 }
 
+.nav-logo a {
+    color: #fff;
+}
+
 .nav-links {
     display: flex;
     gap: 2rem;
