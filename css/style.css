@@ -71,6 +71,9 @@ body {
     display: flex;
     gap: 2rem;
 }
+.nav-logo a {
+    color: var(--text-primary)
+}
 
 .nav-link {
     color: #fff;
