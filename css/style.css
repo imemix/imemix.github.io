@@ -161,7 +161,7 @@ body {
 
 .terminal-preview {
     width: 100%;
-    max-width: 500px;
+    max-width: 550px;
     background-color: var(--primary-dark);
     border-radius: 12px;
     overflow: hidden;
@@ -473,7 +473,7 @@ body {
     }
 
     .hero-content h1 {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
 
     .hero-subtitle {
