@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const progress = document.getElementById("progress-bar");
+    const progress_bar = document.getElementById("progress-bar");
     const log = document.getElementById("boot-log");
+    const progress_text = document.getElementById("progress-text")
 
     let percent = 0;
 
@@ -19,9 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const interval = setInterval(() => {
         percent += 5;
-        progress.style.width = percent + "%";
-
+        progress_bar.style.width = percent;
+        progress_text.textContent = percent + "%";
         if (stepIndex < steps.length && percent % 15 === 0) {
+
             log.textContent += "\n" + steps[stepIndex++];
             log.scrollTop = log.scrollHeight;
         }
