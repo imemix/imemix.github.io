@@ -33,6 +33,16 @@ EMInstaller is the ultimate Arch Linux terminal installer, a comprehensive Bash 
 
 ## Quick Start
 
+> 💡 **New:** You can now run the installer with a simple terminal GUI.  Add `--gui` to the command line and navigate with the arrow keys and Enter/Space.
+>
+> ```bash
+> sudo python3 eminstaller.py --gui
+> ```
+>
+> The curses‑based interface walks you through each configuration step.
+
+## Quick Start
+
 ### Pre‑installation BIOS Settings
 1. Boot in **UEFI mode**.
 2. **Disable Secure Boot**.

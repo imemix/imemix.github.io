@@ -16,6 +16,121 @@ def check_platform():
         console.print("[red]Error: this installer must be run on Linux.[/red]")
         sys.exit(1)
 
+# --- curses based GUI helpers ------------------------------------------------
+try:
+    import curses
+except ImportError:
+    curses = None
+
+
+def curses_menu(stdscr, title, options):
+    """Display a vertical menu and allow arrow-key movement."""
+    curses.curs_set(0)
+    current = 0
+    while True:
+        stdscr.clear()
+        h, w = stdscr.getmaxyx()
+        stdscr.addstr(1, 2, title, curses.A_BOLD)
+        for idx, opt in enumerate(options):
+            y = 3 + idx
+            if idx == current:
+                stdscr.attron(curses.A_REVERSE)
+            stdscr.addstr(y, 4, str(opt))
+            if idx == current:
+                stdscr.attroff(curses.A_REVERSE)
+        stdscr.refresh()
+        key = stdscr.getch()
+        if key in (curses.KEY_UP, ord('k')):
+            current = (current - 1) % len(options)
+        elif key in (curses.KEY_DOWN, ord('j')):
+            current = (current + 1) % len(options)
+        elif key in (curses.KEY_ENTER, ord('\n'), ord('\r')):
+            return options[current]
+
+
+def curses_input(stdscr, prompt, default="", password=False):
+    """Prompt the user for text input. Returns default when empty."""
+    curses.echo()
+    curses.curs_set(1)
+    stdscr.clear()
+    stdscr.addstr(1, 2, prompt)
+    stdscr.addstr(2, 2, f"({default}): " if default else "")
+    stdscr.refresh()
+    if password:
+        curses.noecho()
+    win = curses.newwin(1, 60, 2, 2 + (len(default) + 4 if default else 0))
+    value = win.getstr().decode()
+    curses.noecho()
+    curses.curs_set(0)
+    return value if value else default
+
+
+def curses_confirm(stdscr, prompt, default=False):
+    """Yes/no confirmation via menu."""
+    choice = curses_menu(stdscr, prompt, ["Yes", "No"])
+    if choice == "Yes":
+        return True
+    return False
+
+# wrapper to run the interactive configuration via curses
+
+def collect_configuration_curses():
+    """Run the interactive setup using curses-based GUI."""
+    cfg = {}
+
+    def _inner(stdscr):
+        curses.curs_set(0)
+        banner()
+        stdscr.clear()
+        stdscr.addstr(1, 2, "EMInstaller - GUI Setup", curses.A_BOLD)
+        stdscr.addstr(3, 2, "(use arrow keys to move, Enter to select, type for text fields)")
+        stdscr.refresh()
+        time.sleep(1)
+
+        stdscr.clear()
+        stdscr.addstr(1,2,"Select a disk to install to:")
+        disks = get_available_disks()
+        if not disks:
+            console.print("[red]Error: No disks available[/red]")
+            sys.exit(1)
+        disk = curses_menu(stdscr, "Available Disks", disks)
+        cfg['disk'] = disk.split()[0]
+        # basic configuration
+        cfg['hostname'] = curses_input(stdscr, "Hostname", "arch")
+        cfg['username'] = curses_input(stdscr, "Username", "user")
+        cfg['userpass'] = curses_input(stdscr, "Make a secure User password", password=True)
+        cfg['rootpass'] = curses_input(stdscr, "Make a secure Root password and write it down", password=True)
+        # system configuration
+        cfg['fs'] = curses_input(stdscr, "Filesystem (ext4/btrfs/xfs)", "ext4")
+        cfg['use_luks'] = curses_confirm(stdscr, "Enable LUKS Encryption?", False)
+        cfg['create_swap'] = curses_confirm(stdscr, "Create Swapfile?", True)
+        cfg['kernel'] = curses_input(stdscr, "Kernel (linux/linux-lts/linux-zen)", "linux")
+        # desktop
+        cfg['desktop'] = curses_menu(stdscr, "Desktop Environment", ["cli-only", "gnome", "kde", "hyprland", "xfce", "i3"])
+        # custom packages
+        pkg = curses_input(stdscr, "Additional packages (space-separated)", "")
+        cfg['custom_packages_input'] = pkg
+        # optional features
+        cfg['gaming'] = curses_confirm(stdscr, "Install Gaming Stack (Steam, Wine, Lutris)?", False)
+        cfg['dev_tools'] = curses_confirm(stdscr, "Install Development Tools (Git, Node, Python)?", False)
+        cfg['dotfiles'] = curses_confirm(stdscr, "Install Dotfiles?", False)
+        cfg['detected_gpu'] = detect_gpu()
+        # localization
+        cfg['timezone'] = curses_input(stdscr, "Timezone", "UTC")
+        cfg['language'] = curses_input(stdscr, "Language Code (e.g., en_US)", "en_US")
+        cfg['locale_encoding'] = curses_input(stdscr, "Locale Encoding (UTF-8/ISO-8859-1)", "UTF-8")
+        # gpu/virtualization
+        cfg['gpu'] = curses_menu(stdscr, "GPU Driver", ["none", "nvidia", "nvidia-legacy", "amd", "intel"])
+        cfg['vm_graphics'] = curses_menu(stdscr, "VM Graphics", ["none", "qemu", "vmware", "virtualbox", "hyper-v"])
+
+    if curses is None:
+        console.print("[red]curses module not available, cannot run GUI mode[/red]")
+        sys.exit(1)
+    curses.wrapper(_inner)
+    return cfg
+
+
+
 
 def check_root():
     if os.geteuid() != 0:
@@ -327,9 +442,13 @@ def main():
 
     parser = argparse.ArgumentParser(description="EMInstaller - interactive Arch installer")
     parser.add_argument("-y", "--yes", action="store_true", help="Assume yes for all confirmations")
+    parser.add_argument("--gui", action="store_true", help="Use curses-based GUI for configuration")
     args = parser.parse_args()
 
-    cfg = collect_configuration()
+    if args.gui:
+        cfg = collect_configuration_curses()
+    else:
+        cfg = collect_configuration()
     print_summary(cfg, assume_yes=args.yes)
 
     
