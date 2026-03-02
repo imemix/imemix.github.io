@@ -21,7 +21,7 @@ Contributions may involve installer logic, documentation, website content, or se
 
 ---
 
-# ⚠️ Safety First
+# [!] Safety First
 
 
 EMInstaller performs:
@@ -50,7 +50,7 @@ Test thoroughly.
 
 ---
 
-# 🧠 Project Philosophy
+# [*] Project Philosophy
 
 EMInstaller aims to:
 
@@ -64,7 +64,7 @@ This is an installer, not a framework. Improvements should respect that.
 
 ---
 
-# 📌 Repository Scope
+# [*] Repository Scope
 
 This repository contains:
 
@@ -83,7 +83,7 @@ Contributions may target:
 
 ---
 
-# 🚀 Getting Started
+# [>] Getting Started
 
 1\. Fork the repository.\
 2\. Clone your fork locally.
@@ -105,7 +105,7 @@ git checkout -b feature/your-change
 
 * * * * *
 
-🧪 Testing Requirements (Installer Changes)
+[test] Testing Requirements (Installer Changes)
 ===========================================
 
 If modifying `eminstaller.py`, you must test inside:
@@ -167,7 +167,7 @@ Your pull request must describe:
 
 * * * * *
 
-🛠 Code Style Guidelines
+[tools] Code Style Guidelines
 ========================
 
 Keep It Clear
@@ -214,7 +214,7 @@ Do not clutter output unnecessarily.
 
 * * * * *
 
-🔒 Security Guidelines
+[lock] Security Guidelines
 ======================
 
 Be extremely cautious when modifying:
@@ -245,7 +245,7 @@ If you discover a vulnerability, follow responsible disclosure as described in `
 
 * * * * *
 
-📦 Package Management Guidelines
+[pkg] Package Management Guidelines
 ================================
 
 When modifying install packages:
@@ -262,7 +262,7 @@ Optional stacks (gaming, dev tools, etc.) must remain conditional.
 
 * * * * *
 
-🌐 Website & Documentation Contributions
+[web] Website & Documentation Contributions
 ========================================
 
 This repository also powers the GitHub Pages site.
@@ -285,7 +285,7 @@ Never document functionality that does not exist.
 
 * * * * *
 
-🧱 Disk Logic Rules
+[*] Disk Logic Rules
 ===================
 
 Partitioning logic must:
@@ -302,7 +302,7 @@ Disk logic changes must be tested thoroughly before submission.
 
 * * * * *
 
-📝 Commit Message Guidelines
+[*] Commit Message Guidelines
 ============================
 
 Use descriptive commit messages.
@@ -324,7 +324,7 @@ Clear history matters.
 
 * * * * *
 
-🔄 Pull Request Guidelines
+[<->] Pull Request Guidelines
 ==========================
 
 Each pull request should include:
@@ -345,7 +345,7 @@ Large architectural proposals must be discussed in an issue first.
 
 * * * * *
 
-❌ What Will Not Be Accepted
+[X] What Will Not Be Accepted
 ===========================
 
 -   Untested partition logic changes
@@ -362,7 +362,7 @@ Large architectural proposals must be discussed in an issue first.
 
 * * * * *
 
-🤝 Code of Conduct
+[*] Code of Conduct
 ==================
 
 Please follow the `CODE_OF_CONDUCT.md`.
@@ -373,7 +373,7 @@ This project operates at system level. Mistakes happen. Collaboration improves o
 
 * * * * *
 
-🧠 Final Note
+[*] Final Note
 =============
 
 An installer script is not just code.
