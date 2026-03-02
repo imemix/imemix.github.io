@@ -1,11 +1,12 @@
 # EMInstaller
 
 ```
-    ____  __  __ ___ _  _ 
- |  _ \|  \/  |_ _| \| |
- | | | | |\/| || || .` |
- |_| |_|_|  |_|___|_|\_|
- EMInstaller — Arch Linux Terminal Installer
+    _______  _______    ________   _______ 
+  //       \/       \\ /        \//   /   \
+ //        /        //_/       ///        /
+/        _/         //         /         / 
+\________/\__/__/__/ \\_______/\__/_____/  
+EMIN — EMInstaller
 ```
 
 > **This project is a work in progress.**
