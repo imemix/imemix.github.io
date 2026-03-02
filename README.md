@@ -176,7 +176,7 @@ Core guiding principles:
 
 > If you can’t quickly understand an install script, don’t run it.
 
-##### ⚠️ Important Notice
+# ⚠️ Important Notice
 
 Piping remote content directly into `bash` is inherently risky:
 
