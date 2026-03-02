@@ -1,5 +1,13 @@
 # Security Policy
 
+```
+	____  __  __ ___ _  _ 
+ |  _ \|  \/  |_ _| \| |
+ | | | | |\/| || || .` |
+ |_| |_|_|  |_|___|_|\_|
+ EMInstaller — Arch Linux Terminal Installer
+```
+
 ## Supported Versions
 
 These are the only tested and supported distros that support Eminstaller. If you have tested the installer on a different Arch-Linux like distro, then please make a discussion with information about the distro with pictures and what does and does not work.

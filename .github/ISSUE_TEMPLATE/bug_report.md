@@ -4,6 +4,14 @@ about: Create a report to help us improve
 ---
 
 Please note
+```
+	____  __  __ ___ _  _ 
+ |  _ \|  \/  |_ _| \| |
+ | | | | |\/| || || .` |
+ |_| |_|_|  |_|___|_|\_|
+ EMInstaller — Arch Linux Terminal Installer
+```
+
 - If the bug has nothing to do with the installer, I will be deleting the issue.
 - If the issue is towards a certain window manager, then please go to them.
 - If you think I have missed a vital part of the window manager, please explain below what I may have missed.

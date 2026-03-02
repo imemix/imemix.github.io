@@ -1,5 +1,13 @@
 # Contributing to EMInstaller & imemix.github.io
 
+```
+	____  __  __ ___ _  _ 
+ |  _ \|  \/  |_ _| \| |
+ | | | | |\/| || || .` |
+ |_| |_|_|  |_|___|_|\_|
+ EMInstaller — Arch Linux Terminal Installer
+```
+
 Thank you for your interest in contributing.
 
 This repository (`https://github.com/imemix/imemix.github.io`) serves two primary purposes:

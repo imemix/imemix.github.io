@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+<!--
+    ____  __  __ ___ _  _ 
+ |  _ \|  \/  |_ _| \| |
+ | | | | |\/| || || .` |
+ |_| |_|_|  |_|___|_|\_|
+ EMInstaller — Arch Linux Terminal Installer
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -274,6 +281,17 @@ INSTALLER_DEBUG=1 sudo bash install</code></pre>
 sudo bash install --skip-validation</code></pre>
             </div>
             <p>See the main installer documentation for available flags and options.</p>
+
+            <h3>Desktop Environments</h3>
+            <p>During interactive setup you can select which graphical environment to install. Supported values include:</p>
+            <ul>
+                <li><code>cli-only</code> – no GUI</li>
+                <li><code>gnome</code> – GNOME Shell with GDM</li>
+                <li><code>kde</code> – KDE Plasma with SDDM</li>
+                <li><code>hyprland</code> – Hyprland Wayland compositor with LightDM</li>
+                <li><code>xfce</code> – XFCE4 desktop with LightDM</li>
+                <li><code>i3</code> – i3 window manager with LightDM</li>
+            </ul>
 
             <h3>Offline Installation</h3>
             <p>For systems without internet access, download the installer first:</p>

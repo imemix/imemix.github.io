@@ -1,5 +1,13 @@
 # Contributor Covenant Code of Conduct
 
+```
+  ____  __  __ ___ _  _ 
+ |  _ \|  \/  |_ _| \| |
+ | | | | |\/| || || .` |
+ |_| |_|_|  |_|___|_|\_|
+ EMInstaller — Arch Linux Terminal Installer
+```
+
 ## Our Pledge
 
 We as members, contributors, and leaders pledge to make participation in our

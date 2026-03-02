@@ -1,5 +1,13 @@
 # EMInstaller
 
+```
+    ____  __  __ ___ _  _ 
+ |  _ \|  \/  |_ _| \| |
+ | | | | |\/| || || .` |
+ |_| |_|_|  |_|___|_|\_|
+ EMInstaller — Arch Linux Terminal Installer
+```
+
 > **This project is a work in progress.**
 > Not all features are complete, and the script may change frequently.  
 > **Always read and test before running.**
@@ -7,8 +15,7 @@
 EMInstaller is the ultimate Arch Linux terminal installer, a comprehensive Bash script that streamlines installation with an intuitive command‑line interface.
 
 ## Status & Desktop Support
-- ✅ GNOME and KDE currently supported
-- ⚠️ HYPRLAND, XFCE, and i3 support is incomplete or broken
+- ✅ GNOME, KDE, Hyprland, XFCE, and i3 currently supported
 
 
 ## Quick Start
@@ -176,7 +183,18 @@ Core guiding principles:
 
 > If you can’t quickly understand an install script, don’t run it.
 
-# ⚠️ Important Notice
+### Desktop Environments
+
+The installer now supports a wider range of graphical environments. When prompted interactively you may choose:
+
+- `cli-only` – no graphical interface
+- `gnome` – GNOME Shell (GDM)
+- `kde` – KDE Plasma (SDDM)
+- `hyprland` – Hyprland Wayland compositor (LightDM)
+- `xfce` – XFCE4 desktop (LightDM)
+- `i3` – i3 window manager (LightDM)
+
+The script will automatically install and enable the appropriate display manager.# ⚠️ Important Notice
 
 Piping remote content directly into `bash` is inherently risky:
 

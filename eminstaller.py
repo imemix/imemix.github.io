@@ -242,7 +242,7 @@ def collect_configuration():
     cfg['kernel'] = get_input_interactive("Kernel (linux/linux-lts/linux-zen)", "linux")
 
     console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
-    console.print("  Options: cli-only, gnome, kde")
+    console.print("  Options: cli-only, gnome, kde, hyprland, xfce, i3")
     cfg['desktop'] = get_input_interactive("Desktop Environment", "gnome")
 
     console.print("\n[bold yellow]=== Custom Packages ===[/bold yellow]\n")
@@ -394,6 +394,13 @@ def main():
             packages.update({"gnome", "gdm", "networkmanager", "network-manager-applet"})
         elif desktop == "kde":
             packages.update({"plasma", "sddm", "networkmanager"})
+        elif desktop == "hyprland":
+            # lightweight Wayland compositor
+            packages.update({"hyprland", "wayland", "xorg-xwayland", "lightdm", "lightdm-gtk-greeter"})
+        elif desktop == "xfce":
+            packages.update({"xfce4", "xfce4-goodies", "lightdm", "lightdm-gtk-greeter"})
+        elif desktop == "i3":
+            packages.update({"i3", "i3status", "lightdm", "lightdm-gtk-greeter"})
 
     if gaming:
         packages.update({"steam", "wine", "lutris"})
@@ -432,6 +439,8 @@ def main():
         arch_chroot("systemctl enable gdm", "Enabling GNOME Display Manager (GDM)")
     elif desktop == "kde":
         arch_chroot("systemctl enable sddm", "Enabling Simple Desktop Display Manager (SDDM)")
+    elif desktop in ["hyprland", "xfce", "i3"]:
+        arch_chroot("systemctl enable lightdm", "Enabling LightDM")
 
     arch_chroot("grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB", "Installing GRUB", duration=2)
     arch_chroot("grub-mkconfig -o /boot/grub/grub.cfg", "Generating GRUB config")
