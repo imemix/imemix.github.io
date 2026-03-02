@@ -8,7 +8,16 @@
 \________/\__/__/__/ \\_______/\__/_____/  
 EMIN — EMInstaller
 ```
+---
 
+# [MENU] Navigation
+
+- [Supported Versions](#supported-versions)
+- [Testing on Other Distributions](#testing-on-other-distributions)
+- [Reporting a Vulnerability](#reporting-a-vulnerability)
+- [What to Include](#what-to-include)
+
+---
 ## Supported Versions
 
 The following distributions have been tested and are officially supported for EMInstaller:

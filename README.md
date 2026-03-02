@@ -12,7 +12,19 @@ EMIN — EMInstaller
 > **This project is a work in progress.**
 > Not all features are complete, and the script may change frequently.  
 > **Always read and test before running.**
+---
 
+# [MENU] Navigation
+
+- [Status & Desktop Support](#status--desktop-support)
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [What It Does](#what-it-does)
+- [Security Features](#security-features)
+- [Documentation](#documentation)
+- [Requirements](#-requirements)
+
+---
 EMInstaller is the ultimate Arch Linux terminal installer, a comprehensive Bash script that streamlines installation with an intuitive command‑line interface.
 
 ## Status & Desktop Support

@@ -2,6 +2,18 @@
 
 This document outlines the standards and expectations for participation within the **imemix.github.io** community. We value diversity, respect, and collaboration, and we aim to foster an inclusive environment for everyone.
 
+---
+
+# [MENU] Navigation
+
+- [Our Pledge](#our-pledge)
+- [Guidelines](#guidelines)
+- [Reporting and Enforcement](#reporting-and-enforcement)
+- [Scope](#scope)
+- [Acknowledgments](#acknowledgments)
+
+---
+
 ## Our Pledge
 
 We commit to creating a welcoming atmosphere where all contributors can work and communicate respectfully. Harassment, discrimination, and abusive behaviors will not be tolerated.
