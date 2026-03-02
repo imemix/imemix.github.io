@@ -26,7 +26,7 @@ body{
     max-width: 1400px;
     margin: 0 auto;
     padding: 3rem 1.5rem;
-    min-height: calc(100vh - 200px);
+    min-height: auto;
     position: relative;
 }
 
@@ -43,7 +43,7 @@ body{
     position: fixed;
     top: 100px;
     right: 1.5rem;
-    z-index: 1000;
+    z-index: 1001;
     border-radius: 8px;
     justify-content: center;
     align-items: center;
@@ -202,7 +202,7 @@ body{
 .code-block {
     background-color: var(--primary-dark);
     color: var(--text-primary);
-    padding: 1.5rem;
+    padding: 1.5rem 1.5rem 1.5rem 1.5rem;
     border-radius: 8px;
     overflow-x: auto;
     margin: 1.5rem 0;
@@ -238,7 +238,7 @@ body{
 
 /* COPY BUTTON */
 .copy-code-btn {
-  
+    position: absolute;
     top: 1rem;
     right: 1rem;
     background-color: rgba(255, 255, 255, 0.1);
@@ -309,21 +309,22 @@ body{
     .docs-wrapper {
         grid-template-columns: 1fr;
         gap: 1.5rem;
-        padding: 2.5rem 1.5rem;
+        padding: 2.5rem 1.5rem 3rem 1.5rem;
     }
 
     .hamburger-menu {
         display: flex;
         right: 1.5rem;
+        top: 80px;
     }
 
     .docs-sidebar {
         position: fixed;
-        top: 150px;
+        top: 70px;
         left: -310px;
         width: 280px;
-        height: fit-content;
-        max-height: calc(100vh - 160px);
+        height: auto;
+        max-height: calc(100vh - 90px);
         overflow-y: auto;
         transition: left 0.3s ease;
         z-index: 999;
@@ -371,19 +372,20 @@ body{
     .docs-wrapper {
         grid-template-columns: 1fr;
         gap: 1.2rem;
-        padding: 2rem 1rem;
-        min-height: calc(100vh - 150px);
+        padding: 2rem 1rem 2.5rem 1rem;
     }
 
     .hamburger-menu {
         right: 1rem;
+        top: 80px;
     }
 
     .docs-sidebar {
         position: fixed;
-        top: 150px;
+        top: 70px;
         left: -300px;
         width: 270px;
+        max-height: calc(100vh - 90px);
         transition: left 0.3s ease;
     }
 
@@ -499,18 +501,20 @@ body{
     .docs-wrapper {
         grid-template-columns: 1fr;
         gap: 1rem;
-        padding: 1.5rem 0.75rem;
+        padding: 1.5rem 0.75rem 2rem 0.75rem;
     }
 
     .hamburger-menu {
         right: 1rem;
+        top: 75px;
     }
 
     .docs-sidebar {
         position: fixed;
-        top: 150px;
+        top: 65px;
         left: -290px;
         width: 260px;
+        max-height: calc(100vh - 85px);
         transition: left 0.3s ease;
     }
 
@@ -636,12 +640,12 @@ body{
     .docs-wrapper {
         grid-template-columns: 1fr;
         gap: 0.8rem;
-        padding: 1.2rem 0.5rem;
-        min-height: calc(100vh - 120px);
+        padding: 1.2rem 0.5rem 1.8rem 0.5rem;
     }
 
     .hamburger-menu {
         right: 0.5rem;
+        top: 70px;
         width: 40px;
         height: 40px;
         padding: 5px;
@@ -654,9 +658,10 @@ body{
 
     .docs-sidebar {
         position: fixed;
-        top: 150px;
+        top: 60px;
         left: -280px;
         width: 250px;
+        max-height: calc(100vh - 80px);
         transition: left 0.3s ease;
     }
 
