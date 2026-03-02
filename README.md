@@ -10,7 +10,8 @@ EMIN — EMInstaller
 ```
 
 > **This project is a work in progress.**
-> Not all features are complete, and the script may change frequently.  
+> Not all features are complete, and the script may change frequently.
+> Future updates may break the installer.
 > **Always read and test before running.**
 ---
 
