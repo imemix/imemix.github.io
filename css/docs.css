@@ -211,12 +211,14 @@ body{
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.9rem;
     line-height: 1.8;
+    width: 100%;
 }
 
 .code-block pre {
     margin: 0;
     white-space: pre-wrap;
     word-wrap: break-word;
+    
 }
 
 .code-block code {
@@ -224,6 +226,7 @@ body{
     color: var(--text-primary);
     padding: 0;
     border-radius: 0;
+    
 }
 
 .code-block.warning {
@@ -251,6 +254,7 @@ body{
     font-weight: 500;
     transition: all 0.2s ease;
     font-family: 'Poppins', sans-serif;
+    
 }
 
 .copy-code-btn:hover {
