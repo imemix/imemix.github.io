@@ -38,6 +38,7 @@
             <ul>
                 <li><a href="#what-is">What Is EMInstaller?</a></li>
                 <li><a href="#quick-install">Quick Install</a></li>
+                <li><a href="#main-install">Main Installer</a></li>
                 <li><a href="#safe-method">Safe Method</a></li>
                 <li><a href="#what-does">What It Does</a></li>
                 <li><a href="#requirements">Requirements</a></li>
@@ -76,6 +77,49 @@
                 <li>Download the installer</li>
                 <li>Execute installation steps automatically</li>
             </ol>
+        </section>
+
+        <!-- main installer section -->
+        <section id="main-install">
+            <h2>Main Installer</h2>
+            <p>The payload downloaded by the quick‑install command is a small 
+            wrapper script named <code>install</code> which in turn fetches and 
+            executes <code>eminstaller.py</code>.  You can run either file 
+            directly if you’ve saved them locally.</p>
+
+            <h3>Basic usage</h3>
+            <div class="code-block">
+                <pre><code>sudo bash install                      # run the shell wrapper
+sudo python3 eminstaller.py [OPTIONS]        # run the Python installer directly</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+
+            <h3>Common options</h3>
+            <ul>
+                <li><code>--config &lt;path&gt;</code> – specify a YAML configuration
+                    file.</li>
+                <li><code>--dry-run</code> – show what would be done without making
+                    any changes.</li>
+                <li><code>--offline</code> – skip network downloads; requires the
+                    installer files be present locally.</li>
+                <li><code>--skip-validation</code> – bypass internal sanity checks
+                    (use with caution).</li>
+            </ul>
+
+            <p>The wrapper script accepts the same arguments and simply forwards
+            them to the Python payload.  Environment variables such as
+            <code>INSTALLER_DEBUG</code> and <code>INSTALLER_URL</code> affect
+            both layers.</p>
+
+            <p>For a full list of flags run:</p>
+            <div class="code-block">
+                <pre><code>sudo python3 eminstaller.py --help</code></pre>
+                <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+
+            <p>This section is intended to give users an overview of the “main
+            installer”; the detailed behaviour and additional options are
+            documented in the Python source itself.</p>
         </section>
 
         <section id="safe-method">
