@@ -1,12 +1,35 @@
 #!/usr/bin/env python3
+import argparse
 import time
 import subprocess
 import sys
 import getpass
 import os
 import re
+import shutil
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
+
+# make sure we're running on linux as this script relies on /dev/tty, lsblk, parted, etc.
+def check_platform():
+    if not sys.platform.startswith("linux"):
+        console.print("[red]Error: this installer must be run on Linux.[/red]")
+        sys.exit(1)
+
+
+def check_root():
+    if os.geteuid() != 0:
+        console.print("[red]Error: you must run this script as root.[/red]")
+        sys.exit(1)
+
+
+def ensure_tools(*names):
+    """Exit early if one of the required binaries is not in $PATH."""
+    missing = [n for n in names if shutil.which(n) is None]
+    if missing:
+        console.print(f"[red]Missing required commands: {', '.join(missing)}[/red]")
+        console.print("Please install them or run this script from an Arch live environment.")
+        sys.exit(1)
 
 console = Console()
 
@@ -39,29 +62,42 @@ def run_command(cmd, description="", verbose=False):
     except Exception as e:
         return False, "", str(e)
 
-def run_stage(stage_name, cmd, duration=3):
-    """Run a stage with progress bar"""
+def run_stage(stage_name, cmd, duration=3, verbose=False):
+    """Run a stage with a fake progress bar and execute its command.
+
+    The progress bar is purely aesthetic; the real work is done by the
+    subprocess call that follows. `verbose` will dump stdout when the
+    command succeeds.
+    """
     console.print(f"\n[bold yellow]==> {stage_name}[/bold yellow]")
     with Progress(
         TextColumn("[progress.description]{task.description}"),
         BarColumn(),
         "[progress.percentage]{task.percentage:>3.0f}%",
         TimeRemainingColumn(),
-        console=console
+        console=console,
     ) as progress:
         task = progress.add_task(stage_name, total=100)
-        for i in range(0, 101, 5):
+        for _ in range(20):
             progress.update(task, advance=5)
-            time.sleep(duration/20)
-    
+            time.sleep(duration / 20)
+
     # Execute the command
-    success, stdout, stderr = run_command(cmd)
+    success, stdout, stderr = run_command(cmd, verbose=verbose)
     if success or "error" not in stderr.lower():
         console.print(f"[green]✓ {stage_name} completed[/green]")
         return True
     else:
         console.print(f"[yellow]⚠ {stage_name} warning: {stderr[:100]}[/yellow]")
-        return True
+        return False
+
+
+def arch_chroot(cmd, description=None, duration=1, verbose=False):
+    """Helper to run a command inside the /mnt chroot using run_stage."""
+    if description is None:
+        description = cmd.split()[0]
+    full_cmd = f"arch-chroot /mnt {cmd}"
+    return run_stage(description, full_cmd, duration, verbose)
 
 def detect_gpu():
     """Detect GPU in system"""
@@ -178,294 +214,283 @@ def confirm_interactive(prompt_text, default=False):
         else:
             return default
 
-# ==============================
-# Interactive Configuration
-# ==============================
-banner()
-console.print("\n[bold cyan]EMInstaller - Interactive Setup[/bold cyan]")
-console.print("[cyan]Configure your Arch Linux installation.\n[/cyan]")
 
-console.print("[bold yellow]=== Disk Selection ===[/bold yellow]\n")
-disk = get_disk_selection()
 
-console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
-hostname = get_input_interactive("Hostname", "arch")
-username = get_input_interactive("Username", "user")
-userpass = get_password_interactive("Make a secure User password")
-rootpass = get_password_interactive("Make a secure Root password and write it down")
+# Configuration helpers
 
-console.print("\n[bold yellow]=== System Configuration ===[/bold yellow]\n")
-fs = get_input_interactive("Filesystem (ext4/btrfs/xfs)", "ext4")
-use_luks = confirm_interactive("Enable LUKS Encryption?", False)
-create_swap = confirm_interactive("Create Swapfile?", True)
-kernel = get_input_interactive("Kernel (linux/linux-lts/linux-zen)", "linux")
 
-console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
-console.print("  Options: cli-only, gnome, kde")
-desktop = get_input_interactive("Desktop Environment", "gnome")
+def collect_configuration():
+    """Interactively prompt the user and return a configuration dictionary."""
+    banner()
+    console.print("\n[bold cyan]EMInstaller - Interactive Setup[/bold cyan]")
+    console.print("[cyan]Configure your Arch Linux installation.\n[/cyan]")
 
-console.print("\n[bold yellow]=== Custom Packages ===[/bold yellow]\n")
-console.print("  Enter additional packages separated by spaces.")
-console.print("  Example: firefox neovim htop docker\n")
+    cfg = {}
+    console.print("[bold yellow]=== Disk Selection ===[/bold yellow]\n")
+    cfg['disk'] = get_disk_selection()
 
-custom_packages_input = get_input_interactive(
-    "Additional packages (leave blank for none)",
-    ""
-)
+    console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
+    cfg['hostname'] = get_input_interactive("Hostname", "arch")
+    cfg['username'] = get_input_interactive("Username", "user")
+    cfg['userpass'] = get_password_interactive("Make a secure User password")
+    cfg['rootpass'] = get_password_interactive("Make a secure Root password and write it down")
 
-console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
-gaming = confirm_interactive("Install Gaming Stack (Steam, Wine, Lutris)?", False)
-dev_tools = confirm_interactive("Install Development Tools (Git, Node, Python)?", False)
-dotfiles = confirm_interactive("Install Dotfiles?", False)
+    console.print("\n[bold yellow]=== System Configuration ===[/bold yellow]\n")
+    cfg['fs'] = get_input_interactive("Filesystem (ext4/btrfs/xfs)", "ext4")
+    cfg['use_luks'] = confirm_interactive("Enable LUKS Encryption?", False)
+    cfg['create_swap'] = confirm_interactive("Create Swapfile?", True)
+    cfg['kernel'] = get_input_interactive("Kernel (linux/linux-lts/linux-zen)", "linux")
 
-detected_gpu = detect_gpu()
-console.print("\n[bold yellow]=== Localization ===[/bold yellow]\n")
-console.print("  Timezone Examples: UTC, America/New_York, Europe/London, Asia/Tokyo")
-console.print("  Language Codes: en_US, de_DE, fr_FR, es_ES, ja_JP, zh_CN, etc.\n")
-timezone = get_input_interactive("Timezone", "UTC")
-language = get_input_interactive("Language Code (e.g., en_US)", "en_US")
-locale_encoding = get_input_interactive("Locale Encoding (UTF-8/ISO-8859-1)", "UTF-8")
+    console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
+    console.print("  Options: cli-only, gnome, kde")
+    cfg['desktop'] = get_input_interactive("Desktop Environment", "gnome")
 
-console.print("\n[bold yellow]=== GPU/Virtualization ===[/bold yellow]\n")
-console.print("  GPU Options: none, nvidia, amd, intel")
-console.print("  VM Graphics: qemu, vmware, virtualbox, hyper-v\n")
-gpu = get_input_interactive("GPU Driver (none/nvidia/nvidia-legacy/amd/intel)", detected_gpu)
-vm_graphics = get_input_interactive("VM Graphics (none/qemu/vmware/virtualbox/hyper-v)", "none")
+    console.print("\n[bold yellow]=== Custom Packages ===[/bold yellow]\n")
+    console.print("  Enter additional packages separated by spaces.")
+    console.print("  Example: firefox neovim htop docker\n")
+    cfg['custom_packages_input'] = get_input_interactive(
+        "Additional packages (leave blank for none)",
+        ""
+    )
 
-# Display summary
-console.print("\n[bold yellow]=== Installation Configuration ===[/bold yellow]\n")
-console.print(f"  [cyan]Disk:[/cyan] {disk}")
-console.print(f"  [cyan]Hostname:[/cyan] {hostname}")
-console.print(f"  [cyan]Username:[/cyan] {username}")
-console.print(f"  [cyan]Filesystem:[/cyan] {fs}")
-console.print(f"  [cyan]LUKS Encryption:[/cyan] {use_luks}")
-console.print(f"  [cyan]Swapfile:[/cyan] {create_swap}")
-console.print(f"  [cyan]Kernel:[/cyan] {kernel}")
-console.print(f"  [cyan]Desktop:[/cyan] {desktop}")
-console.print(f"  [cyan]Timezone:[/cyan] {timezone}")
-console.print(f"  [cyan]Language:[/cyan] {language}")
-console.print(f"  [cyan]Locale Encoding:[/cyan] {locale_encoding}")
-console.print(f"  [cyan]GPU Driver:[/cyan] {gpu}")
-console.print(f"  [cyan]VM Graphics:[/cyan] {vm_graphics}")
-console.print(f"  [cyan]Gaming Stack:[/cyan] {gaming}")
-console.print(f"  [cyan]Dev Tools:[/cyan] {dev_tools}")
-console.print(f"  [cyan]Dotfiles:[/cyan] {dotfiles}\n")
+    console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
+    cfg['gaming'] = confirm_interactive("Install Gaming Stack (Steam, Wine, Lutris)?", False)
+    cfg['dev_tools'] = confirm_interactive("Install Development Tools (Git, Node, Python)?", False)
+    cfg['dotfiles'] = confirm_interactive("Install Dotfiles?", False)
 
-if not confirm_interactive(f"[bold red]⚠️  WARNING: This will erase ALL data on {disk}. [red]Proceed?[/red]", False):
-    console.print("[yellow]Installation cancelled.[/yellow]")
-    sys.exit(0)
+    cfg['detected_gpu'] = detect_gpu()
+    console.print("\n[bold yellow]=== Localization ===[/bold yellow]\n")
+    console.print("  Timezone Examples: UTC, America/New_York, Europe/London, Asia/Tokyo")
+    console.print("  Language Codes: en_US, de_DE, fr_FR, es_ES, ja_JP, zh_CN, etc.\n")
+    cfg['timezone'] = get_input_interactive("Timezone", "UTC")
+    cfg['language'] = get_input_interactive("Language Code (e.g., en_US)", "en_US")
+    cfg['locale_encoding'] = get_input_interactive("Locale Encoding (UTF-8/ISO-8859-1)", "UTF-8")
 
-# ==============================
-# Execute Installation
-# ==============================
-console.print("\n[bold green]Starting installation to disk...[/bold green]\n")
+    console.print("\n[bold yellow]=== GPU/Virtualization ===[/bold yellow]\n")
+    console.print("  GPU Options: none, nvidia, amd, intel")
+    console.print("  VM Graphics: qemu, vmware, virtualbox, hyper-v\n")
+    cfg['gpu'] = get_input_interactive(
+        "GPU Driver (none/nvidia/nvidia-legacy/amd/intel)",
+        cfg['detected_gpu'],
+    )
+    cfg['vm_graphics'] = get_input_interactive(
+        "VM Graphics (none/qemu/vmware/virtualbox/hyper-v)",
+        "none",
+    )
 
-# Determine partition names
-if "nvme" in disk:
-    efi_part = f"{disk}p1"
-    root_part = f"{disk}p2"
-else:
-    efi_part = f"{disk}1"
-    root_part = f"{disk}2"
+    return cfg
 
-# Wipe disk
-run_stage("Wiping disk", f"wipefs -af {disk}", duration=2)
 
-# Create partition table
-run_stage("Creating GPT partition table", f"parted -s {disk} mklabel gpt", duration=1)
 
-# Create partitions
-run_stage("Creating EFI partition (512MB)", f"parted -s {disk} mkpart primary fat32 1MiB 513MiB", duration=1)
-run_stage("Setting EFI boot flag", f"parted -s {disk} set 1 esp on", duration=1)
-run_stage("Creating root partition", f"parted -s {disk} mkpart primary {fs} 513MiB 100%", duration=1)
 
-# Format partitions
-run_stage("Formatting EFI partition", f"mkfs.fat -F32 -n EFI {efi_part}", duration=1)
-run_stage(f"Formatting root partition ({fs})", f"mkfs.{fs} -L arch {root_part}", duration=3)
+# summary & confirmation (called from main)
 
-# Mount partitions
-run_stage("Creating mount directories", f"mkdir -p /mnt/boot /mnt", duration=1)
-run_stage("Mounting root partition", f"mount {root_part} /mnt", duration=1)
-run_stage("Mounting EFI partition", f"mkdir -p /mnt/boot/efi && mount {efi_part} /mnt/boot/efi", duration=1)
+def print_summary(cfg, assume_yes=False):
+    console.print("\n[bold yellow]=== Installation Configuration ===[/bold yellow]\n")
+    items = [
+        ("Disk", cfg['disk']),
+        ("Hostname", cfg['hostname']),
+        ("Username", cfg['username']),
+        ("Filesystem", cfg['fs']),
+        ("LUKS Encryption", cfg['use_luks']),
+        ("Swapfile", cfg['create_swap']),
+        ("Kernel", cfg['kernel']),
+        ("Desktop", cfg['desktop']),
+        ("Timezone", cfg['timezone']),
+        ("Language", cfg['language']),
+        ("Locale Encoding", cfg['locale_encoding']),
+        ("GPU Driver", cfg['gpu']),
+        ("VM Graphics", cfg['vm_graphics']),
+        ("Gaming Stack", cfg['gaming']),
+        ("Dev Tools", cfg['dev_tools']),
+        ("Dotfiles", cfg['dotfiles']),
+    ]
+    for name, val in items:
+        console.print(f"  [cyan]{name}:[/cyan] {val}")
+    console.print()
+    if not confirm_interactive(
+        f"[bold red]⚠️  WARNING: This will erase ALL data on {cfg['disk']}. [red]Proceed?[/red]",
+        assume_yes,
+    ):
+        console.print("[yellow]Installation cancelled.[/yellow]")
+        sys.exit(0)
 
-# Create swapfile if requested
-if create_swap:
-    run_stage("Creating swapfile (2GB)", f"dd if=/dev/zero of=/mnt/swapfile bs=1M count=2048 && chmod 600 /mnt/swapfile && mkswap /mnt/swapfile", duration=3)
 
-# Install base system
-packages = ["base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmanager", "vim", "sudo"]
-custom_packages = []
+# main entrypoint
 
-if custom_packages_input.strip():
-    for pkg in custom_packages_input.split():
-        if re.match(r'^[a-zA-Z0-9@._+-]+$', pkg):
-            custom_packages.append(pkg)
-        else:
-            console.print(f"[red]Invalid package name ignored: {pkg}[/red]")
 
-if desktop != "cli-only":
-    packages.append("xorg")
+def main():
+    check_platform()
+    check_root()
+    # verify we have the external commands we rely on
+    ensure_tools("lsblk", "parted", "mkfs.fat", "pacstrap", "genfstab", "grub-install", "arch-chroot")
+
+    parser = argparse.ArgumentParser(description="EMInstaller - interactive Arch installer")
+    parser.add_argument("-y", "--yes", action="store_true", help="Assume yes for all confirmations")
+    args = parser.parse_args()
+
+    cfg = collect_configuration()
+    print_summary(cfg, assume_yes=args.yes)
+
+    
+    # begin installation using values from cfg
+    
+    disk = cfg['disk']
+    hostname = cfg['hostname']
+    username = cfg['username']
+    userpass = cfg['userpass']
+    rootpass = cfg['rootpass']
+    fs = cfg['fs']
+    create_swap = cfg['create_swap']
+    kernel = cfg['kernel']
+    desktop = cfg['desktop']
+    custom_packages_input = cfg['custom_packages_input']
+    gaming = cfg['gaming']
+    dev_tools = cfg['dev_tools']
+    custom_packages = []
+    timezone = cfg['timezone']
+    language = cfg['language']
+    locale_encoding = cfg['locale_encoding']
+    gpu = cfg['gpu']
+    vm_graphics = cfg['vm_graphics']
+
+    console.print("\n[bold green]Starting installation to disk...[/bold green]\n")
+
+    # partition naming
+    if "nvme" in disk:
+        efi_part = f"{disk}p1"
+        root_part = f"{disk}p2"
+    else:
+        efi_part = f"{disk}1"
+        root_part = f"{disk}2"
+
+    run_stage("Wiping disk", f"wipefs -af {disk}", duration=2)
+    run_stage("Creating GPT partition table", f"parted -s {disk} mklabel gpt", duration=1)
+    run_stage("Creating EFI partition (512MB)", f"parted -s {disk} mkpart primary fat32 1MiB 513MiB", duration=1)
+    run_stage("Setting EFI boot flag", f"parted -s {disk} set 1 esp on", duration=1)
+    run_stage("Creating root partition", f"parted -s {disk} mkpart primary {fs} 513MiB 100%", duration=1)
+    run_stage("Formatting EFI partition", f"mkfs.fat -F32 -n EFI {efi_part}", duration=1)
+    run_stage(f"Formatting root partition ({fs})", f"mkfs.{fs} -L arch {root_part}", duration=3)
+    run_stage("Creating mount directories", f"mkdir -p /mnt/boot /mnt", duration=1)
+    run_stage("Mounting root partition", f"mount {root_part} /mnt", duration=1)
+    run_stage("Mounting EFI partition", f"mkdir -p /mnt/boot/efi && mount {efi_part} /mnt/boot/efi", duration=1)
+
+    if create_swap:
+        run_stage("Creating swapfile (2GB)", f"dd if=/dev/zero of=/mnt/swapfile bs=1M count=2048 && chmod 600 /mnt/swapfile && mkswap /mnt/swapfile", duration=3)
+
+    # build package set (use set to dedupe)
+    packages = {"base", "linux-firmware", "grub", "efibootmgr", kernel, "networkmanager", "vim", "sudo"}
+
+    if custom_packages_input.strip():
+        for pkg in custom_packages_input.split():
+            if re.match(r'^[a-zA-Z0-9@._+-]+$', pkg):
+                custom_packages.append(pkg)
+            else:
+                console.print(f"[red]Invalid package name ignored: {pkg}[/red]")
+
+    if desktop != "cli-only":
+        packages.add("xorg")
+        if desktop == "gnome":
+            packages.update({"gnome", "gdm", "networkmanager", "network-manager-applet"})
+        elif desktop == "kde":
+            packages.update({"plasma", "sddm", "networkmanager"})
+
+    if gaming:
+        packages.update({"steam", "wine", "lutris"})
+    if dev_tools:
+        packages.update({"git", "base-devel", "npm", "python"})
+    if custom_packages:
+        packages.update(custom_packages)
+
+    run_stage("Installing base packages", f"pacstrap /mnt {' '.join(sorted(packages))}", duration=10)
+    run_stage("Generating fstab", "genfstab -U /mnt >> /mnt/etc/fstab", duration=1)
+
+    console.print("\n[bold green]Configuring system in chroot...[/bold green]\n")
+    # timezone/locale/hostname/hosts/passwords/users
+    arch_chroot(f"ln -sf /usr/share/zoneinfo/{timezone} /etc/localtime", "Setting timezone")
+    locale_string = f"{language}.{locale_encoding}"
+    arch_chroot(f"bash -c \"echo '{locale_string} {locale_encoding}' >> /etc/locale.gen && locale-gen\"", "Generating locale", duration=2)
+    arch_chroot(f"bash -c \"echo 'LANG={locale_string}' > /etc/locale.conf\"", "Setting LANG")
+    arch_chroot(f"bash -c \"echo '{hostname}' > /etc/hostname\"", "Setting hostname")
+    arch_chroot(
+        f"bash -c \"echo '127.0.0.1 localhost' >> /etc/hosts && echo '::1 localhost' >> /etc/hosts && echo '127.0.1.1 {hostname}.localdomain {hostname}' >> /etc/hosts\"",
+        "Configuring hosts",
+    )
+    arch_chroot(f"bash -c \"echo -e '{rootpass}\\n{rootpass}' | passwd\"", "Setting root password")
+    arch_chroot(f"useradd -m -s /bin/bash {username}", "Creating user")
+    arch_chroot(f"bash -c \"echo -e '{userpass}\\n{userpass}' | passwd {username}\"", "Setting user password")
+
+    arch_chroot("systemctl enable NetworkManager", "Enabling NetworkManager")
+    arch_chroot("mkdir -p /etc/sudoers.d", "Creating sudoers directory")
+    arch_chroot(
+        f"bash -c \"echo '{username} ALL=(ALL) ALL' > /etc/sudoers.d/{username} && chmod 0440 /etc/sudoers.d/{username}\"",
+        "Configuring sudoers",
+    )
+    arch_chroot(f"test -f /etc/sudoers.d/{username} && echo 'sudoers configured'", "Verifying sudoers configuration")
+
     if desktop == "gnome":
-        packages.extend(["gnome", "gdm", "networkmanager", "network-manager-applet"])
+        arch_chroot("systemctl enable gdm", "Enabling GNOME Display Manager (GDM)")
     elif desktop == "kde":
-        packages.extend(["plasma", "sddm", "networkmanager"])
-    #elif desktop == "hyprland":
-        #packages.extend(["hyprland", "hyprpaper", "waybar", "greetd", "greetd-tuigreet", "wofi", "konsole", "dolphin", "networkmanager"])
-    #elif desktop == "xfce":
-        #packages.extend(["xfce4", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
-    #elif desktop == "i3":
-        #packages.extend(["i3-wm", "i3status", "dmenu", "lightdm", "lightdm-gtk-greeter", "networkmanager", "network-manager-applet"])
+        arch_chroot("systemctl enable sddm", "Enabling Simple Desktop Display Manager (SDDM)")
 
-    
-if gaming:
-    packages.extend(["steam", "wine", "lutris"])
+    arch_chroot("grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB", "Installing GRUB", duration=2)
+    arch_chroot("grub-mkconfig -o /boot/grub/grub.cfg", "Generating GRUB config")
 
-if dev_tools:
-    packages.extend(["git", "base-devel", "npm", "python"])
-    
-if custom_packages:
-    packages.extend(custom_packages)
-# Don't add yay to packages list - we'll install it after chroot
+    # GPU & VM drivers
+    if gpu == "nvidia":
+        arch_chroot("pacman -S --noconfirm nvidia nvidia-utils", "Installing NVIDIA drivers", duration=5)
+    elif gpu == "nvidia-legacy":
+        arch_chroot("pacman -S --noconfirm xf86-video-nouveau", "Installing Nouveau (Legacy NVIDIA fallback)", duration=3)
+    elif gpu == "amd":
+        arch_chroot("pacman -S --noconfirm xf86-video-amdgpu", "Installing AMD drivers", duration=5)
+    elif gpu == "intel":
+        arch_chroot("pacman -S --noconfirm xf86-video-intel", "Installing Intel drivers", duration=3)
 
-run_stage("Installing base packages", f"pacstrap /mnt {' '.join(packages)}", duration=10)
+    if vm_graphics == "qemu":
+        arch_chroot("pacman -S --noconfirm xf86-video-qxl spice-vdagent", "Installing QEMU graphics drivers", duration=3)
+    elif vm_graphics == "vmware":
+        arch_chroot("pacman -S --noconfirm xf86-video-vmware open-vm-tools", "Installing VMware graphics drivers", duration=3)
+    elif vm_graphics == "virtualbox":
+        arch_chroot("pacman -S --noconfirm virtualbox-guest-utils", "Installing VirtualBox graphics drivers", duration=3)
+    elif vm_graphics == "hyper-v":
+        arch_chroot("pacman -S --noconfirm xf86-video-fbdev", "Installing Hyper-V graphics drivers", duration=3)
 
-# Generate fstab
-run_stage("Generating fstab", f"genfstab -U /mnt >> /mnt/etc/fstab", duration=1)
+    arch_chroot("umount -R /mnt", "Unmounting partitions")
 
-# Chroot and configure system
-console.print("\n[bold green]Configuring system in chroot...[/bold green]\n")
+    console.print()
+    banner("INSTALLATION COMPLETE! 🚀")
+    console.print(f"[bold green]Arch Linux has been successfully installed on {disk}![/bold green]\n")
 
-# Set timezone
-run_stage("Setting timezone", f"arch-chroot /mnt ln -sf /usr/share/zoneinfo/{timezone} /etc/localtime", duration=1)
+    console.print("[cyan]Final Configuration Summary:[/cyan]")
+    console.print(f"  Disk: [green]{disk}[/green]")
+    console.print(f"  Hostname: [green]{hostname}[/green]")
+    console.print(f"  User: [green]{username}[/green]")
+    console.print(f"  Desktop: [green]{desktop}[/green]")
+    console.print(f"  Filesystem: [green]{fs}[/green]")
+    console.print(f"  Kernel: [green]{kernel}[/green]")
+    console.print(f"  Timezone: [green]{timezone}[/green]")
+    console.print(f"  Language: [green]{language}[/green]")
+    console.print(f"  Locale Encoding: [green]{locale_encoding}[/green]")
+    console.print(f"  GPU Driver: [green]{gpu}[/green]")
 
-# Set locale
-locale_string = f"{language}.{locale_encoding}"
-run_stage("Generating locale", f"arch-chroot /mnt bash -c \"echo '{locale_string} {locale_encoding}' >> /etc/locale.gen && locale-gen\"", duration=2)
-run_stage("Setting LANG", f"arch-chroot /mnt bash -c \"echo 'LANG={locale_string}' > /etc/locale.conf\"", duration=1)
+    console.print("\n[bold cyan]Next Steps:[/bold cyan]")
+    console.print(f"  1. [yellow]Eject the Arch Linux ISO[/yellow]")
+    console.print(f"  2. Reboot your system: [yellow]sudo reboot[/yellow]")
+    console.print(f"  3. Boot from {disk}")
+    console.print(f"  4. Login with username: [green]{username}[/green]")
+    console.print(f"  5. Configure your preferences")
 
-# Set hostname
-run_stage("Setting hostname", f"arch-chroot /mnt bash -c \"echo '{hostname}' > /etc/hostname\"", duration=1)
+    if gaming:
+        console.print("  6. Launch Steam from applications menu")
 
-# Configure hosts
-run_stage("Configuring hosts", f"arch-chroot /mnt bash -c \"echo '127.0.0.1 localhost' >> /etc/hosts && echo '::1 localhost' >> /etc/hosts && echo '127.0.1.1 {hostname}.localdomain {hostname}' >> /etc/hosts\"", duration=1)
+    if dev_tools:
+        console.print("  6. Start developing!")
 
-# Set root password
-run_stage("Setting root password", f"arch-chroot /mnt bash -c \"echo -e '{rootpass}\\n{rootpass}' | passwd\"", duration=1)
+    if custom_packages:
+        console.print(f"  [cyan]Custom Packages:[/cyan] {' '.join(custom_packages)}")
 
-# Create user
-run_stage("Creating user", f"arch-chroot /mnt useradd -m -s /bin/bash {username}", duration=1)
-run_stage("Setting user password", f"arch-chroot /mnt bash -c \"echo -e '{userpass}\\n{userpass}' | passwd {username}\"", duration=1)
+    console.print("\n[bold green]Installation successful! You can now remove the ISO and boot from disk.[/bold green]")
 
-# Enable NetworkManager
-run_stage("Enabling NetworkManager", f"arch-chroot /mnt systemctl enable NetworkManager", duration=1)
 
-# Configure sudoers - create sudoers.d directory and add user
-run_stage("Creating sudoers directory", f"arch-chroot /mnt mkdir -p /etc/sudoers.d", duration=1)
-run_stage("Configuring sudoers", f"arch-chroot /mnt bash -c \"echo '{username} ALL=(ALL) ALL' > /etc/sudoers.d/{username} && chmod 0440 /etc/sudoers.d/{username}\"", duration=1)
-
-# Verify sudoers was created
-run_stage("Verifying sudoers configuration", f"arch-chroot /mnt test -f /etc/sudoers.d/{username} && echo 'sudoers configured'", duration=1)
-
-# Enable display manager
-if desktop == "gnome":
-    run_stage(
-        "Enabling GNOME Display Manager (GDM)",
-        f"arch-chroot /mnt systemctl enable gdm",
-        duration=1
-    )
-elif desktop == "kde":
-    run_stage(
-        "Enabling Simple Desktop Display Manager (SDDM)",
-        f"arch-chroot /mnt systemctl enable sddm",
-        duration=1
-    )
-#elif desktop == "hyprland":
-    #run_stage("Enabling Greetd Display Manager", f"arch-chroot /mnt systemctl enable greetd", duration=1)
-#elif desktop in ["xfce", "i3"]:
-    #run_stage("Enabling LightDM Display Manager", f"arch-chroot /mnt systemctl enable lightdm", duration=1)
-
-# Install bootloader
-run_stage(
-    "Installing GRUB",
-    f"arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB",
-    duration=2
-)
-run_stage(
-    "Generating GRUB config",
-    f"arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg",
-    duration=1
-)
-
-# Install GPU drivers
-if gpu == "nvidia":
-    run_stage(
-        "Installing NVIDIA drivers",
-        f"arch-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils",
-        duration=5
-    )
-elif gpu == "nvidia-legacy":
-    run_stage(
-        "Installing Nouveau (Legacy NVIDIA fallback)",
-        f"arch-chroot /mnt pacman -S --noconfirm xf86-video-nouveau",
-        duration=3
-    )
-elif gpu == "amd":
-    run_stage(
-        "Installing AMD drivers",
-        f"arch-chroot /mnt pacman -S --noconfirm xf86-video-amdgpu",
-        duration=5
-    )
-elif gpu == "intel":
-    run_stage(
-        "Installing Intel drivers",
-        f"arch-chroot /mnt pacman -S --noconfirm xf86-video-intel",
-        duration=3
-    )
-
-# Install VM graphics drivers
-if vm_graphics == "qemu":
-    run_stage("Installing QEMU graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-qxl spice-vdagent", duration=3)
-elif vm_graphics == "vmware":
-    run_stage("Installing VMware graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-vmware open-vm-tools", duration=3)
-elif vm_graphics == "virtualbox":
-    run_stage("Installing VirtualBox graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm virtualbox-guest-utils", duration=3)
-elif vm_graphics == "hyper-v":
-    run_stage("Installing Hyper-V graphics drivers", f"arch-chroot /mnt pacman -S --noconfirm xf86-video-fbdev", duration=3)
-
-# Unmount partitions
-run_stage("Unmounting partitions", f"umount -R /mnt", duration=1)
-
-# Installation complete
-console.print()
-banner("INSTALLATION COMPLETE! 🚀")
-console.print(f"[bold green]Arch Linux has been successfully installed on {disk}![/bold green]\n")
-
-console.print("[cyan]Final Configuration Summary:[/cyan]")
-console.print(f"  Disk: [green]{disk}[/green]")
-console.print(f"  Hostname: [green]{hostname}[/green]")
-console.print(f"  User: [green]{username}[/green]")
-console.print(f"  Desktop: [green]{desktop}[/green]")
-console.print(f"  Filesystem: [green]{fs}[/green]")
-console.print(f"  Kernel: [green]{kernel}[/green]")
-console.print(f"  Timezone: [green]{timezone}[/green]")
-console.print(f"  Language: [green]{language}[/green]")
-console.print(f"  Locale Encoding: [green]{locale_encoding}[/green]")
-console.print(f"  GPU Driver: [green]{gpu}[/green]")
-
-console.print("\n[bold cyan]Next Steps:[/bold cyan]")
-console.print(f"  1. [yellow]Eject the Arch Linux ISO[/yellow]")
-console.print(f"  2. Reboot your system: [yellow]sudo reboot[/yellow]")
-console.print(f"  3. Boot from {disk}")
-console.print(f"  4. Login with username: [green]{username}[/green]")
-console.print(f"  5. Configure your preferences")
-
-if gaming:
-    console.print("  6. Launch Steam from applications menu")
-
-if dev_tools:
-    console.print("  6. Start developing!")
-    
-if custom_packages:
-    console.print(f"  [cyan]Custom Packages:[/cyan] {' '.join(custom_packages)}")
-    
-console.print("\n[bold green]Installation successful! You can now remove the ISO and boot from disk.[/bold green]")
+if __name__ == "__main__":
+    main()

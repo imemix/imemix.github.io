@@ -1,32 +1,122 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.1"
+VERSION="1.2"
 RAW_INSTALLER="https://imemix.github.io/eminstaller.py"
 
+# Colors
+ESC="\033"
+RED="$ESC[31m"
+GREEN="$ESC[32m"
+YELLOW="$ESC[33m"
+BLUE="$ESC[34m"
+BOLD="$ESC[1m"
+RESET="$ESC[0m"
 
-echo "==========================================="
-echo "        EMInstaller v${VERSION}"
-echo "==========================================="
+info(){ printf "%b\n" "${BOLD}${BLUE}[INFO]${RESET} $1"; }
+succ(){ printf "%b\n" "${BOLD}${GREEN}[OK]${RESET} $1"; }
+warn(){ printf "%b\n" "${BOLD}${YELLOW}[WARN]${RESET} $1"; }
+err(){ printf "%b\n" "${BOLD}${RED}[ERROR]${RESET} $1"; }
+die(){ err "$1"; exit ${2:-1}; }
+
+usage(){
+    cat <<EOF
+EMInstaller v${VERSION}
+
+Usage: $0 [--help]
+
+Installs or updates EM dependencies and launches the remote installer.
+
+Options:
+    -h, --help    Show this help message and exit
+EOF
+}
+
+if [[ ${1:-} =~ ^(-h|--help)$ ]]; then
+    usage
+    exit 0
+fi
 
 if [ "$(id -u)" -ne 0 ]; then
-    echo "[ERROR] Please run with sudo."
-    exit 1
+    die "Please run with sudo or as root."
 fi
 
-echo "[*] Installing and Updating dependencies..."
-pacman -Sy --noconfirm python git curl archinstall >/dev/null
+printf "%b\n" "${BOLD}${GREEN}===========================================${RESET}"
+printf "%b\n" "${BOLD}${GREEN}        EMInstaller v${VERSION}${RESET}"
+printf "%b\n" "${BOLD}${GREEN}===========================================${RESET}"
 
-TMP_SCRIPT="/tmp/eminstaller.py"
+# detect package manager
+detect_pm(){
+    if command -v pacman >/dev/null 2>&1; then echo pacman
+    elif command -v apt-get >/dev/null 2>&1; then echo apt
+    elif command -v dnf >/dev/null 2>&1; then echo dnf
+    elif command -v yum >/dev/null 2>&1; then echo yum
+    elif command -v apk >/dev/null 2>&1; then echo apk
+    else echo unknown
+    fi
+}
 
-echo "[*] Downloading installer..."
-# Try local copy first (for testing), then fall back to GitHub
+PM=$(detect_pm)
+if [ "$PM" = "unknown" ]; then
+    warn "Could not detect package manager; please ensure python, git and curl are installed."
+else
+    info "Detected package manager: $PM"
+fi
+
+# ensure downloader
+DOWNLOAD_CMD=""
+if command -v curl >/dev/null 2>&1; then
+    DOWNLOAD_CMD="curl -fsSL"
+elif command -v wget >/dev/null 2>&1; then
+    DOWNLOAD_CMD="wget -qO-"
+else
+    die "Neither curl nor wget is available. Please install one and retry."
+fi
+
+info "Ensuring core packages are present (python, git, curl)..."
+case "$PM" in
+    pacman)
+        pacman -Sy --noconfirm python git curl >/dev/null 2>&1 || warn "pacman install failed; continuing."
+        ;;
+    apt)
+        apt-get update -qq >/dev/null 2>&1 || true
+        DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-pip git curl >/dev/null 2>&1 || warn "apt install failed; continuing."
+        ;;
+    dnf|yum)
+        $PM install -y python3 git curl >/dev/null 2>&1 || warn "$PM install failed; continuing."
+        ;;
+    apk)
+        apk add --no-cache python3 git curl >/dev/null 2>&1 || warn "apk install failed; continuing."
+        ;;
+    *)
+        warn "Skipping automated install because package manager is unknown."
+        ;;
+esac
+
+TMP_SCRIPT="$(mktemp /tmp/eminstaller.XXXXXX.py)"
+trap 'rm -f "$TMP_SCRIPT"' EXIT
+
+info "Downloading installer..."
+# local file checks (ease testing)
 if [ -f "/eminstaller.py" ]; then
     cp /eminstaller.py "$TMP_SCRIPT"
+    succ "Copied /eminstaller.py to temporary location."
+elif [ -f "./eminstaller.py" ]; then
+    cp ./eminstaller.py "$TMP_SCRIPT"
+    succ "Copied ./eminstaller.py to temporary location."
 else
-    curl -sL "$RAW_INSTALLER" -o "$TMP_SCRIPT"
+    if ! $DOWNLOAD_CMD "$RAW_INSTALLER" > "$TMP_SCRIPT" 2>/dev/null; then
+        rm -f "$TMP_SCRIPT"
+        die "Failed to download installer from $RAW_INSTALLER"
+    fi
+    succ "Downloaded installer to $TMP_SCRIPT"
 fi
 
-echo "[*] Launching EMInstaller..."
+info "Launching EMInstaller..."
+if command -v python3 >/dev/null 2>&1; then
+    python3 "$TMP_SCRIPT"
+else
+    die "python3 is not available to run the installer."
+fi
 
-python3 "$TMP_SCRIPT"
+succ "Done."
