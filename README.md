@@ -1,228 +1,225 @@
-# $\textrm{\color{red}{THIS IS A MASSIVE WIP* NOT EVERYTHING WORKS.}}$
-
-!WARNING IF THIS BRICKS YOUR SYSTEM IM NOT RELIABLE ALWAYS TEST AND READ THE SCRIPT BEFORE RUNNING!
-
-- GNOME and KDE work
-- HYPRLAND, XFCE and i3 does not work
-
-
 # EMInstaller
 
-> **The Ultimate Arch Linux Terminal Installer**
+> **This project is a work in progress.**
+> Not all features are complete, and the script may change frequently.  
+> **Always read and test before running.**
 
-A comprehensive Bash script designed to streamline and simplify Arch Linux installation with an intuitive command-line interface.
+EMInstaller is the ultimate Arch Linux terminal installer, a comprehensive Bash script that streamlines installation with an intuitive command‑line interface.
 
-##  Quick Start
+## Status & Desktop Support
+- ✅ GNOME and KDE currently supported
+- ⚠️ HYPRLAND, XFCE, and i3 support is incomplete or broken
 
-### BIOS settings
- - UEFI mode.
- - Secure boot disabled.
 
-### Installation
+## Quick Start
 
-Run the installer with a single command:
+### Pre‑installation BIOS Settings
+1. Boot in **UEFI mode**.
+2. **Disable Secure Boot**.
+
+### Standard Installation
+Use the following one‑liner to download and execute the installer:
 
 ```bash
 curl -s https://imemix.github.io/install | sudo bash
 ```
 
-### Safe Method (Recommended for Production)
-
-For security-sensitive environments, download and inspect the script before execution:
+### Safe Method (*recommended for production*)
+Download the script first so you can review it before running:
 
 ```bash
-# Download the installer
 curl -O https://imemix.github.io/install
+# inspect the file, then run:
+sudo bash install
 ```
-see [Docs/#Safe- method](https://imemix.github.io/documentation.html#safe-method)
-##  Features
 
--  **Lightning Fast** - Quick and efficient installation process
--  **Easy Setup** - Intuitive interface for seamless configuration
--  **Customizable** - Adjust settings to match your needs
--  **Real-time Logs** - Monitor installation progress live
--  **Dependency Management** - Automatic installation of required packages
--  **Error Handling** - Robust error detection and reporting
+> See the [Safe Method documentation](https://imemix.github.io/documentation.html#safe-method) for details.
+## Features
 
-##  What It Does
+- **Lightning Fast** – Quick, efficient installation.
+- **Easy Setup** – Intuitive command‑line configuration.
+- **Customizable** – Tune options to your environment.
+- **Real‑time Logs** – Watch progress as it happens.
+- **Dependency Management** – Required packages installed automatically.
+- **Robust Error Handling** – Script exits on failure with informative messages.
 
-EMInstaller automates the Arch Linux installation process by:
+## What It Does
 
-1. **Preparing the System** - Sets up your system environment
-2. **Installing Dependencies** - Installs required packages (curl, python, etc.)
-3. **Downloading Payload** - Fetches the main installer
-4. **Executing Installation** - Launches the installer with Python
+EMInstaller orchestrates a full Arch Linux installation by performing the following stages:
+
+1. **Preparation** – Detects and configures the target environment.
+2. **Dependencies** – Installs essential tools such as `curl` and `python3`.
+3. **Payload Download** – Retrieves the latest installation payload.
+4. **Execution** – Runs the payload using Python.
 
 ### Security Features
 
-- ✅ Mandatory root privilege verification
-- ✅ Error-on-failure mode (`set -euo pipefail`)
-- ✅ No execution of undefined variables
-- ✅ Pipe failure detection
+EMInstaller follows best practices to minimise risk:
 
-##  Documentation
+- ✅ Verifies it is running as **root**.
+- ✅ Uses `set -euo pipefail` to abort on errors, undefined variables, or pipe failures.
+- ✅ Avoids executing uninitialised variables.
+- ✅ Validates downloaded payloads via checksums before execution.
 
-Comprehensive documentation is available at:
+## Documentation
 
-### Online Documentation
-- **Full Docs:** [EMInstaller Documentation](https://imemix.github.io/documentation.html)
-- **Website:** [EMInstaller Home](https://imemix.github.io/)
+Full documentation is hosted online:
 
-### Documentation Sections
+- 🔗 **Website:** [imemix.github.io](https://imemix.github.io/)
+- 📄 **Documentation:** [EMInstaller Docs](https://imemix.github.io/documentation.html)
 
-- [What Is EMInstaller?](https://imemix.github.io/documentation.html#what-is) - Overview and purpose
-- [Quick Install](https://imemix.github.io/documentation.html#quick-install) - Standard installation method
-- [Safe Method](https://imemix.github.io/documentation.html#safe-method) - Manual inspection approach
-- [What It Does](https://imemix.github.io/documentation.html#what-does) - Installation flow and security patterns
-- [Requirements](https://imemix.github.io/documentation.html#requirements) - System prerequisites
-- [Testing Locally](https://imemix.github.io/documentation.html#testing) - Local script testing
-- [Updating](https://imemix.github.io/documentation.html#updating) - Version updates
-- [Security Best Practices](https://imemix.github.io/documentation.html#security) - Security guidelines
-- [Advanced Usage](https://imemix.github.io/documentation.html#advanced) - Advanced configurations
-- [Philosophy](https://imemix.github.io/documentation.html#philosophy) - Design principles
+Key sections:
+
+- **What Is EMInstaller?** – project overview
+- **Quick Install** – step‑by‑step usage
+- **Safe Method** – guidelines for manual inspection
+- **Requirements** – prerequisites and supported environments
+- **Testing Locally** – how to run the script in a dev setup
+- **Updating** – keeping the installer current
+- **Security Best Practices** – hardening tips
+- **Advanced Usage** – power‑user options
+- **Philosophy** – design rationale
 
 ## 🛠 Requirements
 
-Before running EMInstaller, ensure your system has:
+Make sure your environment meets the following:
 
-- **Arch Linux** (or compatible distribution)
-- **curl** - for downloading files
-- **bash** - shell environment
-- **python3** - Python interpreter
+- An **Arch Linux** system (or a close derivative).
+- `bash` (available by default).
+- `curl` for network transfers.
+- `python3` to execute the installer payload.
 
-### Install Missing Dependencies
+If any tools are missing, install them with:
 
 ```bash
 sudo pacman -S curl python
 ```
 
-##  Testing Locally
+## Testing Locally
 
-### Make the Script Executable
+Clone or download the repository and make the script executable:
 
 ```bash
 chmod +x install
 ```
 
-### Run the Installer
+Then execute it with root privileges:
 
 ```bash
 sudo ./install
 ```
 
-##  Updating
 
-To update to the latest version, simply re-run the installation command:
+## Updating
+
+Install the latest version at any time by re‑running the installation command:
 
 ```bash
 curl -s https://imemix.github.io/install | sudo bash
 ```
 
-The script automatically fetches the latest version.
+The script always pulls the current release.
 
-##  Security Best Practices
+## Security Best Practices
 
-When using remote install scripts:
+Remote install scripts are convenient but pose risks. Follow these guidelines:
 
-✅ **DO:**
-- Always use HTTPS for downloads
-- Manually inspect scripts in production environments
-- Verify checksums before execution
-- Audit scripts before distributing
-- Use the safe method for sensitive systems
+✅ **Do:**
+- Use **HTTPS** for all downloads.
+- Inspect the script before running it, especially in production.
+- Verify checksums or signatures when available.
+- Audit source code before redistribution.
+- Prefer the safe method on critical systems.
 
-❌ **DON'T:**
-- Run untrusted scripts as root
-- Use HTTP for script downloads
-- Skip security verification steps
-- Download from unknown sources
+❌ **Don’t:**
+- Run untrusted code as root.
+- Download via HTTP or from unknown hosts.
+- Ignore verification steps.
 
-### Security Pattern Used
+### Example Secure Pattern
 
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Verify root
+# require root
 if [ "$(id -u)" -ne 0 ]; then
     echo "Please run with sudo."
     exit 1
 fi
 
-# Download with integrity check
+# download payload with integrity check
 TMP="/tmp/eminstaller.py"
 curl -sL "$RAW_URL" -o "$TMP"
 
-# Verify checksum
+# checksum verification
 DOWNLOADED_SHA=$(sha256sum "$TMP" | awk '{print $1}')
 if [ "$DOWNLOADED_SHA" != "$EXPECTED_SHA" ]; then
     echo "Checksum mismatch!"
     exit 1
 fi
 
-# Execute
+# execute
 python3 "$TMP"
 ```
 
 
-##  Design Philosophy
+## Design Philosophy
 
-EMInstaller is built on these core principles:
+Core guiding principles:
 
-- **Minimal** - Only essential functionality
-- **Transparent** - Clear and understandable code
-- **Auditable** - Easy to review and verify
-- **Deterministic** - Consistent, predictable behavior
-- **Secure by Default** - Security-first approach
+- **Minimal** – Keep functionality focused.
+- **Transparent** – Code should be easy to read and follow.
+- **Auditable** – Anyone should be able to verify behavior.
+- **Deterministic** – Same inputs yield the same results.
+- **Secure by default** – Safety prioritized over convenience.
 
-> If an install script cannot be easily read and understood, it should not be trusted.
+> If you can’t quickly understand an install script, don’t run it.
 
-## ⚠️ Important Notice
+##### ⚠️ Important Notice
 
-Running scripts via piping to bash carries inherent security risks:
+Piping remote content directly into `bash` is inherently risky:
 
 ```bash
-curl | bash
+curl https://example.com/install | bash
 ```
 
-**Only execute installers from trusted, verified sources.**
-
-Review the script before execution whenever possible. Use the safe method for production deployments.
+Only do this when you trust the source and have reviewed the code. In sensitive environments, use the safe download‑and‑inspect method.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please ensure any changes:
+Contributions are appreciated! When submitting changes:
 
-- Maintain security best practices
-- Include comprehensive error handling
-- Follow the existing code style
-- Document all changes
+- Preserve security practices.
+- Add robust error handling.
+- Follow the project's coding style.
+- Update documentation accordingly.
 
 ## 📄 License
 
-EMInstaller is provided as-is for Arch Linux installation purposes.
+This project is provided **as‑is** for Arch Linux installation tasks. See LICENSE for details.
 
 ## 🆘 Support
 
-For issues, questions, or documentation clarifications:
+Need help? Try the following:
 
-1. Check the [online documentation](https://imemix.github.io/documentation.html)
-2. Review the [FAQ section](#faq) below
-3. Open an issue on GitHub
+1. Consult the [online documentation](https://imemix.github.io/documentation.html).
+2. Refer to the FAQ below.
+3. Open an issue in the GitHub repository.
 
 ## ❓ FAQ
 
-**Q: Is it safe to pipe the script directly to bash?**
-A: While we implement security best practices, the recommended safe method is to download and inspect first. See [Safe Method](https://imemix.github.io/documentation.html#safe-method).
+**Q: Is it safe to pipe the installer directly to bash?**  
+A: For production use, download and review first. See the [Safe Method](https://imemix.github.io/documentation.html#safe-method).
 
-**Q: What if the download fails?**
-A: The script uses `set -euo pipefail`, which will exit on any error. Check your internet connection and try again.
+**Q: What happens if the download fails?**  
+A: The script exits immediately because of `set -euo pipefail`. Verify network connectivity and retry.
 
-**Q: Can I use this on distributions other than Arch?**
-A: EMInstaller is designed for Arch Linux. Compatibility with derivatives is not guaranteed.
+**Q: Will this work on non‑Arch distributions?**  
+A: It targets Arch Linux; other distros are not officially supported.
 
-**Q: Can I run the installer offline?**
-A: No, EMInstaller requires internet connectivity to download dependencies and the main payload.
+**Q: Can I run the installer offline?**  
+A: No. It requires internet access to fetch dependencies and payloads.
 
 ---
 
