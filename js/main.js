@@ -19,11 +19,15 @@ document.addEventListener("DOMContentLoaded", () => {
     let stepIndex = 0;
 
     const interval = setInterval(() => {
-        percent += 5;
-        progress_bar.style.width = percent;
-        progress_text.textContent = percent + "%";
-        if (stepIndex < steps.length && percent % 15 === 0) {
+        
+        percent = Math.min(percent + 5, 100);
 
+        
+        progress_bar.style.width = percent + "%";
+        progress_text.textContent = percent + "%";
+
+        
+        if (stepIndex < steps.length && percent % 15 === 0) {
             log.textContent += "\n" + steps[stepIndex++];
             log.scrollTop = log.scrollHeight;
         }

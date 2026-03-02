@@ -27,7 +27,12 @@
 </nav>
 
 <div class="docs-wrapper">
-    <aside class="docs-sidebar">
+    <button class="hamburger-menu" id="hamburgerBtn" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <aside class="docs-sidebar" id="docsSidebar">
         <nav class="toc">
             <h3>Contents</h3>
             <ul>
@@ -96,42 +101,69 @@
 
         <section id="what-does">
             <h2>What the Script Does</h2>
-            <p>A secure install script follows best practices:</p>
+            <p>EMInstaller follows security best practices by using strict mode:</p>
             <div class="code-block">
                 <pre><code>set -euo pipefail</code></pre>
             </div>
             <p>This enables:</p>
             <ul>
-                <li><strong>-e:</strong> Exit immediately on error</li>
-                <li><strong>-u:</strong> Prevent undefined variables from being used</li>
-                <li><strong>-o pipefail:</strong> Fail if any pipe step fails</li>
+                <li><strong>-e:</strong> Exit immediately if any command fails</li>
+                <li><strong>-u:</strong> Prevent undefined variables from being used silently</li>
+                <li><strong>-o pipefail:</strong> Fail if any command in a pipeline fails</li>
             </ul>
 
-            <h3>Typical Installation Flow</h3>
+            <h3>Detailed Installation Flow</h3>
             <ol>
-                <li>Verify running with root privileges</li>
-                <li>Install required dependencies</li>
-                <li>Download main installer</li>
-                <li>Execute installer with Python</li>
+                <li><strong>Privilege Check:</strong> Verifies the script is running with root privileges (required for system package installation)</li>
+                <li><strong>Dependency Installation:</strong> Installs required system packages like curl, bash, and Python</li>
+                <li><strong>Environment Setup:</strong> Configures necessary environment variables and paths</li>
+                <li><strong>Main Installer Download:</strong> Fetches the latest installer payload using curl</li>
+                <li><strong>Execution:</strong> Launches the installer with Python, passing all necessary arguments</li>
+                <li><strong>Cleanup:</strong> Removes temporary files and provides status feedback</li>
             </ol>
 
-
+            <h3>Error Handling</h3>
+            <p>If any step fails, the script will:</p>
+            <ul>
+                <li>Stop execution immediately</li>
+                <li>Display the error message for troubleshooting</li>
+                <li>Exit with a non-zero status code</li>
+                <li>Prevent partial or incomplete installations</li>
+            </ul>
         </section>
 
         <section id="requirements">
             <h2>Requirements</h2>
             <p>EMInstaller requires the following on your system:</p>
+            
+            <h3>Operating System</h3>
             <ul>
-                <li>Arch Linux (or compatible distribution)</li>
-                <li><code>curl</code> - for downloading files</li>
-                <li><code>bash</code> - shell environment</li>
-                <li><code>python3</code> - Python interpreter</li>
+                <li>Arch Linux or compatible distributions (Manjaro, EndeavourOS, etc.)</li>
+                <li>Systems with pacman package manager support</li>
             </ul>
+
+            <h3>Required Tools</h3>
+            <ul>
+                <li><code>curl</code> - for downloading files from the internet</li>
+                <li><code>bash</code> - shell environment (usually pre-installed)</li>
+                <li><code>python3</code> - Python 3 interpreter for running the main installer</li>
+                <li><code>sudo</code> - required for root privilege escalation</li>
+            </ul>
+
+            <h3>System Requirements</h3>
+            <ul>
+                <li>Minimum 2GB RAM recommended</li>
+                <li>Root or sudo access required</li>
+                <li>Network connectivity for downloads</li>
+                <li>At least 5GB free disk space</li>
+            </ul>
+
             <p>Install missing dependencies with:</p>
             <div class="code-block">
-                <pre><code>sudo pacman -S curl python</code></pre>
+                <pre><code>sudo pacman -Sy curl python base-devel</code></pre>
                 <button class="copy-code-btn" onclick="copyCode(this)">Copy</button>
             </div>
+            <p>The <code>-Sy</code> flag refreshes the package database before installation.</p>
         </section>
 
         <section id="testing">
@@ -178,6 +210,42 @@
         </section>
 
         <section id="advanced">
+            <h2>Advanced Usage</h2>
+            
+            <h3>Environment Variables</h3>
+            <p>Control installer behavior with environment variables:</p>
+            <div class="code-block">
+                <pre><code>INSTALLER_URL="https://custom.source/installer" sudo bash install
+INSTALLER_DEBUG=1 sudo bash install</code></pre>
+            </div>
+            <ul>
+                <li><strong>INSTALLER_URL:</strong> Override the default installer source URL</li>
+                <li><strong>INSTALLER_DEBUG:</strong> Enable verbose output for troubleshooting</li>
+            </ul>
+
+            <h3>Custom Configuration</h3>
+            <p>Pass custom arguments to the main installer:</p>
+            <div class="code-block">
+                <pre><code>sudo bash install --config /path/to/config.yml
+sudo bash install --skip-validation</code></pre>
+            </div>
+            <p>See the main installer documentation for available flags and options.</p>
+
+            <h3>Offline Installation</h3>
+            <p>For systems without internet access, download the installer first:</p>
+            <div class="code-block">
+                <pre><code>curl -O https://imemix.github.io/install
+curl -O https://imemix.github.io/eminstaller.py
+# Transfer both files to target system
+sudo bash install --offline</code></pre>
+            </div>
+
+            <h3>Dry Run (Simulation)</h3>
+            <p>Preview installation steps without making changes:</p>
+            <div class="code-block">
+                <pre><code>sudo bash install --dry-run</code></pre>
+            </div>
+            <p>This is useful for testing in production environments before actual deployment.</p>
 
             <h3>Security Notice</h3>
             <div class="warning-box">
@@ -186,7 +254,7 @@
                     <pre><code>curl | bash</code></pre>
                 </div>
                 <p><strong>Only execute installers from trusted, verified sources.</strong></p>
-                <p>Review the script before execution whenever possible.</p>
+                <p>Review the script before execution whenever possible, or use the recommended safe method in the documentation above.</p>
             </div>
         </section>
 
@@ -227,6 +295,26 @@ function copyCode(button) {
         setTimeout(() => {
             button.textContent = originalText;
         }, 2000);
+    });
+}
+
+// Hamburger menu toggle
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const docsSidebar = document.getElementById('docsSidebar');
+
+if (hamburgerBtn) {
+    hamburgerBtn.addEventListener('click', () => {
+        docsSidebar.classList.toggle('open');
+        hamburgerBtn.classList.toggle('active');
+    });
+
+    // Close menu when a link is clicked
+    const tocLinks = docsSidebar.querySelectorAll('.toc a');
+    tocLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            docsSidebar.classList.remove('open');
+            hamburgerBtn.classList.remove('active');
+        });
     });
 }
 </script>
