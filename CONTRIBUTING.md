@@ -11,6 +11,28 @@ EMIN — EMInstaller
 
 Thank you for your interest in contributing.
 
+---
+
+# [MENU] Navigation
+
+- [Safety First](#-safety-first)
+- [Project Philosophy](#-project-philosophy)
+- [Repository Scope](#-repository-scope)
+- [Getting Started](#-getting-started)
+- [Testing Requirements](#test-testing-requirements-installer-changes)
+- [Code Style Guidelines](#tools-code-style-guidelines)
+- [Security Guidelines](#lock-security-guidelines)
+- [Package Management](#pkg-package-management-guidelines)
+- [Website & Documentation](#web-website--documentation-contributions)
+- [Disk Logic Rules](#-disk-logic-rules)
+- [Commit Messages](#-commit-message-guidelines)
+- [Pull Requests](#--pull-request-guidelines)
+- [What Won't Be Accepted](#x-what-will-not-be-accepted)
+- [Code of Conduct](#-code-of-conduct)
+- [Final Note](#-final-note)
+
+---
+
 This repository (`https://github.com/imemix/imemix.github.io`) serves two primary purposes:
 
 1\. It hosts the **EMInstaller** Arch Linux installation script (`eminstaller.py`).\
