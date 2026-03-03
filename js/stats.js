@@ -19,8 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
         license: document.querySelector('[data-stat="license"]'),
         installerStatus: document.getElementById("installer-status"),
         linesAdded: document.querySelector('[data-stat="lines-added"]'),
-        linesDeleted: document.querySelector('[data-stat="lines-deleted"]'),
-        commits: document.querySelector('[data-stat="commits"]')
+        linesDeleted: document.querySelector('[data-stat="lines-deleted"]')
     };
 
     const setAllStats = (value) => {
@@ -231,9 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (statEls.installerStatus && !rateLimitNoticeShown) {
                 statEls.installerStatus.textContent = "Working ✓";
             }
-            if (statEls.commits) {
-                statEls.commits.textContent = formatNumber(data.commits || 0);
-            }   
+            
             loadCodeFrequency();
         } catch (error) {
             if (!rateLimitNoticeShown) {
