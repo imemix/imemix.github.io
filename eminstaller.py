@@ -26,6 +26,7 @@ except ImportError:
 def curses_menu(stdscr, title, options):
     """Display a vertical menu and allow arrow-key movement."""
     curses.curs_set(0)  # Hide cursor
+    stdscr.keypad(True)
     current = 0
     stdscr.timeout(100)  # 100ms timeout - allows smooth input capture
     
@@ -83,6 +84,7 @@ def curses_menu(stdscr, title, options):
 def curses_input(stdscr, prompt, default="", password=False):
     """Prompt the user for text input."""
     curses.curs_set(1)  # Show cursor
+    stdscr.keypad(True)
     value = ""
     stdscr.timeout(100)  # 100ms timeout - allows smooth input capture
     
@@ -123,15 +125,24 @@ def curses_input(stdscr, prompt, default="", password=False):
         stdscr.refresh()
         
         try:
-            key = stdscr.getch()
-            if key == -1:  # Timeout, no key pressed
+            try:
+                key = stdscr.get_wch()
+            except curses.error:
+                # No key pressed during timeout
                 continue
-            if key in (ord('\n'), ord('\r')):
+
+            if key in ('\n', '\r') or key == curses.KEY_ENTER:
                 curses.curs_set(0)
                 return value if value else default
-            elif key == curses.KEY_BACKSPACE or key == 127:  # Backspace
+
+            if key in ('\b', '\x7f') or key in (curses.KEY_BACKSPACE, 8, 127):
                 value = value[:-1]
-            elif 32 <= key <= 126:  # Printable ASCII
+                continue
+
+            if isinstance(key, str):
+                if key.isprintable() and key not in ('\n', '\r', '\t'):
+                    value += key
+            elif isinstance(key, int) and 32 <= key <= 126:
                 value += chr(key)
         except KeyboardInterrupt:
             sys.exit(1)
@@ -149,6 +160,7 @@ def collect_configuration_curses():
 
     def _inner(stdscr):
         try:
+            stdscr.keypad(True)
             stdscr.timeout(100)  # 100ms timeout for smooth input capture
             # Show intro
             stdscr.erase()
