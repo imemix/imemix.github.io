@@ -148,16 +148,6 @@
         gap: 1.5rem;
     }
 
-    .footer-links {
-        flex-direction: column;
-        gap: 1rem;
-        justify-content: center;
-    }
-
-    .footer-links a {
-        padding: 0.5rem 0;
-    }
-
     .terminal-code {
         font-size: 0.85rem;
         padding: 1rem;
@@ -351,9 +341,6 @@
         gap: 1rem;
     }
 
-    .footer-links {
-        gap: 0.75rem;
-    }
 }
 
 
@@ -587,8 +574,4 @@
         gap: 0.75rem;
     }
 
-    .footer-links {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
 }
