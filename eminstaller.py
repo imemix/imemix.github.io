@@ -23,6 +23,40 @@ except ImportError:
     curses = None
 
 
+def _open_tty_streams():
+    """Return streams bound to /dev/tty when available for interactive prompts."""
+    tty_in = None
+    tty_out = None
+    try:
+        tty_in = open("/dev/tty", "r", encoding="utf-8", errors="ignore")
+    except OSError:
+        tty_in = sys.stdin
+
+    try:
+        tty_out = open("/dev/tty", "w", encoding="utf-8", errors="ignore")
+    except OSError:
+        tty_out = sys.stdout
+
+    return tty_in, tty_out
+
+
+def prompt_input(prompt):
+    """Read user input from /dev/tty (or fallback stdin) to avoid pipe EOF issues."""
+    tty_in, tty_out = _open_tty_streams()
+    tty_out.write(prompt)
+    tty_out.flush()
+    line = tty_in.readline()
+    if line == "":
+        raise EOFError("No interactive input available. Run from a real terminal or use --yes where possible.")
+    return line.rstrip("\n")
+
+
+def prompt_password(prompt):
+    """Read password from /dev/tty (or fallback) without echo."""
+    _, tty_out = _open_tty_streams()
+    return getpass.getpass(prompt, stream=tty_out)
+
+
 def curses_menu(stdscr, title, options):
     """Display a vertical menu and allow arrow-key movement."""
     curses.curs_set(0)  # Hide cursor
@@ -245,7 +279,7 @@ def _prompt_choice(prompt, options, default=None):
         for idx, opt in enumerate(options, start=1):
             console.print(f"  {idx}) {opt}")
         hint = f" [{default}]" if default else ""
-        raw = input(f"Select option{hint}: ").strip()
+        raw = prompt_input(f"Select option{hint}: ").strip()
         if not raw and default:
             raw = default
 
@@ -263,7 +297,7 @@ def _prompt_choice(prompt, options, default=None):
 def _prompt_yes_no(prompt, default=False):
     suffix = "Y/n" if default else "y/N"
     while True:
-        raw = input(f"{prompt} ({suffix}): ").strip().lower()
+        raw = prompt_input(f"{prompt} ({suffix}): ").strip().lower()
         if not raw:
             return default
         if raw in ("y", "yes"):
@@ -285,10 +319,10 @@ def collect_configuration_text():
     selected_disk = _prompt_choice("Select installation disk", disks, default="1")
     cfg['disk'] = selected_disk.split()[0]
 
-    cfg['hostname'] = input("Hostname [arch]: ").strip() or "arch"
-    cfg['username'] = input("Username [user]: ").strip() or "user"
-    cfg['userpass'] = getpass.getpass("User password: ")
-    cfg['rootpass'] = getpass.getpass("Root password: ")
+    cfg['hostname'] = prompt_input("Hostname [arch]: ").strip() or "arch"
+    cfg['username'] = prompt_input("Username [user]: ").strip() or "user"
+    cfg['userpass'] = prompt_password("User password: ")
+    cfg['rootpass'] = prompt_password("Root password: ")
 
     cfg['fs'] = _prompt_choice("Filesystem", ["ext4", "btrfs", "xfs"], default="1")
     cfg['use_luks'] = _prompt_yes_no("Enable LUKS Encryption?", default=False)
@@ -300,14 +334,14 @@ def collect_configuration_text():
         default="1",
     )
 
-    cfg['custom_packages_input'] = input("Additional packages (space-separated, optional): ").strip()
+    cfg['custom_packages_input'] = prompt_input("Additional packages (space-separated, optional): ").strip()
     cfg['gaming'] = _prompt_yes_no("Install Gaming Stack?", default=False)
     cfg['dev_tools'] = _prompt_yes_no("Install Dev Tools?", default=False)
     cfg['dotfiles'] = _prompt_yes_no("Install Dotfiles?", default=False)
     cfg['detected_gpu'] = detect_gpu()
 
-    cfg['timezone'] = input("Timezone [UTC]: ").strip() or "UTC"
-    cfg['language'] = input("Language Code [en_US]: ").strip() or "en_US"
+    cfg['timezone'] = prompt_input("Timezone [UTC]: ").strip() or "UTC"
+    cfg['language'] = prompt_input("Language Code [en_US]: ").strip() or "en_US"
     cfg['locale_encoding'] = _prompt_choice("Locale Encoding", ["UTF-8", "ISO-8859-1"], default="1")
     cfg['gpu'] = _prompt_choice("GPU Driver", ["none", "nvidia", "nvidia-legacy", "amd", "intel"], default="1")
     cfg['vm_graphics'] = _prompt_choice(
@@ -336,7 +370,7 @@ def ensure_tools(*names):
 console = Console()
 
 def banner(text="EMInstaller v1.1"):
-    ascii_art = f"""
+    ascii_art = rf"""
 [cyan]
     _______  _______    ________   _______ 
   //       \/       \\ /        \//   /   \
@@ -461,7 +495,7 @@ def print_summary(cfg, assume_yes=False):
     if not assume_yes:
         # Show a final warning/confirmation before proceeding
         console.print(f"[bold red]⚠️  WARNING: This will erase ALL data on {cfg['disk']}.[/bold red]")
-        response = input("[bold red]Type 'YES' to proceed or press Enter to cancel: [/bold red]")
+        response = prompt_input("Type 'YES' to proceed or press Enter to cancel: ")
         if response.upper() != "YES":
             console.print("[yellow]Installation cancelled.[/yellow]")
             sys.exit(0)
@@ -482,11 +516,16 @@ def main():
     args = parser.parse_args()
 
     # Use GUI for configuration unless explicitly disabled or not in a TTY
-    if args.no_gui or not sys.stdin.isatty() or not sys.stdout.isatty():
-        cfg = collect_configuration_text()
-    else:
-        cfg = collect_configuration_curses()
-    print_summary(cfg, assume_yes=args.yes)
+    try:
+        if args.no_gui or not sys.stdin.isatty() or not sys.stdout.isatty():
+            cfg = collect_configuration_text()
+        else:
+            cfg = collect_configuration_curses()
+        print_summary(cfg, assume_yes=args.yes)
+    except EOFError as e:
+        console.print(f"[red]Input error: {e}[/red]")
+        console.print("[yellow]Tip: run from a local terminal with a TTY, or avoid piping stdin into the installer process.[/yellow]")
+        sys.exit(1)
 
     
     # begin installation using values from cfg
