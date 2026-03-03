@@ -25,108 +25,184 @@ except ImportError:
 
 def curses_menu(stdscr, title, options):
     """Display a vertical menu and allow arrow-key movement."""
-    curses.curs_set(0)
+    curses.curs_set(0)  # Hide cursor
     current = 0
+    
     while True:
         stdscr.clear()
         h, w = stdscr.getmaxyx()
-        stdscr.addstr(1, 2, title, curses.A_BOLD)
+        
+        # Title
+        try:
+            stdscr.attron(curses.A_BOLD)
+            stdscr.addstr(1, 2, title)
+            stdscr.attroff(curses.A_BOLD)
+        except curses.error:
+            pass
+        
+        # Options
         for idx, opt in enumerate(options):
             y = 3 + idx
-            if idx == current:
-                stdscr.attron(curses.A_REVERSE)
-            stdscr.addstr(y, 4, str(opt))
-            if idx == current:
-                stdscr.attroff(curses.A_REVERSE)
+            if y < h - 1:  # Stay within bounds
+                if idx == current:
+                    try:
+                        stdscr.attron(curses.A_REVERSE)
+                        stdscr.addstr(y, 4, str(opt)[:w-6])
+                        stdscr.attroff(curses.A_REVERSE)
+                    except curses.error:
+                        pass
+                else:
+                    try:
+                        stdscr.addstr(y, 4, str(opt)[:w-6])
+                    except curses.error:
+                        pass
+        
+        # Help text
+        try:
+            stdscr.addstr(h-1, 2, "Use UP/DN arrows, press ENTER to select"[:w-4])
+        except curses.error:
+            pass
+        
         stdscr.refresh()
-        key = stdscr.getch()
-        if key in (curses.KEY_UP, ord('k')):
-            current = (current - 1) % len(options)
-        elif key in (curses.KEY_DOWN, ord('j')):
-            current = (current + 1) % len(options)
-        elif key in (curses.KEY_ENTER, ord('\n'), ord('\r')):
-            return options[current]
+        
+        try:
+            key = stdscr.getch()
+            if key in (curses.KEY_UP, ord('k')):
+                current = (current - 1) % len(options)
+            elif key in (curses.KEY_DOWN, ord('j')):
+                current = (current + 1) % len(options)
+            elif key in (curses.KEY_ENTER, ord('\n'), ord('\r'), 32):  # 32 = space
+                return options[current]
+        except KeyboardInterrupt:
+            sys.exit(1)
 
 
 def curses_input(stdscr, prompt, default="", password=False):
-    """Prompt the user for text input. Returns default when empty."""
-    curses.echo()
-    curses.curs_set(1)
-    stdscr.clear()
-    stdscr.addstr(1, 2, prompt)
-    stdscr.addstr(2, 2, f"({default}): " if default else "")
-    stdscr.refresh()
-    if password:
-        curses.noecho()
-    win = curses.newwin(1, 60, 2, 2 + (len(default) + 4 if default else 0))
-    value = win.getstr().decode()
-    curses.noecho()
-    curses.curs_set(0)
-    return value if value else default
+    """Prompt the user for text input."""
+    curses.curs_set(1)  # Show cursor
+    value = ""
+    
+    while True:
+        stdscr.clear()
+        h, w = stdscr.getmaxyx()
+        
+        # Display prompt
+        try:
+            stdscr.addstr(2, 2, prompt[:w-4])
+            default_text = f" (default: {default})" if default else ""
+            stdscr.addstr(3, 2, f"Enter value{default_text}:"[:w-4])
+            
+            # Show what user is typing (masked if password)
+            display_value = "*" * len(value) if password else value
+            stdscr.addstr(5, 2, f"> {display_value}"[:w-4])
+            
+            # Help text
+            stdscr.addstr(h-1, 2, "Press ENTER to confirm, CTRL+C to cancel"[:w-4])
+        except curses.error:
+            pass
+        
+        stdscr.refresh()
+        
+        try:
+            key = stdscr.getch()
+            if key in (ord('\n'), ord('\r')):
+                curses.curs_set(0)
+                return value if value else default
+            elif key == curses.KEY_BACKSPACE or key == 127:  # Backspace
+                value = value[:-1]
+            elif 32 <= key <= 126:  # Printable ASCII
+                value += chr(key)
+        except KeyboardInterrupt:
+            sys.exit(1)
 
 
 def curses_confirm(stdscr, prompt, default=False):
     """Yes/no confirmation via menu."""
     choice = curses_menu(stdscr, prompt, ["Yes", "No"])
-    if choice == "Yes":
-        return True
-    return False
+    return choice == "Yes"
 
-# wrapper to run the interactive configuration via curses
 
 def collect_configuration_curses():
     """Run the interactive setup using curses-based GUI."""
     cfg = {}
 
     def _inner(stdscr):
-        curses.curs_set(0)
-        banner()
-        stdscr.clear()
-        stdscr.addstr(1, 2, "EMInstaller - GUI Setup", curses.A_BOLD)
-        stdscr.addstr(3, 2, "(use arrow keys to move, Enter to select, type for text fields)")
-        stdscr.refresh()
-        time.sleep(1)
-
-        stdscr.clear()
-        stdscr.addstr(1,2,"Select a disk to install to:")
-        disks = get_available_disks()
-        if not disks:
-            console.print("[red]Error: No disks available[/red]")
+        try:
+            # Show intro
+            stdscr.clear()
+            try:
+                stdscr.attron(curses.A_BOLD)
+                stdscr.addstr(2, 2, "EMInstaller - GUI Setup")
+                stdscr.attroff(curses.A_BOLD)
+            except curses.error:
+                pass
+            try:
+                stdscr.addstr(4, 2, "Use arrow keys to move, Enter to select")
+                stdscr.addstr(5, 2, "Type to enter text, CTRL+C to cancel")
+            except curses.error:
+                pass
+            stdscr.refresh()
+            time.sleep(2)
+            
+            # Disk selection
+            disks = get_available_disks()
+            if not disks:
+                return {"error": "No disks available"}
+            disk = curses_menu(stdscr, "Select installation disk", disks)
+            cfg['disk'] = disk.split()[0]
+            
+            # Basic configuration
+            cfg['hostname'] = curses_input(stdscr, "Hostname", "arch")
+            cfg['username'] = curses_input(stdscr, "Username", "user")
+            cfg['userpass'] = curses_input(stdscr, "User password", "", password=True)
+            cfg['rootpass'] = curses_input(stdscr, "Root password", "", password=True)
+            
+            # System configuration
+            cfg['fs'] = curses_menu(stdscr, "Filesystem", ["ext4", "btrfs", "xfs"])
+            cfg['use_luks'] = curses_confirm(stdscr, "Enable LUKS Encryption?")
+            cfg['create_swap'] = curses_confirm(stdscr, "Create Swapfile?")
+            cfg['kernel'] = curses_menu(stdscr, "Kernel", ["linux", "linux-lts", "linux-zen"])
+            
+            # Desktop
+            cfg['desktop'] = curses_menu(stdscr, "Desktop Environment", ["cli-only", "gnome", "kde", "hyprland", "xfce", "i3"])
+            
+            # Custom packages
+            cfg['custom_packages_input'] = curses_input(stdscr, "Additional packages", "")
+            
+            # Optional features
+            cfg['gaming'] = curses_confirm(stdscr, "Install Gaming Stack?")
+            cfg['dev_tools'] = curses_confirm(stdscr, "Install Dev Tools?")
+            cfg['dotfiles'] = curses_confirm(stdscr, "Install Dotfiles?")
+            cfg['detected_gpu'] = detect_gpu()
+            
+            # Localization
+            cfg['timezone'] = curses_input(stdscr, "Timezone", "UTC")
+            cfg['language'] = curses_input(stdscr, "Language Code", "en_US")
+            cfg['locale_encoding'] = curses_menu(stdscr, "Locale Encoding", ["UTF-8", "ISO-8859-1"])
+            
+            # GPU/Virtualization
+            cfg['gpu'] = curses_menu(stdscr, "GPU Driver", ["none", "nvidia", "nvidia-legacy", "amd", "intel"])
+            cfg['vm_graphics'] = curses_menu(stdscr, "VM Graphics", ["none", "qemu", "vmware", "virtualbox", "hyper-v"])
+            
+        except KeyboardInterrupt:
             sys.exit(1)
-        disk = curses_menu(stdscr, "Available Disks", disks)
-        cfg['disk'] = disk.split()[0]
-        # basic configuration
-        cfg['hostname'] = curses_input(stdscr, "Hostname", "arch")
-        cfg['username'] = curses_input(stdscr, "Username", "user")
-        cfg['userpass'] = curses_input(stdscr, "Make a secure User password", password=True)
-        cfg['rootpass'] = curses_input(stdscr, "Make a secure Root password and write it down", password=True)
-        # system configuration
-        cfg['fs'] = curses_input(stdscr, "Filesystem (ext4/btrfs/xfs)", "ext4")
-        cfg['use_luks'] = curses_confirm(stdscr, "Enable LUKS Encryption?", False)
-        cfg['create_swap'] = curses_confirm(stdscr, "Create Swapfile?", True)
-        cfg['kernel'] = curses_input(stdscr, "Kernel (linux/linux-lts/linux-zen)", "linux")
-        # desktop
-        cfg['desktop'] = curses_menu(stdscr, "Desktop Environment", ["cli-only", "gnome", "kde", "hyprland", "xfce", "i3"])
-        # custom packages
-        pkg = curses_input(stdscr, "Additional packages (space-separated)", "")
-        cfg['custom_packages_input'] = pkg
-        # optional features
-        cfg['gaming'] = curses_confirm(stdscr, "Install Gaming Stack (Steam, Wine, Lutris)?", False)
-        cfg['dev_tools'] = curses_confirm(stdscr, "Install Development Tools (Git, Node, Python)?", False)
-        cfg['dotfiles'] = curses_confirm(stdscr, "Install Dotfiles?", False)
-        cfg['detected_gpu'] = detect_gpu()
-        # localization
-        cfg['timezone'] = curses_input(stdscr, "Timezone", "UTC")
-        cfg['language'] = curses_input(stdscr, "Language Code (e.g., en_US)", "en_US")
-        cfg['locale_encoding'] = curses_input(stdscr, "Locale Encoding (UTF-8/ISO-8859-1)", "UTF-8")
-        # gpu/virtualization
-        cfg['gpu'] = curses_menu(stdscr, "GPU Driver", ["none", "nvidia", "nvidia-legacy", "amd", "intel"])
-        cfg['vm_graphics'] = curses_menu(stdscr, "VM Graphics", ["none", "qemu", "vmware", "virtualbox", "hyper-v"])
+        except Exception as e:
+            cfg['error'] = str(e)
 
     if curses is None:
         console.print("[red]curses module not available, cannot run GUI mode[/red]")
         sys.exit(1)
-    curses.wrapper(_inner)
+    
+    try:
+        curses.wrapper(_inner)
+    except Exception as e:
+        console.print(f"[red]GUI error: {e}[/red]")
+        sys.exit(1)
+    
+    if cfg.get('error'):
+        console.print(f"[red]Error: {cfg['error']}[/red]")
+        sys.exit(1)
+    
     return cfg
 
 
@@ -245,155 +321,156 @@ def get_available_disks():
     except:
         return []
 
-def display_disks():
-    """Display available disks"""
-    disks = get_available_disks()
-    if not disks:
-        console.print("[yellow]No disks found[/yellow]")
-        return None
-    
-    console.print("[bold yellow]Available Disks:[/bold yellow]\n")
-    for i, disk in enumerate(disks, 1):
-        console.print(f"  {i}. {disk}")
-    console.print()
-    return disks
-
-def get_input_interactive(prompt_text, default=""):
-    """Get user input with default value from /dev/tty"""
-    if default:
-        full_prompt = f"  {prompt_text} ({default}): "
-    else:
-        full_prompt = f"  {prompt_text}: "
-    
-    try:
-        with open("/dev/tty", "r") as tty:
-            sys.stdout.write(full_prompt)
-            sys.stdout.flush()
-            user_input = tty.readline().strip()
-            return user_input if user_input else default
-    except:
-        console.print(full_prompt, end="")
-        user_input = input()
-        return user_input if user_input else default
-
-def get_disk_selection():
-    """Get disk selection from user"""
-    disks = display_disks()
-    if not disks:
-        console.print("[red]Error: No disks available[/red]")
-        sys.exit(1)
-    
-    while True:
-        try:
-            choice = get_input_interactive("Select disk number", "1")
-            choice_num = int(choice)
-            if 1 <= choice_num <= len(disks):
-                selected_disk = disks[choice_num - 1].split()[0]
-                console.print(f"[green]Selected: {selected_disk}[/green]\n")
-                return selected_disk
-            else:
-                console.print(f"[red]Invalid choice. Please select 1-{len(disks)}[/red]")
-        except ValueError:
-            console.print("[red]Invalid input. Please enter a number[/red]")
-
-def get_password_interactive(prompt_text):
-    try:
-        with open("/dev/tty", "w") as tty_out:
-            return getpass.getpass(prompt=f"  {prompt_text}: ", stream=tty_out)
-    except:
-        return getpass.getpass(prompt=f"  {prompt_text}: ")
-
-def confirm_interactive(prompt_text, default=False):
-    """Get yes/no confirmation from user from /dev/tty"""
-    default_str = "Y/n" if default else "y/N"
-    full_prompt = f"  {prompt_text} [{default_str}]: "
-    
-    try:
-        with open("/dev/tty", "r") as tty:
-            sys.stdout.write(full_prompt)
-            sys.stdout.flush()
-            response = tty.readline().strip().lower()
-            if response in ['y', 'yes']:
-                return True
-            elif response in ['n', 'no']:
-                return False
-            else:
-                return default
-    except:
-        console.print(full_prompt, end="")
-        response = input().lower()
-        if response in ['y', 'yes']:
-            return True
-        elif response in ['n', 'no']:
-            return False
-        else:
-            return default
-
-
-
-# Configuration helpers
+# ===== OLD INPUT SYSTEM (DEPRECATED - using GUI instead) =================
+# def display_disks():
+#     """Display available disks"""
+#     disks = get_available_disks()
+#     if not disks:
+#         console.print("[yellow]No disks found[/yellow]")
+#         return None
+#     
+#     console.print("[bold yellow]Available Disks:[/bold yellow]\n")
+#     for i, disk in enumerate(disks, 1):
+#         console.print(f"  {i}. {disk}")
+#     console.print()
+#     return disks
+# 
+# def get_input_interactive(prompt_text, default=""):
+#     """Get user input with default value from /dev/tty"""
+#     if default:
+#         full_prompt = f"  {prompt_text} ({default}): "
+#     else:
+#         full_prompt = f"  {prompt_text}: "
+#     
+#     try:
+#         with open("/dev/tty", "r") as tty:
+#             sys.stdout.write(full_prompt)
+#             sys.stdout.flush()
+#             user_input = tty.readline().strip()
+#             return user_input if user_input else default
+#     except:
+#         console.print(full_prompt, end="")
+#         user_input = input()
+#         return user_input if user_input else default
+# 
+# def get_disk_selection():
+#     """Get disk selection from user"""
+#     disks = display_disks()
+#     if not disks:
+#         console.print("[red]Error: No disks available[/red]")
+#         sys.exit(1)
+#     
+#     while True:
+#         try:
+#             choice = get_input_interactive("Select disk number", "1")
+#             choice_num = int(choice)
+#             if 1 <= choice_num <= len(disks):
+#                 selected_disk = disks[choice_num - 1].split()[0]
+#                 console.print(f"[green]Selected: {selected_disk}[/green]\n")
+#                 return selected_disk
+#             else:
+#                 console.print(f"[red]Invalid choice. Please select 1-{len(disks)}[/red]")
+#         except ValueError:
+#             console.print("[red]Invalid input. Please enter a number[/red]")
+# 
+# def get_password_interactive(prompt_text):
+#     try:
+#         with open("/dev/tty", "w") as tty_out:
+#             return getpass.getpass(prompt=f"  {prompt_text}: ", stream=tty_out)
+#     except:
+#         return getpass.getpass(prompt=f"  {prompt_text}: ")
+# 
+# def confirm_interactive(prompt_text, default=False):
+#     """Get yes/no confirmation from user from /dev/tty"""
+#     default_str = "Y/n" if default else "y/N"
+#     full_prompt = f"  {prompt_text} [{default_str}]: "
+#     
+#     try:
+#         with open("/dev/tty", "r") as tty:
+#             sys.stdout.write(full_prompt)
+#             sys.stdout.flush()
+#             response = tty.readline().strip().lower()
+#             if response in ['y', 'yes']:
+#                 return True
+#             elif response in ['n', 'no']:
+#                 return False
+#             else:
+#                 return default
+#     except:
+#         console.print(full_prompt, end="")
+#         response = input().lower()
+#         if response in ['y', 'yes']:
+#             return True
+#         elif response in ['n', 'no']:
+#             return False
+#         else:
+#             return default
+# =========================================================================
 
 
-def collect_configuration():
-    """Interactively prompt the user and return a configuration dictionary."""
-    banner()
-    console.print("\n[bold cyan]EMInstaller - Interactive Setup[/bold cyan]")
-    console.print("[cyan]Configure your Arch Linux installation.\n[/cyan]")
 
-    cfg = {}
-    console.print("[bold yellow]=== Disk Selection ===[/bold yellow]\n")
-    cfg['disk'] = get_disk_selection()
-
-    console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
-    cfg['hostname'] = get_input_interactive("Hostname", "arch")
-    cfg['username'] = get_input_interactive("Username", "user")
-    cfg['userpass'] = get_password_interactive("Make a secure User password")
-    cfg['rootpass'] = get_password_interactive("Make a secure Root password and write it down")
-
-    console.print("\n[bold yellow]=== System Configuration ===[/bold yellow]\n")
-    cfg['fs'] = get_input_interactive("Filesystem (ext4/btrfs/xfs)", "ext4")
-    cfg['use_luks'] = confirm_interactive("Enable LUKS Encryption?", False)
-    cfg['create_swap'] = confirm_interactive("Create Swapfile?", True)
-    cfg['kernel'] = get_input_interactive("Kernel (linux/linux-lts/linux-zen)", "linux")
-
-    console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
-    console.print("  Options: cli-only, gnome, kde, hyprland, xfce, i3")
-    cfg['desktop'] = get_input_interactive("Desktop Environment", "gnome")
-
-    console.print("\n[bold yellow]=== Custom Packages ===[/bold yellow]\n")
-    console.print("  Enter additional packages separated by spaces.")
-    console.print("  Example: firefox neovim htop docker\n")
-    cfg['custom_packages_input'] = get_input_interactive(
-        "Additional packages (leave blank for none)",
-        ""
-    )
-
-    console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
-    cfg['gaming'] = confirm_interactive("Install Gaming Stack (Steam, Wine, Lutris)?", False)
-    cfg['dev_tools'] = confirm_interactive("Install Development Tools (Git, Node, Python)?", False)
-    cfg['dotfiles'] = confirm_interactive("Install Dotfiles?", False)
-
-    cfg['detected_gpu'] = detect_gpu()
-    console.print("\n[bold yellow]=== Localization ===[/bold yellow]\n")
-    console.print("  Timezone Examples: UTC, America/New_York, Europe/London, Asia/Tokyo")
-    console.print("  Language Codes: en_US, de_DE, fr_FR, es_ES, ja_JP, zh_CN, etc.\n")
-    cfg['timezone'] = get_input_interactive("Timezone", "UTC")
-    cfg['language'] = get_input_interactive("Language Code (e.g., en_US)", "en_US")
-    cfg['locale_encoding'] = get_input_interactive("Locale Encoding (UTF-8/ISO-8859-1)", "UTF-8")
-
-    console.print("\n[bold yellow]=== GPU/Virtualization ===[/bold yellow]\n")
-    console.print("  GPU Options: none, nvidia, amd, intel")
-    console.print("  VM Graphics: qemu, vmware, virtualbox, hyper-v\n")
-    cfg['gpu'] = get_input_interactive(
-        "GPU Driver (none/nvidia/nvidia-legacy/amd/intel)",
-        cfg['detected_gpu'],
-    )
-    cfg['vm_graphics'] = get_input_interactive(
-        "VM Graphics (none/qemu/vmware/virtualbox/hyper-v)",
-        "none",
-    )
-
-    return cfg
+# ===== OLD CONFIGURATION SYSTEM (DEPRECATED - using GUI instead) ==========
+# def collect_configuration():
+#     """Interactively prompt the user and return a configuration dictionary."""
+#     banner()
+#     console.print("\n[bold cyan]EMInstaller - Interactive Setup[/bold cyan]")
+#     console.print("[cyan]Configure your Arch Linux installation.\n[/cyan]")
+# 
+#     cfg = {}
+#     console.print("[bold yellow]=== Disk Selection ===[/bold yellow]\n")
+#     cfg['disk'] = get_disk_selection()
+# 
+#     console.print("[bold yellow]=== Basic Configuration ===[/bold yellow]\n")
+#     cfg['hostname'] = get_input_interactive("Hostname", "arch")
+#     cfg['username'] = get_input_interactive("Username", "user")
+#     cfg['userpass'] = get_password_interactive("Make a secure User password")
+#     cfg['rootpass'] = get_password_interactive("Make a secure Root password and write it down")
+# 
+#     console.print("\n[bold yellow]=== System Configuration ===[/bold yellow]\n")
+#     cfg['fs'] = get_input_interactive("Filesystem (ext4/btrfs/xfs)", "ext4")
+#     cfg['use_luks'] = confirm_interactive("Enable LUKS Encryption?", False)
+#     cfg['create_swap'] = confirm_interactive("Create Swapfile?", True)
+#     cfg['kernel'] = get_input_interactive("Kernel (linux/linux-lts/linux-zen)", "linux")
+# 
+#     console.print("\n[bold yellow]=== Desktop Environment ===[/bold yellow]\n")
+#     console.print("  Options: cli-only, gnome, kde, hyprland, xfce, i3")
+#     cfg['desktop'] = get_input_interactive("Desktop Environment", "gnome")
+# 
+#     console.print("\n[bold yellow]=== Custom Packages ===[/bold yellow]\n")
+#     console.print("  Enter additional packages separated by spaces.")
+#     console.print("  Example: firefox neovim htop docker\n")
+#     cfg['custom_packages_input'] = get_input_interactive(
+#         "Additional packages (leave blank for none)",
+#         ""
+#     )
+# 
+#     console.print("\n[bold yellow]=== Optional Features ===[/bold yellow]\n")
+#     cfg['gaming'] = confirm_interactive("Install Gaming Stack (Steam, Wine, Lutris)?", False)
+#     cfg['dev_tools'] = confirm_interactive("Install Development Tools (Git, Node, Python)?", False)
+#     cfg['dotfiles'] = confirm_interactive("Install Dotfiles?", False)
+# 
+#     cfg['detected_gpu'] = detect_gpu()
+#     console.print("\n[bold yellow]=== Localization ===[/bold yellow]\n")
+#     console.print("  Timezone Examples: UTC, America/New_York, Europe/London, Asia/Tokyo")
+#     console.print("  Language Codes: en_US, de_DE, fr_FR, es_ES, ja_JP, zh_CN, etc.\n")
+#     cfg['timezone'] = get_input_interactive("Timezone", "UTC")
+#     cfg['language'] = get_input_interactive("Language Code (e.g., en_US)", "en_US")
+#     cfg['locale_encoding'] = get_input_interactive("Locale Encoding (UTF-8/ISO-8859-1)", "UTF-8")
+# 
+#     console.print("\n[bold yellow]=== GPU/Virtualization ===[/bold yellow]\n")
+#     console.print("  GPU Options: none, nvidia, amd, intel")
+#     console.print("  VM Graphics: qemu, vmware, virtualbox, hyper-v\n")
+#     cfg['gpu'] = get_input_interactive(
+#         "GPU Driver (none/nvidia/nvidia-legacy/amd/intel)",
+#         cfg['detected_gpu'],
+#     )
+#     cfg['vm_graphics'] = get_input_interactive(
+#         "VM Graphics (none/qemu/vmware/virtualbox/hyper-v)",
+#         "none",
+#     )
+# 
+#     return cfg
+# =========================================================================
 
 
 
@@ -423,12 +500,14 @@ def print_summary(cfg, assume_yes=False):
     for name, val in items:
         console.print(f"  [cyan]{name}:[/cyan] {val}")
     console.print()
-    if not confirm_interactive(
-        f"[bold red]⚠️  WARNING: This will erase ALL data on {cfg['disk']}. [red]Proceed?[/red]",
-        assume_yes,
-    ):
-        console.print("[yellow]Installation cancelled.[/yellow]")
-        sys.exit(0)
+    
+    if not assume_yes:
+        # Show a final warning/confirmation before proceeding
+        console.print(f"[bold red]⚠️  WARNING: This will erase ALL data on {cfg['disk']}.[/bold red]")
+        response = input("[bold red]Type 'YES' to proceed or press Enter to cancel: [/bold red]")
+        if response.upper() != "YES":
+            console.print("[yellow]Installation cancelled.[/yellow]")
+            sys.exit(0)
 
 
 # main entrypoint
@@ -442,13 +521,10 @@ def main():
 
     parser = argparse.ArgumentParser(description="EMInstaller - interactive Arch installer")
     parser.add_argument("-y", "--yes", action="store_true", help="Assume yes for all confirmations")
-    parser.add_argument("--gui", action="store_true", help="Use curses-based GUI for configuration")
     args = parser.parse_args()
 
-    if args.gui:
-        cfg = collect_configuration_curses()
-    else:
-        cfg = collect_configuration()
+    # Use GUI for configuration
+    cfg = collect_configuration_curses()
     print_summary(cfg, assume_yes=args.yes)
 
     
