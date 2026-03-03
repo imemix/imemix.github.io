@@ -35,7 +35,7 @@ EOF
 }
 
 banner(){
-    local subtitle="$1"
+    local subtitle="${1-}"
     if [ -z "$subtitle" ]; then
         subtitle="EMInstaller v${VERSION}"
     fi
