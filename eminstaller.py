@@ -8,7 +8,13 @@ import os
 import re
 import shutil
 from rich.console import Console
-from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
+from rich.progress import (
+    Progress,
+    BarColumn,
+    TextColumn,
+    TimeElapsedColumn,
+    SpinnerColumn,
+)
 
 # make sure we're running on linux as this script relies on /dev/tty, lsblk, parted, etc.
 def check_platform():
@@ -411,27 +417,60 @@ def run_command(cmd, description="", verbose=False):
         return False, "", str(e)
 
 def run_stage(stage_name, cmd, duration=3, verbose=False):
-    """Run a stage with a fake progress bar and execute its command.
-
-    The progress bar is purely aesthetic; the real work is done by the
-    subprocess call that follows. `verbose` will dump stdout when the
-    command succeeds.
-    """
+    
     console.print(f"\n[bold yellow]==> {stage_name}[/bold yellow]")
+    max_runtime_seconds = 300
+    stdout = ""
+    stderr = ""
+    timed_out = False
+
+    try:
+        process = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except Exception as e:
+        console.print(f"[yellow]⚠ {stage_name} warning: {e}[/yellow]")
+        return False
+
     with Progress(
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        "[progress.percentage]{task.percentage:>3.0f}%",
-        TimeRemainingColumn(),
+        SpinnerColumn(style="bright_cyan"),
+        TextColumn("[bold cyan]{task.description}"),
+        BarColumn(
+            bar_width=42,
+            complete_style="bold green",
+            finished_style="bright_green",
+            pulse_style="bright_blue",
+        ),
+        TimeElapsedColumn(),
+        transient=True,
+        expand=True,
         console=console,
     ) as progress:
-        task = progress.add_task(stage_name, total=100)
-        for _ in range(20):
-            progress.update(task, advance=5)
-            time.sleep(duration / 20)
+        task = progress.add_task(f"{stage_name}...", total=None)
+        start = time.monotonic()
 
-    # Execute the command
-    success, stdout, stderr = run_command(cmd, verbose=verbose)
+        while process.poll() is None:
+            if time.monotonic() - start > max_runtime_seconds:
+                timed_out = True
+                process.kill()
+                break
+            progress.update(task)
+            time.sleep(0.1)
+
+    if timed_out:
+        stderr = "Timeout"
+        success = False
+    else:
+        stdout, stderr = process.communicate()
+        success = process.returncode == 0
+
+    if verbose and stdout:
+        console.print(stdout)
+
     if success or "error" not in stderr.lower():
         console.print(f"[green]✓ {stage_name} completed[/green]")
         return True
