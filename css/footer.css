@@ -4,7 +4,8 @@
     border-top: 2px solid var(--primary-dark);
     color: #fff;
     padding: 3rem 1.5rem;
-    text-align: center;
+    display: flex;
+    align-items: center;
 }
 
 .footer .container {
