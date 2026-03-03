@@ -257,18 +257,30 @@ def collect_configuration_curses():
             cfg['error'] = str(e)
 
     if curses is None:
-        console.print("[red]curses module not available, cannot run GUI mode[/red]")
-        sys.exit(1)
-    
+        raise RuntimeError("curses module not available")
+
     try:
-        curses.wrapper(_inner)
+        if sys.stdin.isatty() and sys.stdout.isatty():
+            curses.wrapper(_inner)
+        else:
+            # If launched via a pipe, bind curses to the controlling terminal.
+            with open("/dev/tty", "r+", encoding="utf-8", errors="ignore") as tty:
+                saved_stdin = os.dup(0)
+                saved_stdout = os.dup(1)
+                try:
+                    os.dup2(tty.fileno(), 0)
+                    os.dup2(tty.fileno(), 1)
+                    curses.wrapper(_inner)
+                finally:
+                    os.dup2(saved_stdin, 0)
+                    os.dup2(saved_stdout, 1)
+                    os.close(saved_stdin)
+                    os.close(saved_stdout)
     except Exception as e:
-        console.print(f"[red]GUI error: {e}[/red]")
-        sys.exit(1)
-    
+        raise RuntimeError(f"GUI error: {e}")
+
     if cfg.get('error'):
-        console.print(f"[red]Error: {cfg['error']}[/red]")
-        sys.exit(1)
+        raise RuntimeError(cfg['error'])
     
     return cfg
 
@@ -515,12 +527,16 @@ def main():
     parser.add_argument("--no-gui", action="store_true", help="Use text prompts instead of curses GUI")
     args = parser.parse_args()
 
-    # Use GUI for configuration unless explicitly disabled or not in a TTY
+    # Prefer GUI by default; fall back to text mode only when GUI is unavailable.
     try:
-        if args.no_gui or not sys.stdin.isatty() or not sys.stdout.isatty():
+        if args.no_gui:
             cfg = collect_configuration_text()
         else:
-            cfg = collect_configuration_curses()
+            try:
+                cfg = collect_configuration_curses()
+            except RuntimeError as gui_error:
+                console.print(f"[yellow]GUI unavailable, falling back to text mode: {gui_error}[/yellow]")
+                cfg = collect_configuration_text()
         print_summary(cfg, assume_yes=args.yes)
     except EOFError as e:
         console.print(f"[red]Input error: {e}[/red]")

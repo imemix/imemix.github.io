@@ -114,7 +114,12 @@ fi
 
 info "Launching EMInstaller..."
 if command -v python3 >/dev/null 2>&1; then
-    python3 "$TMP_SCRIPT"
+    if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+        python3 "$TMP_SCRIPT" </dev/tty >/dev/tty 2>&1
+    else
+        warn "No /dev/tty available; running installer without interactive terminal binding."
+        python3 "$TMP_SCRIPT"
+    fi
 else
     die "python3 is not available to run the installer."
 fi
