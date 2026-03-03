@@ -24,6 +24,7 @@
     text-decoration: none;
     font-weight: 600;
     transition: color 0.3s ease;
+    text-decoration: wavy underline var(--text-primary);
 }
 
 .repo-link-style:hover {

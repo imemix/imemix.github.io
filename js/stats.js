@@ -19,13 +19,18 @@ document.addEventListener("DOMContentLoaded", () => {
         license: document.querySelector('[data-stat="license"]'),
         installerStatus: document.getElementById("installer-status"),
         linesAdded: document.querySelector('[data-stat="lines-added"]'),
-        linesDeleted: document.querySelector('[data-stat="lines-deleted"]')
+        linesDeleted: document.querySelector('[data-stat="lines-deleted"]'),
+        lastCommit: document.querySelector('[data-stat="last-commit"]')
     };
 
     const setAllStats = (value) => {
         Object.values(statEls).forEach((el) => {
             if (el) {
                 el.textContent = value;
+                if (el === statEls.lastCommit) {
+                    el.removeAttribute("href");
+                    el.removeAttribute("aria-label");
+                }
             }
         });
     };
@@ -52,6 +57,44 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (statEls.linesDeleted) {
             statEls.linesDeleted.textContent = deletedText;
+        }
+    };
+
+    const updateLastCommit = (isoDate, sha, url) => {
+        const lastCommitEl = statEls.lastCommit;
+        if (!lastCommitEl) {
+            return;
+        }
+
+        const resetLastCommit = (text = "--") => {
+            lastCommitEl.textContent = text;
+            lastCommitEl.removeAttribute("href");
+            lastCommitEl.removeAttribute("aria-label");
+        };
+
+        if (!isoDate) {
+            resetLastCommit();
+            return;
+        }
+
+        const formatted = formatUpdatedDate(isoDate);
+        if (formatted === "--") {
+            resetLastCommit();
+            return;
+        }
+
+        lastCommitEl.textContent = sha
+            ? `${formatted} (${sha.slice(0, 7)})`
+            : formatted;
+
+        if (url) {
+            lastCommitEl.setAttribute("href", url);
+            if (sha) {
+                lastCommitEl.setAttribute("aria-label", `View commit ${sha}`);
+            }
+        } else {
+            lastCommitEl.removeAttribute("href");
+            lastCommitEl.removeAttribute("aria-label");
         }
     };
 
@@ -112,6 +155,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const loadLatestCommitStats = async () => {
         try {
             updateLineStats("Loading latest...", "Loading latest...");
+            if (statEls.lastCommit) {
+                statEls.lastCommit.textContent = "Loading latest...";
+                statEls.lastCommit.removeAttribute("href");
+                statEls.lastCommit.removeAttribute("aria-label");
+            }
 
             const commitsResponse = await githubFetch(`https://api.github.com/repos/${repoOwner}/${repoName}/commits?per_page=1`);
             if (!commitsResponse.ok) {
@@ -121,6 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const commits = await commitsResponse.json();
             if (!Array.isArray(commits) || commits.length === 0 || !commits[0]?.url) {
                 updateLineStats("Checking...", "--");
+                updateLastCommit(null);
                 return;
             }
 
@@ -132,6 +181,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const commitData = await commitResponse.json();
             const stats = commitData?.stats;
 
+            const commitDate = commitData?.commit?.committer?.date || commitData?.commit?.author?.date;
+            const commitSha = commitData?.sha;
+            const commitUrl = commitData?.html_url;
+            updateLastCommit(commitDate, commitSha, commitUrl);
+
             if (stats) {
                 updateLineStats(`+${formatNumber(stats.additions || 0)}`, `-${formatNumber(stats.deletions || 0)}`);
             } else {
@@ -142,6 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 updateLineStats("Rate limited", "Rate limited");
             } else {
                 updateLineStats("--", "--");
+                updateLastCommit(null);
             }
         }
     };
@@ -240,4 +295,5 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     loadRepoStats();
+    loadLatestCommitStats();
 });
