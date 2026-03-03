@@ -85,8 +85,10 @@ def curses_input(stdscr, prompt, default="", password=False):
     """Prompt the user for text input."""
     curses.curs_set(1)  # Show cursor
     stdscr.keypad(True)
+    stdscr.nodelay(False)
     value = ""
-    stdscr.timeout(100)  # 100ms timeout - allows smooth input capture
+    input_x = 2
+    input_y = 5
     
     while True:
         stdscr.erase()
@@ -123,27 +125,27 @@ def curses_input(stdscr, prompt, default="", password=False):
             pass
         
         stdscr.refresh()
-        
-        try:
-            try:
-                key = stdscr.get_wch()
-            except curses.error:
-                # No key pressed during timeout
-                continue
 
-            if key in ('\n', '\r') or key == curses.KEY_ENTER:
+        try:
+            key = stdscr.getch()
+
+            if key in (curses.KEY_ENTER, 10, 13):
                 curses.curs_set(0)
                 return value if value else default
 
-            if key in ('\b', '\x7f') or key in (curses.KEY_BACKSPACE, 8, 127):
+            if key in (curses.KEY_BACKSPACE, 127, 8):
                 value = value[:-1]
                 continue
 
-            if isinstance(key, str):
-                if key.isprintable() and key not in ('\n', '\r', '\t'):
-                    value += key
-            elif isinstance(key, int) and 32 <= key <= 126:
-                value += chr(key)
+            if key == curses.KEY_RESIZE:
+                continue
+
+            if 32 <= key <= 126:
+                # keep input within visible field
+                h, w = stdscr.getmaxyx()
+                input_width = min(50, max(1, w - 4))
+                if len(value) < input_width:
+                    value += chr(key)
         except KeyboardInterrupt:
             sys.exit(1)
 
@@ -160,6 +162,8 @@ def collect_configuration_curses():
 
     def _inner(stdscr):
         try:
+            curses.cbreak()
+            curses.noecho()
             stdscr.keypad(True)
             stdscr.timeout(100)  # 100ms timeout for smooth input capture
             # Show intro
