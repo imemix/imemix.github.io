@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updated: document.querySelector('[data-stat="updated"]'),
         license: document.querySelector('[data-stat="license"]'),
         installerStatus: document.getElementById("installer-status"),
-        pythonCode: document.querySelector('[data-stat="python-code"]')
+        commitactivity: document.querySelector('[data-stat="commit-activity"]')
     };
 
     const setAllStats = (value) => {
@@ -108,8 +108,25 @@ document.addEventListener("DOMContentLoaded", () => {
             if (statEls.installerStatus) {
                 statEls.installerStatus.textContent = "Working ✓";
             }
-            if (statEls.pythonCode) {
-                statEls.pythonCode.textContent = formatNumber(data.size || 0) + " - Slitherly lines of code";
+            if (statEls.commitactivity) {
+                try {
+                    const commitsResponse = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/stats/commit_activity`);
+                    if (commitsResponse.ok) {
+                        const commitsData = await commitsResponse.json();
+                        if (Array.isArray(commitsData) && commitsData.length > 0) {
+                            const totalCommits = commitsData.reduce((sum, week) => sum + week.total, 0);
+                            statEls.commitactivity.textContent = formatNumber(totalCommits);
+                        } else {
+                            statEls.commitactivity.textContent = "--";
+                        }
+                    } else if (commitsResponse.status === 202) {
+                        statEls.commitactivity.textContent = "Loading...";
+                    } else {
+                        statEls.commitactivity.textContent = "--";
+                    }
+                } catch (error) {
+                    statEls.commitactivity.textContent = "--";
+                }
             }
         } catch (error) {
             setAllStats("Unavailable");
