@@ -12,7 +12,7 @@
 }
 
 .repo-stat-card {
-    background-color: var(--surface-bg);
+    background-color: var(--background);
     border: 1px solid rgba(var(--primary-rgb), 0.5);
     border-radius: 12px;
     padding: 1.25rem;

@@ -10,24 +10,27 @@ document.addEventListener("DOMContentLoaded", () => {
         "[ OK ] Formatting filesystem",
         "[ OK ] Installing base system",
         "[ OK ] Installing kernel",
-        "[ OK ] Installing GPU drivers",
+        "[ OK ] Installing packages",
         "[ OK ] Installing desktop environment",
-        "[ OK ] Applying dotfiles",
+        "[ OK ] Configuring networkmanager",
+        "[ OK ] Installing GPU drivers",
+        "[ OK ] Setting up user accounts",
         "[ OK ] Finalizing installation"
     ];
+    
 
     let stepIndex = 0;
 
     const interval = setInterval(() => {
         
-        percent = Math.min(percent + 5, 100);
+        percent = Math.min(percent + 6, 100);
 
         
         progress_bar.style.width = percent + "%";
         progress_text.textContent = percent + "%";
 
         
-        if (stepIndex < steps.length && percent % 15 === 0) {
+        if (stepIndex < steps.length && percent % 6 === 0) {
             log.textContent += "\n" + steps[stepIndex++];
             log.scrollTop = log.scrollHeight;
         }
