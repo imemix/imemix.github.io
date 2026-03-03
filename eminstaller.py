@@ -27,7 +27,7 @@ def curses_menu(stdscr, title, options):
     """Display a vertical menu and allow arrow-key movement."""
     curses.curs_set(0)  # Hide cursor
     current = 0
-    stdscr.timeout(50)  # 50ms timeout to prevent flashing
+    stdscr.nodelay(True)  # Non-blocking input
     
     while True:
         stdscr.erase()
@@ -68,7 +68,8 @@ def curses_menu(stdscr, title, options):
         
         try:
             key = stdscr.getch()
-            if key == -1:  # Timeout, no key pressed
+            if key == -1:  # No key pressed
+                time.sleep(0.05)  # Small sleep to prevent CPU spin
                 continue
             if key in (curses.KEY_UP, ord('k')):
                 current = (current - 1) % len(options)
@@ -84,7 +85,7 @@ def curses_input(stdscr, prompt, default="", password=False):
     """Prompt the user for text input."""
     curses.curs_set(1)  # Show cursor
     value = ""
-    stdscr.timeout(50)  # 50ms timeout to prevent flashing
+    stdscr.nodelay(True)  # Non-blocking input
     
     while True:
         stdscr.erase()
@@ -109,7 +110,8 @@ def curses_input(stdscr, prompt, default="", password=False):
         
         try:
             key = stdscr.getch()
-            if key == -1:  # Timeout, no key pressed
+            if key == -1:  # No key pressed
+                time.sleep(0.05)  # Small sleep to prevent CPU spin
                 continue
             if key in (ord('\n'), ord('\r')):
                 curses.curs_set(0)
@@ -134,7 +136,7 @@ def collect_configuration_curses():
 
     def _inner(stdscr):
         try:
-            stdscr.timeout(50)  # Set timeout to prevent flashing
+            stdscr.nodelay(True)  # Set non-blocking input mode
             # Show intro
             stdscr.erase()
             try:
