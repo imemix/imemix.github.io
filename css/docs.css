@@ -3,6 +3,8 @@
 :root {
     --primary-color: #2563eb;
     --primary-dark: #1e40af;
+    --primary-rgb: 37, 99, 235;
+    --primary-dark-rgb: 30, 64, 175;
     --secondary-color: #10b981;
     --accent-color: #f59e0b;
     --dark-bg: #301B3F;
@@ -10,10 +12,12 @@
     --light-bg: #301B3F;
     --card-bg: #301B3F;
     --text-primary: #fff;
-    --text-secondary: #fff;
+    --text-secondary: #cbd5e1;
     --border-color: #301B3F;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+    --surface-bg: rgba(48, 27, 63, 0.55);
+    --surface-strong: #22122f;
 }
 body{
     background-color: var(--background);
@@ -26,7 +30,7 @@ body{
     max-width: 1400px;
     margin: 0 auto;
     padding: 3rem 1.5rem;
-    min-height: auto;
+    min-height: calc(100vh - 160px);
     position: relative;
 }
 
@@ -34,10 +38,12 @@ body{
 .hamburger-menu {
     display: none;
     flex-direction: column;
-    background-color: rgba(37, 99, 235, 0.15);
+    background-color: rgba(var(--primary-rgb), 0.15);
     border: 2px solid var(--primary-color);
     cursor: pointer;
     padding: 6px;
+    margin-top: 39px;
+    margin-right: 8px;
     width: 44px;
     height: 44px;
     position: fixed;
@@ -51,7 +57,7 @@ body{
 }
 
 .hamburger-menu:hover {
-    background-color: rgba(37, 99, 235, 0.25);
+    background-color: rgba(var(--primary-rgb), 0.25);
     border-color: var(--accent-color);
 }
 
@@ -80,6 +86,8 @@ body{
 /* SIDEBAR */
 .docs-sidebar {
     position: sticky;
+    margin-top: 50px;
+    margin-left: 9px;
     top: 80px;
     height: fit-content;
 }
@@ -116,13 +124,18 @@ body{
     border-radius: 6px;
     transition: all 0.2s ease;
     font-size: 0.95rem;
+    border: 1px solid transparent;
 }
 
 .toc a:hover {
-    background-color: var(--background);
+    background-color: rgba(var(--primary-rgb), 0.12);
     color: var(--primary-color);
-    border-left: 2px solid var(--primary-color);
-    padding-left: 0.6rem;
+    border-color: rgba(var(--primary-rgb), 0.5);
+}
+
+.toc a:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
 }
 
 /* MAIN CONTENT */
@@ -132,6 +145,10 @@ body{
     border-radius: 12px;
     padding: 3rem;
     box-shadow: var(--shadow-lg);
+}
+
+.docs-content section {
+    scroll-margin-top: 110px;
 }
 
 .docs-content section {
@@ -165,6 +182,7 @@ body{
     font-size: 1rem;
     line-height: 1.8;
     margin-bottom: 1rem;
+    max-width: 75ch;
 }
 
 .docs-content ul,
@@ -190,7 +208,7 @@ body{
 }
 
 .docs-content code {
-    background-color: var(--light-bg);
+    background-color: rgba(var(--primary-rgb), 0.16);
     color: var(--text-primary);
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
@@ -200,7 +218,7 @@ body{
 
 /* CODE BLOCKS */
 .code-block {
-    background-color: var(--primary-dark);
+    background-color: var(--surface-strong);
     color: var(--text-primary);
     padding: 1.5rem 1.5rem 1.5rem 1.5rem;
     border-radius: 8px;
@@ -230,13 +248,13 @@ body{
 }
 
 .code-block.warning {
-    background-color: #fef3c7;
-    border: 2px solid red;
-    color: var(--secondary-color);
+    background-color: rgba(127, 29, 29, 0.2);
+    border: 2px solid #ef4444;
+    color: #fecaca;
 }
 
 .code-block.warning code {
-    color: #92400e;
+    color: #fecaca;
 }
 
 /* COPY BUTTON */
@@ -245,7 +263,7 @@ body{
     top: 1rem;
     right: 1rem;
     background-color: rgba(255, 255, 255, 0.1);
-    color: #cbd5e1;
+    color: #e2e8f0;
     border: 1px solid rgba(255, 255, 255, 0.2);
     padding: 0.5rem 1rem;
     border-radius: 6px;
@@ -258,14 +276,14 @@ body{
 }
 
 .copy-code-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(var(--primary-rgb), 0.3);
+    border-color: rgba(var(--primary-rgb), 0.9);
 }
 
 /* TIP BOX */
 .tip {
-    background-color: var(--primary-color);
-    color: #0c4a6e;
+    background-color: rgba(var(--primary-rgb), 0.18);
+    color: var(--text-primary);
     padding: 1rem;
     border-left: 4px solid var(--accent-color);
     border-radius: 6px;
@@ -275,7 +293,7 @@ body{
 
 /* SECURITY CHECKLIST */
 .security-checklist {
-    background-color: var(--primary-dark);
+    background-color: rgba(16, 185, 129, 0.14);
     border-left: 4px solid var(--secondary-color);
     padding: 1.5rem;
     border-radius: 8px;
@@ -292,20 +310,20 @@ body{
 
 /* WARNING BOX */
 .warning-box {
-    background-color: #fee2e2;
-    border: 1px solid #fecaca;
+    background-color: rgba(127, 29, 29, 0.18);
+    border: 1px solid rgba(239, 68, 68, 0.55);
     border-radius: 8px;
     padding: 1.5rem;
     margin: 1.5rem 0;
 }
 
 .warning-box p {
-    color: #7f1d1d;
+    color: #fecaca;
     margin: 0.8rem 0;
 }
 
 .warning-box strong {
-    color: #991b1b;
+    color: #fee2e2;
 }
 
 /* RESPONSIVE - Tablet (1024px and below) */

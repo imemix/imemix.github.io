@@ -3,6 +3,8 @@
 :root {
     --primary-color: #2563eb;
     --primary-dark: #1e40af;
+    --primary-rgb: 37, 99, 235;
+    --primary-dark-rgb: 30, 64, 175;
     --secondary-color: #10b981;
     --accent-color: #f59e0b;
     --dark-bg: #301B3F;
@@ -10,10 +12,13 @@
     --light-bg: #301B3F;
     --card-bg: #301B3F;
     --text-primary: #fff;
-    --text-secondary: #fff;
+    --text-secondary: #cbd5e1;
     --border-color: #301B3F;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+    --surface-bg: rgba(48, 27, 63, 0.55);
+    --surface-strong: #22122f;
+    --radius: 12px;
 }
 
 * {
@@ -43,13 +48,14 @@ body {
 
 /* NAVBAR */
 .navbar {
-    background-color: var(--background);
+    background-color: rgba(21, 21, 21, 0.9);
     padding: 1rem 0;
     border-bottom: 1px solid var(--primary-color);
     position: sticky;
     top: 0;
     z-index: 1000;
     box-shadow: var(--shadow);
+    backdrop-filter: blur(8px);
 }
 
 .nav-container {
@@ -83,6 +89,7 @@ body {
     font-weight: 500;
     transition: color 0.3s ease;
     position: relative;
+    padding: 0.3rem 0.2rem;
 }
 
 .nav-link::after {
@@ -100,6 +107,10 @@ body {
     color: var(--primary-color);
 }
 
+.nav-link.active {
+    color: var(--primary-color);
+}
+
 .nav-link:hover::after {
     width: 100%;
 }
@@ -111,7 +122,9 @@ body {
     align-items: center;
     gap: 4rem;
     padding: 5rem 1.5rem;
-    background: var(--background)
+    background: var(--background);
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .hero-content h1 {
@@ -131,7 +144,7 @@ body {
 
 .hero-desc {
     font-size: 1.1rem;
-    color: #fff;
+    color: var(--text-secondary);
     margin-bottom: 2rem;
     line-height: 1.8;
 }
@@ -147,12 +160,14 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    display: inline-block;
 }
 
 .cta-button:hover {
     background-color: var(--primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 15px 40px rgba(var(--primary-rgb), 0.3);
 }
 
 /* HERO VISUAL */
@@ -164,7 +179,7 @@ body {
 .terminal-preview {
     width: 100%;
     max-width: 500px;
-    background-color: var(--primary-dark);
+    background-color: var(--surface-strong);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-lg);
@@ -172,7 +187,7 @@ body {
 }
 
 .terminal-bar {
-    background-color: var(--background);
+    background-color: rgba(0, 0, 0, 0.25);
     padding: 0.75rem 1rem;
     display: flex;
     gap: 0.75rem;
@@ -224,15 +239,15 @@ body {
 
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
 }
 
 .feature-card {
-    background-color: var(--primary-color);
+    background-color: var(--surface-bg);
     padding: 2rem;
     border-radius: 12px;
-    border: 2px solid var(--background);
+    border: 1px solid rgba(var(--primary-rgb), 0.5);
     text-align: center;
     transition: all 0.3s ease;
     
@@ -241,12 +256,13 @@ body {
 .feature-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
-    border-color: var(--background);
+    border-color: var(--primary-color);
 }
 
 .feature-icon {
     font-size: 2.5rem;
     margin-bottom: 1rem;
+    color: var(--primary-color);
 }
 
 .feature-card h3 {
@@ -264,11 +280,19 @@ body {
 /* INSTALL SECTION */
 .install-section {
     padding: 5rem 1.5rem;
-    background: var(--background)
+    background: var(--background);
+}
+
+.small-print {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-top: -1.8rem;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
 }
 
 .terminal-container {
-    background-color: var(--primary-color);
+    background-color: var(--surface-strong);
     border: 1px solid var(--primary-color);
     border-radius: 12px;
     overflow: hidden;
@@ -296,7 +320,7 @@ body {
 }
 
 .boot-log {
-    background-color: var(--primary-color);
+    background-color: var(--surface-strong);
     color: var(--text-primary);
     padding: 1.5rem;
     font-family: 'JetBrains Mono', monospace;
@@ -314,7 +338,7 @@ body {
 }
 
 .boot-log::-webkit-scrollbar-track {
-    background: var(--primary-color);
+    background: var(--surface-strong);
 }
 
 .boot-log::-webkit-scrollbar-thumb {
@@ -330,6 +354,7 @@ body {
 .progress-container {
     
     border-top: 1px solid var(--primary-color);
+    background-color: rgba(var(--primary-rgb), 0.08);
     padding: 1.5rem;
     display: flex;
     align-items: center;
@@ -344,7 +369,7 @@ body {
     border-radius: 4px;
     width: 0%;
     transition: width 0.4s ease;
-    box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.3);
 }
 
 .progress-text {
@@ -358,7 +383,7 @@ body {
 
 /* TERMINAL COMMAND */
 .terminal-command {
-    background-color: var(--background);
+    background-color: rgba(0, 0, 0, 0.25);
     color: var(--text-primary);
     padding: 1rem 1.5rem;
     font-family: 'JetBrains Mono', monospace;
@@ -389,7 +414,7 @@ body {
 .cta-section {
     padding: 5rem 1.5rem;
     background: var(--background);
-    border-top: 2px solid #1e40af;
+    border-top: 2px solid var(--primary-color);
     color: white;
     text-align: center;
 }
@@ -409,8 +434,8 @@ body {
 .code-block {
     display: inline-flex;
     align-items: center;
-    background-color: var(--primary-dark);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-color: var(--surface-strong);
+    border: 1px solid rgba(var(--primary-rgb), 0.5);
     border-radius: 8px;
     padding: 1rem 1.5rem;
     gap: 1rem;
@@ -423,9 +448,9 @@ body {
 }
 
 .copy-btn {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(var(--primary-rgb), 0.15);
     color: white;
-    border: 1px solid white;
+    border: 1px solid rgba(var(--primary-rgb), 0.8);
     padding: 0.6rem 1.2rem;
     border-radius: 6px;
     cursor: pointer;
@@ -435,7 +460,7 @@ body {
 }
 
 .copy-btn:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(var(--primary-rgb), 0.3);
     transform: translateY(-2px);
 }
 
@@ -462,13 +487,22 @@ body {
 }
 
 .footer-links a {
-    color: #cbd5e1;
+    color: var(--text-secondary);
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .footer-links a:hover {
     color: var(--primary-color);
+}
+
+.cta-button:focus-visible,
+.copy-btn:focus-visible,
+.nav-link:focus-visible,
+.footer-links a:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    border-radius: 6px;
 }
 
 
@@ -569,6 +603,12 @@ body {
 
     .install-section {
         padding: 2.5rem 1.25rem;
+    }
+
+    .small-print {
+        margin-top: -1.2rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
     }
 
     .cta-section {
@@ -716,6 +756,12 @@ body {
 
     .install-section {
         padding: 2rem 1rem;
+    }
+
+    .small-print {
+        margin-top: -0.9rem;
+        margin-bottom: 1.2rem;
+        font-size: 0.85rem;
     }
 
     .terminal-container {
@@ -919,6 +965,12 @@ body {
         padding: 1.5rem 0.75rem;
     }
 
+    .small-print {
+        margin-top: -0.8rem;
+        margin-bottom: 1rem;
+        font-size: 0.8rem;
+    }
+
     .terminal-container {
         border-radius: 8px;
         margin-top: 1rem;
@@ -967,7 +1019,7 @@ body {
 
     .cta-section {
         padding: 1.5rem 0.75rem;
-        border-top: 1px solid #1e40af;
+        border-top: 1px solid var(--primary-dark);
     }
 
     .cta-section h2 {
