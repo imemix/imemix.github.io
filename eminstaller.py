@@ -63,54 +63,6 @@ def prompt_password(prompt):
     return getpass.getpass(prompt, stream=tty_out)
 
 
-GUI_ASCII_ART = [
-    "_______  _______    ________   _______",
-    "//       \\/       \\\\ /        \\\\//   /   \\",
-    "//        /        //_/       ///        /",
-    "/        _/         //         /         /",
-    "\\________/\\__/__/__/ \\\\_______/\\__/_____/",
-    "EMIN — EMInstaller",
-]
-
-
-def draw_gui_ascii_art(stdscr):
-    """Render ASCII art panel on the right side when there is enough space."""
-    h, w = stdscr.getmaxyx()
-    if w < 80:
-        return
-
-    art_width = max(len(line) for line in GUI_ASCII_ART)
-    left_padding = 2
-    right_margin = 2
-    art_x = w - art_width - right_margin
-    if art_x < 40:
-        return
-
-    start_y = max(1, min(3, h - len(GUI_ASCII_ART) - 1))
-
-    for idx, line in enumerate(GUI_ASCII_ART):
-        y = start_y + idx
-        if y >= h - 1:
-            break
-        try:
-            if idx == len(GUI_ASCII_ART) - 1:
-                stdscr.attron(curses.A_BOLD)
-                stdscr.addstr(y, art_x, line[: max(0, w - art_x - 1)])
-                stdscr.attroff(curses.A_BOLD)
-            else:
-                stdscr.addstr(y, art_x, line[: max(0, w - art_x - 1)])
-        except curses.error:
-            pass
-
-    divider_x = max(left_padding + 30, art_x - 3)
-    if divider_x < w - 1:
-        for y in range(1, h - 1):
-            try:
-                stdscr.addstr(y, divider_x, "│")
-            except curses.error:
-                break
-
-
 def curses_menu(stdscr, title, options):
     """Display a vertical menu and allow arrow-key movement."""
     curses.curs_set(0)  # Hide cursor
@@ -122,7 +74,6 @@ def curses_menu(stdscr, title, options):
     while True:
         stdscr.erase()
         h, w = stdscr.getmaxyx()
-        draw_gui_ascii_art(stdscr)
         
         # Title
         try:
@@ -181,7 +132,6 @@ def curses_input(stdscr, prompt, default="", password=False):
     while True:
         stdscr.erase()
         h, w = stdscr.getmaxyx()
-        draw_gui_ascii_art(stdscr)
         input_width = min(50, max(1, w - 4))
         input_x = 2
         input_y = 5
@@ -253,7 +203,6 @@ def collect_configuration_curses():
             stdscr.timeout(100)  # 100ms timeout for smooth input capture
             # Show intro
             stdscr.erase()
-            draw_gui_ascii_art(stdscr)
             try:
                 stdscr.attron(curses.A_BOLD)
                 stdscr.addstr(2, 2, "EMInstaller - GUI Setup")
