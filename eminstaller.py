@@ -96,7 +96,7 @@ def curses_input(stdscr, prompt, default="", password=False):
             default_text = f" (default: {default})" if default else ""
             stdscr.addstr(3, 2, f"Enter value{default_text}:"[:w-4])
             
-            # Draw input field with underline
+            # Draw input field
             input_width = min(50, w - 4)
             input_x = 2
             input_y = 5
@@ -111,17 +111,12 @@ def curses_input(stdscr, prompt, default="", password=False):
             stdscr.addstr(input_y, input_x, padded_value[:input_width])
             stdscr.attroff(curses.A_REVERSE)
             
-            # Help text
-            stdscr.addstr(h-1, 2, "Press ENTER to confirm, CTRL+C to cancel"[:w-4])
-        except curses.error:
-            pass
-        
-        stdscr.refresh()
-        
-        # Now position cursor after setting up the screen
-        try:
+            # Position cursor right after the input text (only once)
             cursor_x = input_x + len(display_value)
             stdscr.move(input_y, min(cursor_x, input_x + input_width - 1))
+            
+            # Help text
+            stdscr.addstr(h-1, 2, "Press ENTER to confirm, CTRL+C to cancel"[:w-4])
         except curses.error:
             pass
         
