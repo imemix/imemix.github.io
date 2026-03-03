@@ -90,33 +90,38 @@ def curses_input(stdscr, prompt, default="", password=False):
         stdscr.erase()
         h, w = stdscr.getmaxyx()
         
-        # Display prompt and input box
+        # Display prompt and input field
         try:
             stdscr.addstr(2, 2, prompt[:w-4])
             default_text = f" (default: {default})" if default else ""
             stdscr.addstr(3, 2, f"Enter value{default_text}:"[:w-4])
             
-            # Draw input box with borders
-            box_x = 2
-            box_y = 5
-            box_width = min(50, w - 4)
-            
-            # Draw box borders
-            stdscr.addstr(box_y, box_x, "┌" + "─" * (box_width - 2) + "┐")
-            stdscr.addstr(box_y + 1, box_x, "│")
-            stdscr.addstr(box_y + 1, box_x + box_width - 1, "│")
-            stdscr.addstr(box_y + 2, box_x, "└" + "─" * (box_width - 2) + "┘")
+            # Draw input field with underline
+            input_width = min(50, w - 4)
+            input_x = 2
+            input_y = 5
             
             # Show what user is typing (masked if password)
             display_value = "*" * len(value) if password else value
-            stdscr.addstr(box_y + 1, box_x + 1, display_value[:box_width - 2])
+            # Pad the display value to fill the visible input width
+            padded_value = display_value.ljust(input_width)
             
-            # Position cursor right after the input text
-            cursor_x = min(box_x + 1 + len(display_value), box_x + box_width - 2)
-            stdscr.move(box_y + 1, cursor_x)
+            # Draw input field background with reverse video
+            stdscr.attron(curses.A_REVERSE)
+            stdscr.addstr(input_y, input_x, padded_value[:input_width])
+            stdscr.attroff(curses.A_REVERSE)
             
             # Help text
             stdscr.addstr(h-1, 2, "Press ENTER to confirm, CTRL+C to cancel"[:w-4])
+        except curses.error:
+            pass
+        
+        stdscr.refresh()
+        
+        # Now position cursor after setting up the screen
+        try:
+            cursor_x = input_x + len(display_value)
+            stdscr.move(input_y, min(cursor_x, input_x + input_width - 1))
         except curses.error:
             pass
         
