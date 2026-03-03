@@ -32,6 +32,18 @@ Options:
 EOF
 }
 
+clear_screen(){
+    if [ -t 1 ]; then
+        if command -v clear >/dev/null 2>&1; then
+            clear
+        else
+            printf "\033c"
+        fi
+    fi
+}
+
+clear_screen
+
 if [[ ${1:-} =~ ^(-h|--help)$ ]]; then
     usage
     exit 0
