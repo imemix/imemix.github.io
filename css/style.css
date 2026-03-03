@@ -456,6 +456,39 @@ body {
     line-height: 1.2;
 }
 
+.repo-commit-lines {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+}
+
+.repo-commit-note {
+    text-align: left;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 0.2rem;
+}
+
+.repo-commit-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+}
+
+.repo-commit-line-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.repo-commit-line-value {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
 .repo-code-style {
     margin: 15px auto;
     
@@ -565,7 +598,11 @@ body {
     .hero-content h1 {
         font-size: 3rem;
     }
-
+    .repo-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+    }
     .terminal-preview {
         max-width: 450px;
     }
@@ -654,7 +691,7 @@ body {
     .install-section {
         padding: 2.5rem 1.25rem;
     }
-
+    
     .repo-stats-section {
         padding: 2.5rem 1.25rem;
     }

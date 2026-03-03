@@ -49,7 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
         updated: document.querySelector('[data-stat="updated"]'),
         license: document.querySelector('[data-stat="license"]'),
         installerStatus: document.getElementById("installer-status"),
-        commitactivity: document.querySelector('[data-stat="commit-activity"]')
+        linesAdded: document.querySelector('[data-stat="lines-added"]'),
+        linesDeleted: document.querySelector('[data-stat="lines-deleted"]')
     };
 
     const setAllStats = (value) => {
@@ -74,6 +75,96 @@ document.addEventListener("DOMContentLoaded", () => {
             hour: "2-digit",
             minute: "2-digit"
         });
+    };
+
+    const updateLineStats = (addedText, deletedText) => {
+        if (statEls.linesAdded) {
+            statEls.linesAdded.textContent = addedText;
+        }
+        if (statEls.linesDeleted) {
+            statEls.linesDeleted.textContent = deletedText;
+        }
+    };
+
+    const loadLatestCommitStats = async () => {
+        try {
+            updateLineStats("Loading latest...", "Loading latest...");
+
+            const commitsResponse = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/commits?per_page=1`);
+            if (!commitsResponse.ok) {
+                throw new Error("Failed to fetch latest commit list" + ` (status: ${commitsResponse.status})`);
+            }
+
+            const commits = await commitsResponse.json();
+            if (!Array.isArray(commits) || commits.length === 0 || !commits[0]?.url) {
+                updateLineStats("--", "--");
+                return;
+            }
+
+            const commitResponse = await fetch(commits[0].url);
+            if (!commitResponse.ok) {
+                throw new Error("Failed to fetch commit stats" + ` (status: ${commitResponse.status})`);
+            }
+
+            const commitData = await commitResponse.json();
+            const stats = commitData?.stats;
+
+            if (stats) {
+                updateLineStats(`+${formatNumber(stats.additions || 0)}`, `-${formatNumber(stats.deletions || 0)}`);
+            } else {
+                updateLineStats("--", "--");
+            }
+        } catch (error) {
+            updateLineStats("--", "--");
+        }
+    };
+
+    const loadCodeFrequency = async (attempt = 0) => {
+        const maxAttempts = 5;
+        const retryDelay = 2000;
+
+        if (!statEls.linesAdded && !statEls.linesDeleted) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/stats/code_frequency`);
+
+            if (response.status === 202) {
+                updateLineStats("Loading...", "Loading...");
+                if (attempt < maxAttempts) {
+                    setTimeout(() => {
+                        loadCodeFrequency(attempt + 1);
+                    }, retryDelay * (attempt + 1));
+                } else {
+                    loadLatestCommitStats();
+                }
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch code frequency stats" + ` (status: ${response.status})`);
+            }
+
+            const codeFrequencyData = await response.json();
+
+            if (Array.isArray(codeFrequencyData) && codeFrequencyData.length > 0) {
+                const totals = codeFrequencyData.reduce((acc, week) => {
+                    if (!Array.isArray(week) || week.length < 3) {
+                        return acc;
+                    }
+                    acc.added += Math.max(0, week[1] || 0);
+                    acc.deleted += Math.abs(week[2] || 0);
+                    return acc;
+                }, { added: 0, deleted: 0 });
+
+                updateLineStats(`+${formatNumber(totals.added)}`, `-${formatNumber(totals.deleted)}`);
+            } else {
+                loadLatestCommitStats();
+            }
+        } catch (error) {
+            loadLatestCommitStats();
+        }
     };
 
     const loadRepoStats = async () => {
@@ -108,26 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (statEls.installerStatus) {
                 statEls.installerStatus.textContent = "Working ✓";
             }
-            if (statEls.commitactivity) {
-                try {
-                    const commitsResponse = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/stats/commit_activity`);
-                    if (commitsResponse.ok) {
-                        const commitsData = await commitsResponse.json();
-                        if (Array.isArray(commitsData) && commitsData.length > 0) {
-                            const totalCommits = commitsData.reduce((sum, week) => sum + week.total, 0);
-                            statEls.commitactivity.textContent = formatNumber(totalCommits);
-                        } else {
-                            statEls.commitactivity.textContent = "--";
-                        }
-                    } else if (commitsResponse.status === 202) {
-                        statEls.commitactivity.textContent = "Loading...";
-                    } else {
-                        statEls.commitactivity.textContent = "--";
-                    }
-                } catch (error) {
-                    statEls.commitactivity.textContent = "--";
-                }
-            }
+            loadCodeFrequency();
         } catch (error) {
             setAllStats("Unavailable");
         }
