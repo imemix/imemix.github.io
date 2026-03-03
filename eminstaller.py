@@ -98,7 +98,12 @@ def curses_input(stdscr, prompt, default="", password=False):
             
             # Show what user is typing (masked if password)
             display_value = "*" * len(value) if password else value
-            stdscr.addstr(5, 2, f"> {display_value}"[:w-4])
+            input_line = f"> {display_value}"
+            stdscr.addstr(5, 2, input_line[:w-4])
+            
+            # Position cursor right after the input text
+            cursor_x = min(2 + len(input_line), w - 1)
+            stdscr.move(5, cursor_x)
             
             # Help text
             stdscr.addstr(h-1, 2, "Press ENTER to confirm, CTRL+C to cancel"[:w-4])
