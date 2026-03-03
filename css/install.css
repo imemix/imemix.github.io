@@ -1,0 +1,128 @@
+/* INSTALL SECTION */
+.install-section {
+    padding: 5rem 1.5rem;
+    background: var(--background);
+}
+
+.small-print {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-top: -1.8rem;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+.terminal-container {
+    background-color: var(--surface-strong);
+    border: 1px solid var(--primary-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    margin-top: 2rem;
+}
+
+.terminal-header {
+    background: var(--background);
+    color: #e2e8f0;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+}
+
+.terminal-title {
+    font-weight: 600;
+}
+
+.terminal-stats {
+    color: #94a3b8;
+}
+
+.boot-log {
+    background-color: var(--surface-strong);
+    color: var(--text-primary);
+    padding: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    max-height: 200px;
+    overflow-y: auto;
+    border: none;
+    margin: 0;
+}
+
+.boot-log::-webkit-scrollbar {
+    width: 6px;
+}
+
+.boot-log::-webkit-scrollbar-track {
+    background: var(--surface-strong);
+}
+
+.boot-log::-webkit-scrollbar-thumb {
+    background: var(--background);
+    border-radius: 3px;
+}
+
+.boot-log::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* PROGRESS BAR */
+.progress-container {
+    border-top: 1px solid var(--primary-color);
+    background-color: rgba(var(--primary-rgb), 0.08);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.progress-bar {
+    height: 8px;
+    background: linear-gradient(90deg, #ef4444, #eab308, #22c55e);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.3);
+}
+
+.progress-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: #fff;
+    min-width: 40px;
+    text-align: right;
+    margin-left: auto;
+}
+
+/* TERMINAL COMMAND */
+.terminal-command {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: var(--text-primary);
+    padding: 1rem 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    border-top: 1px solid var(--background);
+}
+
+.prompt {
+    color: #06b6d4;
+    font-weight: 600;
+}
+
+.command {
+    color: var(--text-primary);
+}
+
+.cursor {
+    color: var(--text-primary);
+    animation: blink 1.2s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 49%, 100% { opacity: 1; }
+    50%, 99% { opacity: 0; }
+}

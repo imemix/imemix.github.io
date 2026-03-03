@@ -1,0 +1,594 @@
+@media (max-width: 1024px) {
+    .hero {
+        gap: 2.5rem;
+        padding: 4rem 1.5rem;
+    }
+
+    .hero-content h1 {
+        font-size: 3rem;
+    }
+    .repo-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+    .terminal-preview {
+        max-width: 450px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    :root {
+        --primary-color: #2563eb;
+    }
+
+    .hero {
+        grid-template-columns: 1fr;
+        padding: 2.5rem 1.25rem;
+        gap: 2rem;
+    }
+
+    .hero-content h1 {
+        font-size: 2.2rem;
+        line-height: 1.2;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .hero-desc {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .hero-visual {
+        margin-top: 1rem;
+    }
+
+    .terminal-preview {
+        max-width: 100%;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        margin-bottom: 0.1rem;
+    }
+
+    .nav-container {
+        padding: 0 1rem;
+    }
+
+    .nav-logo {
+        font-size: 1.3rem;
+    }
+
+    .nav-links {
+        gap: 1.2rem;
+    }
+
+    .nav-link {
+        font-size: 0.9rem;
+    }
+
+    .features {
+        padding: 2.5rem 1.25rem;
+    }
+
+    .features-grid {
+        gap: 1.5rem;
+    }
+
+    .feature-card {
+        padding: 1.5rem;
+    }
+
+    .feature-icon {
+        font-size: 2rem;
+    }
+
+    .feature-card h3 {
+        font-size: 1.1rem;
+    }
+
+    .feature-card p {
+        font-size: 0.9rem;
+    }
+
+    .install-section {
+        padding: 2.5rem 1.25rem;
+    }
+    
+    .repo-stats-section {
+        padding: 2.5rem 1.25rem;
+    }
+
+    .repo-stat-value {
+        font-size: 1.2rem;
+    }
+
+    .small-print {
+        margin-top: -1.2rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+    }
+
+    .cta-section {
+        padding: 2.5rem 1.25rem;
+    }
+
+    .cta-section h2 {
+        font-size: 2rem;
+    }
+
+    .cta-section p {
+        font-size: 1rem;
+    }
+
+    .code-block {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 0.8rem;
+    }
+
+    .code-block code {
+        font-size: 0.9rem;
+    }
+
+    .copy-btn {
+        width: 100%;
+        padding: 0.7rem 1rem;
+    }
+
+    .footer .container {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .footer-links {
+        flex-direction: column;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .footer-links a {
+        padding: 0.5rem 0;
+    }
+
+    .terminal-code {
+        font-size: 0.85rem;
+        padding: 1rem;
+    }
+
+    .boot-log {
+        font-size: 0.8rem;
+        padding: 1rem;
+        max-height: 150px;
+    }
+
+    .progress-text {
+        font-size: 0.85rem;
+    }
+}
+
+
+@media (max-width: 640px) {
+    .container {
+        padding: 0 1rem;
+    }
+
+    .navbar {
+        padding: 0.75rem 0;
+    }
+
+    .nav-container {
+        padding: 0 1rem;
+    }
+
+    .nav-logo {
+        font-size: 1.1rem;
+    }
+
+    .nav-links {
+        gap: 0.8rem;
+    }
+
+    .nav-link {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.6rem;
+    }
+
+    .hero {
+        padding: 2rem 1rem;
+        gap: 1.5rem;
+    }
+
+    .hero-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .hero-desc {
+        font-size: 0.95rem;
+    }
+
+    .cta-button {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+
+    .feature-card {
+        padding: 1.2rem;
+        border-radius: 10px;
+    }
+
+    .feature-icon {
+        font-size: 1.8rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .terminal-bar {
+        padding: 0.5rem 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+    }
+
+    .terminal-code {
+        font-size: 0.8rem;
+        padding: 0.75rem;
+    }
+
+    .install-section {
+        padding: 2rem 1rem;
+    }
+
+    .repo-stats-section {
+        padding: 2rem 1rem;
+    }
+
+    .repo-stat-card-wide {
+        grid-column: span 2;
+    }
+
+    .small-print {
+        margin-top: -0.9rem;
+        margin-bottom: 1.2rem;
+        font-size: 0.85rem;
+    }
+
+    .terminal-container {
+        border-radius: 10px;
+    }
+
+    .terminal-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .boot-log {
+        font-size: 0.75rem;
+        padding: 0.75rem;
+        max-height: 120px;
+        line-height: 1.6;
+    }
+
+    .progress-container {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+
+    .progress-text {
+        width: 100%;
+        text-align: right;
+        margin-left: 0;
+    }
+
+    .terminal-command {
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .cta-section {
+        padding: 2rem 1rem;
+    }
+
+    .cta-section h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .cta-section p {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .code-block {
+        flex-direction: column;
+        padding: 0.75rem;
+        gap: 0.75rem;
+        border-radius: 6px;
+    }
+
+    .code-block code {
+        font-size: 0.8rem;
+        letter-spacing: 0;
+    }
+
+    .copy-btn {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .footer {
+        padding: 2rem 1rem;
+    }
+
+    .footer .container {
+        gap: 1rem;
+    }
+
+    .footer-links {
+        gap: 0.75rem;
+    }
+}
+
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 0.75rem;
+    }
+
+    .navbar {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--primary-color);
+    }
+
+    .nav-container {
+        padding: 0 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .nav-logo {
+        font-size: 1rem;
+    }
+
+    .nav-links {
+        width: 100%;
+        gap: 0.5rem;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .nav-link {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .nav-link::after {
+        display: none;
+    }
+
+    .hero {
+        padding: 1.5rem 0.75rem;
+        gap: 1rem;
+    }
+
+    .hero-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .hero-desc {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .cta-button {
+        padding: 0.7rem 1.2rem;
+        font-size: 0.9rem;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .features {
+        padding: 1.5rem 0.75rem;
+        border-top: 1px solid var(--primary-color);
+        border-bottom: 1px solid var(--primary-color);
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .feature-card {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    .feature-icon {
+        font-size: 1.6rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .feature-card h3 {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .feature-card p {
+        font-size: 0.85rem;
+    }
+
+    .terminal-preview {
+        max-width: 100%;
+        border-radius: 8px;
+    }
+
+    .terminal-bar {
+        padding: 0.4rem 0.5rem;
+        gap: 0.4rem;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+    }
+
+    .terminal-code {
+        font-size: 0.75rem;
+        padding: 0.5rem;
+        line-height: 1.5;
+    }
+
+    .install-section {
+        padding: 1.5rem 0.75rem;
+    }
+
+    .repo-stats-section {
+        padding: 1.5rem 0.75rem;
+        border-top: 1px solid var(--primary-color);
+    }
+
+    .repo-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .repo-stat-value {
+        font-size: 1.15rem;
+    }
+
+    .small-print {
+        margin-top: -0.8rem;
+        margin-bottom: 1rem;
+        font-size: 0.8rem;
+    }
+
+    .terminal-container {
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+
+    .terminal-header {
+        flex-direction: column;
+        gap: 0.4rem;
+        padding: 0.6rem 0.75rem;
+        font-size: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .boot-log {
+        font-size: 0.7rem;
+        padding: 0.6rem;
+        max-height: 100px;
+        line-height: 1.5;
+    }
+
+    .progress-container {
+        flex-direction: column;
+        padding: 0.75rem;
+        gap: 0.5rem;
+        border-top: 1px solid var(--primary-color);
+    }
+
+    .progress-bar {
+        height: 6px;
+    }
+
+    .progress-text {
+        font-size: 0.75rem;
+        min-width: 35px;
+    }
+
+    .terminal-command {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.75rem;
+        border-top: 1px solid var(--background);
+    }
+
+    .prompt {
+        color: #06b6d4;
+    }
+
+    .cta-section {
+        padding: 1.5rem 0.75rem;
+        border-top: 1px solid var(--primary-dark);
+    }
+
+    .cta-section h2 {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .cta-section p {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .code-block {
+        flex-direction: column;
+        padding: 0.6rem;
+        gap: 0.6rem;
+        border-radius: 6px;
+        margin: 1rem 0;
+    }
+
+    .code-block code {
+        font-size: 0.75rem;
+        letter-spacing: 0;
+    }
+
+    .copy-btn {
+        width: 100%;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .footer {
+        padding: 1.5rem 0.75rem;
+        border-top: 1px solid var(--primary-dark);
+    }
+
+    .footer .container {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+
+    .footer-links {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}

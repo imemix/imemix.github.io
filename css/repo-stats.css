@@ -1,0 +1,85 @@
+/* REPO STATS */
+.repo-stats-section {
+    padding: 5rem 1.5rem;
+    background: var(--background);
+    border-top: 2px solid var(--primary-color);
+}
+
+.repo-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.repo-stat-card {
+    background-color: var(--surface-bg);
+    border: 1px solid rgba(var(--primary-rgb), 0.5);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.repo-link-style {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.repo-link-style:hover {
+    color: var(--primary-dark);
+}
+
+.repo-stat-card-wide {
+    grid-column: span 3;
+}
+
+.repo-stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+}
+
+.repo-stat-value {
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.repo-commit-lines {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+}
+
+.repo-commit-note {
+    text-align: left;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 0.2rem;
+}
+
+.repo-commit-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+}
+
+.repo-commit-line-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.repo-commit-line-value {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.repo-code-style {
+    margin: 15px auto;
+}
