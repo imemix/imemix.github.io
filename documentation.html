@@ -8,28 +8,32 @@
 EMIN — EMInstaller
 -->
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>EMInstaller - Documentation</title>
-<link rel="icon" type="image/x-icon" href="images/favicon.ico">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Official EMInstaller documentation covering install methods, safety practices, requirements, and advanced usage.">
-<meta name="keywords" content="EMInstaller docs, Arch Linux installer documentation, install guide, safe install, eminstaller.py">
-<meta name="author" content="EMInstaller">
-<meta name="robots" content="index, follow">
-<meta property="og:type" content="article">
-<meta property="og:site_name" content="EMInstaller">
-<meta property="og:title" content="EMInstaller - Documentation">
-<meta property="og:description" content="Learn how to install and use EMInstaller with secure and advanced setup options.">
-<meta property="og:url" content="https://imemix.github.io/documentation.html">
-<meta property="og:image" content="https://imemix.github.io/images/favicon.ico">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="EMInstaller - Documentation">
-<meta name="twitter:description" content="Official EMInstaller setup and usage documentation.">
-<meta name="twitter:image" content="https://imemix.github.io/images/favicon.ico">
-<link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/docs.css">
+
+    <meta charset="UTF-8">
+    <title>EMInstaller - Documentation</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Official EMInstaller documentation covering install methods, safety practices, requirements, and advanced usage.">
+    <meta name="keywords" content="EMInstaller docs, Arch Linux installer documentation, install guide, safe install, eminstaller.py">
+    <meta name="author" content="EMInstaller">
+    <meta name="robots" content="index, follow">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="EMInstaller">
+    <meta property="og:title" content="EMInstaller - Documentation">
+    <meta property="og:description" content="Learn how to install and use EMInstaller with secure and advanced setup options.">
+    <meta property="og:url" content="https://imemix.github.io/documentation.html">
+    <meta property="og:image" content="https://imemix.github.io/images/favicon.ico">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="EMInstaller - Documentation">
+    <meta name="twitter:description" content="Official EMInstaller setup and usage documentation.">
+    <meta name="twitter:image" content="https://imemix.github.io/images/favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/docs.css">
+
 </head>
+
 <body>
 
 <nav class="navbar">
@@ -40,15 +44,15 @@ EMIN — EMInstaller
                 </a>    
         </div>
         <div class="nav-links">
-            <a href="index.html" class="nav-link">Home</a>
             <a href="index.html#features" class="nav-link">Features</a>
+            <a href="index.html#install" class="nav-link">Install</a>
             <a href="#" class="nav-link active">Docs</a>
-            
+            <a href="stats.html" class="nav-link">Repo Stats</a>
         </div>
     </div>
 </nav>
 
-<div class="docs-wrapper">
+<section class="docs-wrapper">
     <button class="hamburger-menu" id="hamburgerBtn" aria-label="Toggle menu">
         <span></span>
         <span></span>
@@ -74,7 +78,6 @@ EMIN — EMInstaller
     </aside>
 
     <main class="docs-content">
-
         <section id="what-is">
             <h2>What Is EMInstaller?</h2>
             <p>EMInstaller is a comprehensive Bash script designed to streamline Arch Linux installation. It:</p>
@@ -349,7 +352,7 @@ sudo bash install --offline</code></pre>
         </section>
 
     </main>
-</div>
+</section>
 
 <footer class="footer">
     <div class="container">
@@ -362,38 +365,7 @@ sudo bash install --offline</code></pre>
     </div>
 </footer>
 
-<script>
-function copyCode(button) {
-    const codeBlock = button.previousElementSibling;
-    const code = codeBlock.textContent;
-    navigator.clipboard.writeText(code).then(() => {
-        const originalText = button.textContent;
-        button.textContent = 'Copied!';
-        setTimeout(() => {
-            button.textContent = originalText;
-        }, 2000);
-    });
-}
+<script src="js/docs.js"></script>
 
-// Hamburger menu toggle
-const hamburgerBtn = document.getElementById('hamburgerBtn');
-const docsSidebar = document.getElementById('docsSidebar');
-
-if (hamburgerBtn) {
-    hamburgerBtn.addEventListener('click', () => {
-        docsSidebar.classList.toggle('open');
-        hamburgerBtn.classList.toggle('active');
-    });
-
-    // Close menu when a link is clicked
-    const tocLinks = docsSidebar.querySelectorAll('.toc a');
-    tocLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            docsSidebar.classList.remove('open');
-            hamburgerBtn.classList.remove('active');
-        });
-    });
-}
-</script>
 </body>
 </html>

@@ -8,27 +8,31 @@
 EMIN — EMInstaller
 -->
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>EMInstaller - Arch Linux Terminal Installer</title>
-<link rel="icon" type="image/x-icon" href="images/favicon.ico">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="EMInstaller is an Arch Linux terminal installer with guided setup, multiple desktop options, and real-time install feedback.">
-<meta name="keywords" content="EMInstaller, Arch Linux installer, archinstall, terminal installer, GNOME, KDE, Hyprland, XFCE, i3">
-<meta name="author" content="EMInstaller">
-<meta name="robots" content="index, follow">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="EMInstaller">
-<meta property="og:title" content="EMInstaller - Arch Linux Terminal Installer">
-<meta property="og:description" content="Simplify Arch Linux installation with an intuitive terminal-based installer.">
-<meta property="og:url" content="https://imemix.github.io/">
-<meta property="og:image" content="https://imemix.github.io/images/favicon.ico">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="EMInstaller - Arch Linux Terminal Installer">
-<meta name="twitter:description" content="Simplify Arch Linux installation with an intuitive terminal-based installer.">
-<meta name="twitter:image" content="https://imemix.github.io/images/favicon.ico">
-<link rel="stylesheet" href="css/style.css">
+    
+    <meta charset="UTF-8">
+    <title>EMInstaller - Arch Linux Terminal Installer</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EMInstaller is an Arch Linux terminal installer with guided setup, multiple desktop options, and real-time install feedback.">
+    <meta name="keywords" content="EMInstaller, Arch Linux installer, archinstall, terminal installer, GNOME, KDE, Hyprland, XFCE, i3">
+    <meta name="author" content="EMInstaller">
+    <meta name="robots" content="index, follow">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="EMInstaller">
+    <meta property="og:title" content="EMInstaller - Arch Linux Terminal Installer">
+    <meta property="og:description" content="Simplify Arch Linux installation with an intuitive terminal-based installer.">
+    <meta property="og:url" content="https://imemix.github.io/">
+    <meta property="og:image" content="https://imemix.github.io/images/favicon.ico">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="EMInstaller - Arch Linux Terminal Installer">
+    <meta name="twitter:description" content="Simplify Arch Linux installation with an intuitive terminal-based installer.">
+    <meta name="twitter:image" content="https://imemix.github.io/images/favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+
 </head>
+
 <body>
 
 <nav class="navbar">
@@ -36,12 +40,13 @@ EMIN — EMInstaller
         <div class="nav-logo">
             <a href="index.html">
                 EMInstaller
-            </a>    
+            </a> 
         </div>
         <div class="nav-links">
             <a href="#features" class="nav-link">Features</a>
             <a href="#install" class="nav-link">Install</a>
             <a href="documentation.html" class="nav-link">Docs</a>
+            <a href="stats.html" class="nav-link">Repo Stats</a>
         </div>
     </div>
 </nav>
@@ -51,8 +56,8 @@ EMIN — EMInstaller
         <h1  class="hero-title">
             EMInstaller
         </h1>
-        <p class="hero-subtitle">The Ultimate Arch Linux Terminal Installer</p>
-        <p class="hero-desc">Simplify your Arch Linux installation with an intuitive command-line interface</p>
+        <p class="hero-subtitle">The ultimate Arch installer made easy with EMInstaller</p>
+        <p class="hero-desc">Simplify your Arch Linux installation with an intuitive user friendly graphical interface</p>
         <a href="https://imemix.github.io/#install" class="cta-button">Get Started</a>
     </div>
     <div class="hero-visual">
@@ -126,8 +131,6 @@ EMIN — EMInstaller
     </div>
 </section>
 
-
-
 <section class="cta-section">
     <div class="container">
         <h2>Ready to Install?</h2>
@@ -138,59 +141,7 @@ EMIN — EMInstaller
         </div>
     </div>
 </section>
-<section id="repo-stats" class="repo-stats-section">
-    <div class="container">
-        <h2 class="section-title">GitHub Repo Stats</h2>
-        <div class="repo-stats-grid">
-            <div class="repo-stat-card repo-stat-card-wide">
-                <p class="repo-stat-label">Repository</p>
-                <a class="repo-link-style" href="https://github.com/imemix/imemix.github.io" target="_blank">View on GitHub</a>
-            </div>
-            <div class="repo-stat-card">
-                <p class="repo-stat-label">Stars</p>
-                <p class="repo-stat-value" data-stat="stars">--</p>
-            </div>
-            <div class="repo-stat-card">
-                <p class="repo-stat-label">Forks</p>
-                <p class="repo-stat-value" data-stat="forks">--</p>
-            </div>
-            <div class="repo-stat-card">
-                <p class="repo-stat-label">Open Issues</p>
-                <p class="repo-stat-value" data-stat="issues">--</p>
-            </div>
-            <div class="repo-stat-card">
-                <p class="repo-stat-label">Watchers</p>
-                <p class="repo-stat-value" data-stat="watchers">--</p>
-            </div>
-            <div class="repo-stat-card">
-                <p class="repo-stat-label">Last Updated</p>
-                <p class="repo-stat-value" data-stat="updated">--</p>
-            </div>
-            <div class="repo-stat-card repo-stat-card-wide">
-                <p class="repo-stat-label">License</p>
-                <p class="repo-stat-value" data-stat="license">--</p>
-            </div>
-            <div class="repo-stat-card">
-                <p class="repo-stat-label">Installer Status</p>
-                <p class="repo-stat-value" id="installer-status">Checking...</p>
-            </div>
-            <div class="repo-stat-card repo-stat-card-wide">
-                <p class="repo-stat-label">Commit Activity</p>
-                <div class="repo-commit-lines">
-                    <div class="repo-commit-line">
-                        <span class="repo-commit-line-label">Lines Added</span>
-                        <span class="repo-commit-line-value" data-stat="lines-added">--</span>
-                    </div>
-                    <div class="repo-commit-line">
-                        <span class="repo-commit-line-label">Lines Deleted</span>
-                        <span class="repo-commit-line-value" data-stat="lines-deleted">--</span>
-                    </div>
-                </div>
-            </div>
-            
-        </div>
-    </div>
-</section>
+
 <footer class="footer">
     <div class="container">
         <p>&copy; 2026 EMInstaller. All rights reserved.</p>
@@ -200,6 +151,7 @@ EMIN — EMInstaller
 </footer>
 
 <script src="js/main.js"></script>
+
 <script>
 function copyToClipboard() {
     const text = 'curl -s https://imemix.github.io/install | sudo bash';
@@ -208,5 +160,7 @@ function copyToClipboard() {
     });
 }
 </script>
+
 </body>
+
 </html>

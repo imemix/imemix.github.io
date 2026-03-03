@@ -236,7 +236,14 @@ body {
     color: var(--text-primary);
     margin-bottom: 3rem;
 }
+.section-description {
+    text-align: center;
+    color: var(--text-secondary);
 
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    line-height: 1.8;
+}
 .features-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -645,7 +652,7 @@ body {
 
     .section-title {
         font-size: 1.8rem;
-        margin-bottom: 2rem;
+        margin-bottom: 0.1rem;
     }
 
     .nav-container {
@@ -858,7 +865,7 @@ body {
     }
 
     .repo-stat-card-wide {
-        grid-column: span 1;
+        grid-column: span 2;
     }
 
     .small-print {

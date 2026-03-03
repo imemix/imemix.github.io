@@ -41,6 +41,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const repoOwner = "imemix";
     const repoName = "imemix.github.io";
 
+    const githubHeaders = {
+        Accept: "application/vnd.github+json",
+        "User-Agent": "EMInstaller-site"
+    };
+
+    let rateLimitNoticeShown = false;
+
     const statEls = {
         stars: document.querySelector('[data-stat="stars"]'),
         forks: document.querySelector('[data-stat="forks"]'),
@@ -86,22 +93,76 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    const showRateLimitNotice = (resetEpochSeconds) => {
+        if (rateLimitNoticeShown) {
+            return;
+        }
+        rateLimitNoticeShown = true;
+
+        const parsedReset = Number(resetEpochSeconds);
+        const resetDate = Number.isFinite(parsedReset)
+            ? new Date(parsedReset * 1000)
+            : null;
+
+        const resetTime = resetDate
+            ? resetDate.toLocaleTimeString(undefined, {
+                hour: "2-digit",
+                minute: "2-digit"
+            })
+            : null;
+
+        const message = resetTime
+            ? `GitHub API limit hit. Resets at ${resetTime}.`
+            : "GitHub API limit hit. Try again later.";
+
+        setAllStats("Rate limited");
+        updateLineStats("Rate limited", "Rate limited");
+
+        if (statEls.installerStatus) {
+            statEls.installerStatus.textContent = message;
+        }
+    };
+
+    const detectRateLimit = (response) => {
+        if (response.status !== 403) {
+            return;
+        }
+
+        const remaining = response.headers.get("X-RateLimit-Remaining");
+        if (remaining !== "0") {
+            return;
+        }
+
+        const resetEpochSeconds = response.headers.get("X-RateLimit-Reset");
+        showRateLimitNotice(resetEpochSeconds);
+    };
+
+    const githubFetch = async (url, options = {}) => {
+        const mergedHeaders = options.headers
+            ? { ...githubHeaders, ...options.headers }
+            : githubHeaders;
+
+        const response = await fetch(url, { ...options, headers: mergedHeaders });
+        detectRateLimit(response);
+        return response;
+    };
+
     const loadLatestCommitStats = async () => {
         try {
             updateLineStats("Loading latest...", "Loading latest...");
 
-            const commitsResponse = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/commits?per_page=1`);
+            const commitsResponse = await githubFetch(`https://api.github.com/repos/${repoOwner}/${repoName}/commits?per_page=1`);
             if (!commitsResponse.ok) {
                 throw new Error("Failed to fetch latest commit list" + ` (status: ${commitsResponse.status})`);
             }
 
             const commits = await commitsResponse.json();
             if (!Array.isArray(commits) || commits.length === 0 || !commits[0]?.url) {
-                updateLineStats("--", "--");
+                updateLineStats("Checking...", "--");
                 return;
             }
 
-            const commitResponse = await fetch(commits[0].url);
+            const commitResponse = await githubFetch(commits[0].url);
             if (!commitResponse.ok) {
                 throw new Error("Failed to fetch commit stats" + ` (status: ${commitResponse.status})`);
             }
@@ -115,7 +176,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 updateLineStats("--", "--");
             }
         } catch (error) {
-            updateLineStats("--", "--");
+            if (rateLimitNoticeShown) {
+                updateLineStats("Rate limited", "Rate limited");
+            } else {
+                updateLineStats("--", "--");
+            }
         }
     };
 
@@ -128,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/stats/code_frequency`);
+            const response = await githubFetch(`https://api.github.com/repos/${repoOwner}/${repoName}/stats/code_frequency`);
 
             if (response.status === 202) {
                 updateLineStats("Loading...", "Loading...");
@@ -163,7 +228,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 loadLatestCommitStats();
             }
         } catch (error) {
-            loadLatestCommitStats();
+            if (rateLimitNoticeShown) {
+                updateLineStats("Rate limited", "Rate limited");
+            } else {
+                loadLatestCommitStats();
+            }
         }
     };
 
@@ -171,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             setAllStats("Loading...");
 
-            const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}`);
+            const response = await githubFetch(`https://api.github.com/repos/${repoOwner}/${repoName}`);
             if (!response.ok) {
                 throw new Error("Failed to fetch repository stats"+` (status: ${response.status})`);
             }
@@ -196,12 +265,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (statEls.license) {
                 statEls.license.textContent = data.license ? data.license.spdx_id : "--";
             }
-            if (statEls.installerStatus) {
+            if (statEls.installerStatus && !rateLimitNoticeShown) {
                 statEls.installerStatus.textContent = "Working ✓";
             }
             loadCodeFrequency();
         } catch (error) {
-            setAllStats("Unavailable");
+            if (!rateLimitNoticeShown) {
+                setAllStats("Unavailable");
+            }
         }
     };
 
