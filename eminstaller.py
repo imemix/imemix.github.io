@@ -387,7 +387,7 @@ def ensure_tools(*names):
 
 console = Console()
 
-def banner(text="EMInstaller v1.1"):
+def banner(text="EMInstaller v0.1.3"):
     ascii_art = rf"""
 [cyan]
     _______  _______    ________   _______ 
