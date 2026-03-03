@@ -17,6 +17,7 @@
     border-radius: 12px;
     padding: 1.25rem;
     text-align: center;
+    align-content: center;
 }
 
 .repo-link-style {
