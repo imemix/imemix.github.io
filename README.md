@@ -1,5 +1,5 @@
 # EMInstaller
-
+this is Emix's testing ground for archlinux installer
 ```
     _______  _______    ________   _______ 
   //       \/       \\ /        \//   /   \
