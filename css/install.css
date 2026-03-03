@@ -13,7 +13,7 @@
 }
 
 .terminal-container {
-    background-color: var(--surface-strong);
+    background-color: var(--background);
     border: 1px solid var(--primary-color);
     border-radius: 12px;
     overflow: hidden;
@@ -41,7 +41,13 @@
 }
 
 .boot-log {
-    background-color: var(--surface-strong);
+    background-color: var(--background);
+    border: none;
+}
+
+.boot-log pre {
+    margin: 0;
+    width: 100%;
     color: var(--text-primary);
     padding: 1.5rem;
     font-family: 'JetBrains Mono', monospace;
@@ -49,31 +55,32 @@
     line-height: 1.8;
     max-height: 200px;
     overflow-y: auto;
-    border: none;
-    margin: 0;
+    background: transparent;
 }
 
-.boot-log::-webkit-scrollbar {
+
+
+.boot-log pre::-webkit-scrollbar {
     width: 6px;
 }
 
-.boot-log::-webkit-scrollbar-track {
-    background: var(--surface-strong);
+.boot-log pre::-webkit-scrollbar-track {
+    background: var(--background);
 }
 
-.boot-log::-webkit-scrollbar-thumb {
-    background: var(--background);
+.boot-log pre::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
     border-radius: 3px;
 }
 
-.boot-log::-webkit-scrollbar-thumb:hover {
+.boot-log pre::-webkit-scrollbar-thumb:hover {
     background: var(--primary-dark);
 }
 
 /* PROGRESS BAR */
 .progress-container {
     border-top: 1px solid var(--primary-color);
-    background-color: rgba(var(--primary-rgb), 0.08);
+    border-bottom: 1px solid var(--primary-color);
     padding: 1.5rem;
     display: flex;
     align-items: center;
@@ -100,7 +107,7 @@
 
 /* TERMINAL COMMAND */
 .terminal-command {
-    background-color: rgba(0, 0, 0, 0.25);
+    background-color: rgba(21, 21, 21, 1);
     color: var(--text-primary);
     padding: 1rem 1.5rem;
     font-family: 'JetBrains Mono', monospace;
@@ -126,3 +133,4 @@
     0%, 49%, 100% { opacity: 1; }
     50%, 99% { opacity: 0; }
 }
+

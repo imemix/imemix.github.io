@@ -37,7 +37,7 @@ EMIN — EMInstaller
     <link rel="stylesheet" href="css/cta.css">
     <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/responsive.css">
-
+    <link rel="stylesheet" href="css/crt_terminal.css">
 </head>
 
 <body>
@@ -60,7 +60,7 @@ EMIN — EMInstaller
 
 <header class="hero">
     <div class="hero-content">
-        <h1  class="hero-title">
+        <h1 class="hero-title">
             EMInstaller
         </h1>
         <p class="hero-subtitle">The ultimate Arch installer made easy with EMInstaller</p>
@@ -68,7 +68,7 @@ EMIN — EMInstaller
         <a href="https://imemix.github.io/#install" class="cta-button">Get Started</a>
     </div>
     <div class="hero-visual">
-        <div class="terminal-preview">
+        <div class="terminal-preview crt">
             <div class="terminal-bar">
                 <span class="dot dot-red"></span>
                 <span class="dot dot-yellow"></span>
@@ -117,14 +117,16 @@ EMIN — EMInstaller
                 <span class="terminal-title">EMInstaller Terminal</span>
                 <span class="terminal-stats">root@EMInstaller ~ #</span>
             </div>
-            <pre class="boot-log" id="boot-log">
+            <div class="boot-log crt">
+                <pre id="boot-log">
 [ OK ] Initializing EMInstaller
 [ OK ] Loading archinstall
 [ OK ] Detecting hardware
 [ OK ] Mounting filesystems
 [ OK ] Configuring network
 [ .. ] Installing packages...
-            </pre>
+                </pre>
+            </div>
             <div class="progress-container" id="progress">
                 <div class="progress-bar" id="progress-bar"></div>
                 <span class="progress-text" id="progress-text"></span>

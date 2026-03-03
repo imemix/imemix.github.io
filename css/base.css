@@ -64,8 +64,7 @@ body {
 
 .cta-button:focus-visible,
 .copy-btn:focus-visible,
-.nav-link:focus-visible,
-.footer-links a:focus-visible {
+.nav-link:focus-visible {
     outline: 2px solid var(--accent-color);
     outline-offset: 2px;
     border-radius: 6px;
