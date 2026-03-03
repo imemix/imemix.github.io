@@ -20,7 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
         installerStatus: document.getElementById("installer-status"),
         linesAdded: document.querySelector('[data-stat="lines-added"]'),
         linesDeleted: document.querySelector('[data-stat="lines-deleted"]'),
-        lastCommit: document.querySelector('[data-stat="last-commit"]')
+        lastCommit: document.querySelector('[data-stat="last-commit"]'),
+        lastCommitMessage: document.querySelector('[data-stat="last-commit-message"]')
     };
 
     const setAllStats = (value) => {
@@ -30,6 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (el === statEls.lastCommit) {
                     el.removeAttribute("href");
                     el.removeAttribute("aria-label");
+                }
+                if (el === statEls.lastCommitMessage) {
+                    el.removeAttribute("title");
                 }
             }
         });
@@ -60,17 +64,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    const updateLastCommit = (isoDate, sha, url) => {
+    const updateLastCommit = (isoDate, sha, url, message) => {
         const lastCommitEl = statEls.lastCommit;
-        if (!lastCommitEl) {
-            return;
-        }
+        const messageEl = statEls.lastCommitMessage;
 
         const resetLastCommit = (text = "--") => {
-            lastCommitEl.textContent = text;
-            lastCommitEl.removeAttribute("href");
-            lastCommitEl.removeAttribute("aria-label");
+            if (lastCommitEl) {
+                lastCommitEl.textContent = text;
+                lastCommitEl.removeAttribute("href");
+                lastCommitEl.removeAttribute("aria-label");
+            }
+            if (messageEl) {
+                messageEl.textContent = text;
+                messageEl.removeAttribute("title");
+            }
         };
+
+        if (!lastCommitEl && !messageEl) {
+            return;
+        }
 
         if (!isoDate) {
             resetLastCommit();
@@ -83,18 +95,34 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        lastCommitEl.textContent = sha
-            ? `${formatted} (${sha.slice(0, 7)})`
-            : formatted;
+        if (lastCommitEl) {
+            lastCommitEl.textContent = sha
+                ? `${formatted} (${sha.slice(0, 7)})`
+                : formatted;
 
-        if (url) {
-            lastCommitEl.setAttribute("href", url);
-            if (sha) {
-                lastCommitEl.setAttribute("aria-label", `View commit ${sha}`);
+            if (url) {
+                lastCommitEl.setAttribute("href", url);
+                if (sha) {
+                    lastCommitEl.setAttribute("aria-label", `View commit ${sha}`);
+                } else {
+                    lastCommitEl.removeAttribute("aria-label");
+                }
+            } else {
+                lastCommitEl.removeAttribute("href");
+                lastCommitEl.removeAttribute("aria-label");
             }
-        } else {
-            lastCommitEl.removeAttribute("href");
-            lastCommitEl.removeAttribute("aria-label");
+        }
+
+        if (messageEl) {
+            const trimmedMessage = typeof message === "string" ? message.trim() : "";
+            const summary = trimmedMessage ? trimmedMessage.split("\n")[0].trim() : "";
+            messageEl.textContent = summary || "--";
+
+            if (trimmedMessage) {
+                messageEl.setAttribute("title", trimmedMessage);
+            } else {
+                messageEl.removeAttribute("title");
+            }
         }
     };
 
@@ -160,6 +188,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 statEls.lastCommit.removeAttribute("href");
                 statEls.lastCommit.removeAttribute("aria-label");
             }
+            if (statEls.lastCommitMessage) {
+                statEls.lastCommitMessage.textContent = "Loading latest...";
+                statEls.lastCommitMessage.removeAttribute("title");
+            }
 
             const commitsResponse = await githubFetch(`https://api.github.com/repos/${repoOwner}/${repoName}/commits?per_page=1`);
             if (!commitsResponse.ok) {
@@ -184,7 +216,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const commitDate = commitData?.commit?.committer?.date || commitData?.commit?.author?.date;
             const commitSha = commitData?.sha;
             const commitUrl = commitData?.html_url;
-            updateLastCommit(commitDate, commitSha, commitUrl);
+            const commitMessage = commitData?.commit?.message;
+            updateLastCommit(commitDate, commitSha, commitUrl, commitMessage);
 
             if (stats) {
                 updateLineStats(`+${formatNumber(stats.additions || 0)}`, `-${formatNumber(stats.deletions || 0)}`);

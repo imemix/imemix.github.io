@@ -22,7 +22,7 @@
 .code-block {
     display: inline-flex;
     align-items: center;
-    background-color: var(--primary-color);
+    background-color: var(--background);
     border: 1px solid rgba(var(--primary-rgb), 0.5);
     border-radius: 8px;
     padding: 1rem 1.5rem;
@@ -36,7 +36,7 @@
 }
 
 .copy-btn {
-    background-color: rgba(21, 21, 21, .35);
+    background-color: var(--primary-color);
     color: #ffff;
     border: 1px solid rgba(37, 99, 235, 1);
     padding: 0.6rem 1.2rem;
@@ -48,6 +48,6 @@
 }
 
 .copy-btn:hover {
-    background-color: rgba(21, 21, 21, 1);
+    background-color: var(--primary-dark);
     transform: translateY(-2px);
 }

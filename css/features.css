@@ -14,7 +14,7 @@
 }
 
 .feature-card {
-    background-color: var(--surface-bg);
+    background-color: var(--background);
     padding: 2rem;
     border-radius: 12px;
     border: 1px solid rgba(var(--primary-rgb), 0.5);

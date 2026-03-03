@@ -48,6 +48,14 @@
     line-height: 1.2;
 }
 
+.repo-stat-subvalue {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-top: 0.3rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
 .repo-commit-lines {
     display: grid;
     gap: 0.6rem;
