@@ -27,6 +27,7 @@ def curses_menu(stdscr, title, options):
     """Display a vertical menu and allow arrow-key movement."""
     curses.curs_set(0)  # Hide cursor
     stdscr.keypad(True)
+    stdscr.nodelay(False)
     current = 0
     stdscr.timeout(100)  # 100ms timeout - allows smooth input capture
     
@@ -86,66 +87,60 @@ def curses_input(stdscr, prompt, default="", password=False):
     curses.curs_set(1)  # Show cursor
     stdscr.keypad(True)
     stdscr.nodelay(False)
-    value = ""
-    input_x = 2
-    input_y = 5
-    
+    stdscr.timeout(-1)  # Fully blocking input for reliability
+
     while True:
         stdscr.erase()
         h, w = stdscr.getmaxyx()
-        
-        # Display prompt and input field
+        input_width = min(50, max(1, w - 4))
+        input_x = 2
+        input_y = 5
+
         try:
             stdscr.addstr(2, 2, prompt[:w-4])
             default_text = f" (default: {default})" if default else ""
             stdscr.addstr(3, 2, f"Enter value{default_text}:"[:w-4])
-            
-            # Draw input field
-            input_width = min(50, w - 4)
-            input_x = 2
-            input_y = 5
-            
-            # Show what user is typing (masked if password)
-            display_value = "*" * len(value) if password else value
-            # Pad the display value to fill the visible input width
-            padded_value = display_value.ljust(input_width)
-            
-            # Draw input field background with reverse video
             stdscr.attron(curses.A_REVERSE)
-            stdscr.addstr(input_y, input_x, padded_value[:input_width])
+            stdscr.addstr(input_y, input_x, " " * input_width)
             stdscr.attroff(curses.A_REVERSE)
-            
-            # Position cursor right after the input text (only once)
-            cursor_x = input_x + len(display_value)
-            stdscr.move(input_y, min(cursor_x, input_x + input_width - 1))
-            
-            # Help text
             stdscr.addstr(h-1, 2, "Press ENTER to confirm, CTRL+C to cancel"[:w-4])
+            stdscr.move(input_y, input_x)
+            stdscr.refresh()
         except curses.error:
             pass
-        
-        stdscr.refresh()
 
         try:
-            key = stdscr.getch()
+            if not password:
+                curses.echo()
+                raw = stdscr.getstr(input_y, input_x, input_width)
+                curses.noecho()
+                value = raw.decode(errors="ignore").strip()
+            else:
+                curses.noecho()
+                value_chars = []
+                while True:
+                    key = stdscr.getch()
+                    if key in (curses.KEY_ENTER, 10, 13):
+                        break
+                    if key in (curses.KEY_BACKSPACE, 127, 8):
+                        if value_chars:
+                            value_chars.pop()
+                    elif 32 <= key <= 126 and len(value_chars) < input_width:
+                        value_chars.append(chr(key))
 
-            if key in (curses.KEY_ENTER, 10, 13):
-                curses.curs_set(0)
-                return value if value else default
+                    try:
+                        stdscr.attron(curses.A_REVERSE)
+                        stdscr.addstr(input_y, input_x, ("*" * len(value_chars)).ljust(input_width)[:input_width])
+                        stdscr.attroff(curses.A_REVERSE)
+                        stdscr.move(input_y, min(input_x + len(value_chars), input_x + input_width - 1))
+                        stdscr.refresh()
+                    except curses.error:
+                        pass
 
-            if key in (curses.KEY_BACKSPACE, 127, 8):
-                value = value[:-1]
-                continue
+                value = "".join(value_chars)
 
-            if key == curses.KEY_RESIZE:
-                continue
-
-            if 32 <= key <= 126:
-                # keep input within visible field
-                h, w = stdscr.getmaxyx()
-                input_width = min(50, max(1, w - 4))
-                if len(value) < input_width:
-                    value += chr(key)
+            curses.curs_set(0)
+            return value if value else default
         except KeyboardInterrupt:
             sys.exit(1)
 
@@ -241,6 +236,84 @@ def collect_configuration_curses():
         console.print(f"[red]Error: {cfg['error']}[/red]")
         sys.exit(1)
     
+    return cfg
+
+
+def _prompt_choice(prompt, options, default=None):
+    while True:
+        console.print(f"\n[cyan]{prompt}[/cyan]")
+        for idx, opt in enumerate(options, start=1):
+            console.print(f"  {idx}) {opt}")
+        hint = f" [{default}]" if default else ""
+        raw = input(f"Select option{hint}: ").strip()
+        if not raw and default:
+            raw = default
+
+        if raw.isdigit():
+            index = int(raw) - 1
+            if 0 <= index < len(options):
+                return options[index]
+
+        if raw in options:
+            return raw
+
+        console.print("[yellow]Invalid choice, please try again.[/yellow]")
+
+
+def _prompt_yes_no(prompt, default=False):
+    suffix = "Y/n" if default else "y/N"
+    while True:
+        raw = input(f"{prompt} ({suffix}): ").strip().lower()
+        if not raw:
+            return default
+        if raw in ("y", "yes"):
+            return True
+        if raw in ("n", "no"):
+            return False
+        console.print("[yellow]Please answer yes or no.[/yellow]")
+
+
+def collect_configuration_text():
+    """Fallback interactive setup without curses."""
+    cfg = {}
+
+    disks = get_available_disks()
+    if not disks:
+        console.print("[red]No disks available.[/red]")
+        sys.exit(1)
+
+    selected_disk = _prompt_choice("Select installation disk", disks, default="1")
+    cfg['disk'] = selected_disk.split()[0]
+
+    cfg['hostname'] = input("Hostname [arch]: ").strip() or "arch"
+    cfg['username'] = input("Username [user]: ").strip() or "user"
+    cfg['userpass'] = getpass.getpass("User password: ")
+    cfg['rootpass'] = getpass.getpass("Root password: ")
+
+    cfg['fs'] = _prompt_choice("Filesystem", ["ext4", "btrfs", "xfs"], default="1")
+    cfg['use_luks'] = _prompt_yes_no("Enable LUKS Encryption?", default=False)
+    cfg['create_swap'] = _prompt_yes_no("Create Swapfile?", default=False)
+    cfg['kernel'] = _prompt_choice("Kernel", ["linux", "linux-lts", "linux-zen"], default="1")
+    cfg['desktop'] = _prompt_choice(
+        "Desktop Environment",
+        ["cli-only", "gnome", "kde", "hyprland", "xfce", "i3"],
+        default="1",
+    )
+
+    cfg['custom_packages_input'] = input("Additional packages (space-separated, optional): ").strip()
+    cfg['gaming'] = _prompt_yes_no("Install Gaming Stack?", default=False)
+    cfg['dev_tools'] = _prompt_yes_no("Install Dev Tools?", default=False)
+    cfg['dotfiles'] = _prompt_yes_no("Install Dotfiles?", default=False)
+    cfg['detected_gpu'] = detect_gpu()
+
+    cfg['timezone'] = input("Timezone [UTC]: ").strip() or "UTC"
+    cfg['language'] = input("Language Code [en_US]: ").strip() or "en_US"
+    cfg['locale_encoding'] = _prompt_choice("Locale Encoding", ["UTF-8", "ISO-8859-1"], default="1")
+    cfg['gpu'] = _prompt_choice("GPU Driver", ["none", "nvidia", "nvidia-legacy", "amd", "intel"], default="1")
+    cfg['vm_graphics'] = _prompt_choice(
+        "VM Graphics", ["none", "qemu", "vmware", "virtualbox", "hyper-v"], default="1"
+    )
+
     return cfg
 
 
@@ -405,10 +478,14 @@ def main():
 
     parser = argparse.ArgumentParser(description="EMInstaller - interactive Arch installer")
     parser.add_argument("-y", "--yes", action="store_true", help="Assume yes for all confirmations")
+    parser.add_argument("--no-gui", action="store_true", help="Use text prompts instead of curses GUI")
     args = parser.parse_args()
 
-    # Use GUI for configuration
-    cfg = collect_configuration_curses()
+    # Use GUI for configuration unless explicitly disabled or not in a TTY
+    if args.no_gui or not sys.stdin.isatty() or not sys.stdout.isatty():
+        cfg = collect_configuration_text()
+    else:
+        cfg = collect_configuration_curses()
     print_summary(cfg, assume_yes=args.yes)
 
     
