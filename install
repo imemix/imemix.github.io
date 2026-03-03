@@ -10,6 +10,8 @@ RED="$ESC[31m"
 GREEN="$ESC[32m"
 YELLOW="$ESC[33m"
 BLUE="$ESC[34m"
+MAGENTA="$ESC[35m"
+CYAN="$ESC[36m"
 BOLD="$ESC[1m"
 RESET="$ESC[0m"
 
@@ -30,6 +32,22 @@ Installs or updates EM dependencies and launches the remote installer.
 Options:
     -h, --help    Show this help message and exit
 EOF
+}
+
+banner(){
+    local subtitle="$1"
+    if [ -z "$subtitle" ]; then
+        subtitle="EMInstaller v${VERSION}"
+    fi
+
+    printf "%b\n" "${BOLD}${CYAN}    _______  _______    ________   _______ ${RESET}"
+    printf "%b\n" "${BOLD}${CYAN}  //       \\/       \\ /        \\//   /   \\${RESET}"
+    printf "%b\n" "${BOLD}${CYAN} //        /        //_/       ///        /${RESET}"
+    printf "%b\n" "${BOLD}${CYAN}/        _/         //         /         / ${RESET}"
+    printf "%b\n" "${BOLD}${CYAN}\\________/\__/__/__/ \\_______/\__/_____/  ${RESET}"
+    printf "%b\n" "${BOLD}${MAGENTA}EMIN - EMInstaller${RESET}"
+    printf "%b\n" "${BOLD}${MAGENTA}${subtitle}${RESET}"
+    printf "\n"
 }
 
 clear_screen(){
@@ -53,9 +71,7 @@ if [ "$(id -u)" -ne 0 ]; then
     die "Please run with sudo or as root."
 fi
 
-printf "%b\n" "${BOLD}${GREEN}===========================================${RESET}"
-printf "%b\n" "${BOLD}${GREEN}        EMInstaller v${VERSION}${RESET}"
-printf "%b\n" "${BOLD}${GREEN}===========================================${RESET}"
+banner
 
 # detect package manager
 detect_pm(){
@@ -137,3 +153,4 @@ else
 fi
 
 succ "Done."
+banner "INSTALLATION COMPLETE!"
