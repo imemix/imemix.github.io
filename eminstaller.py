@@ -90,20 +90,30 @@ def curses_input(stdscr, prompt, default="", password=False):
         stdscr.erase()
         h, w = stdscr.getmaxyx()
         
-        # Display prompt
+        # Display prompt and input box
         try:
             stdscr.addstr(2, 2, prompt[:w-4])
             default_text = f" (default: {default})" if default else ""
             stdscr.addstr(3, 2, f"Enter value{default_text}:"[:w-4])
             
+            # Draw input box with borders
+            box_x = 2
+            box_y = 5
+            box_width = min(50, w - 4)
+            
+            # Draw box borders
+            stdscr.addstr(box_y, box_x, "┌" + "─" * (box_width - 2) + "┐")
+            stdscr.addstr(box_y + 1, box_x, "│")
+            stdscr.addstr(box_y + 1, box_x + box_width - 1, "│")
+            stdscr.addstr(box_y + 2, box_x, "└" + "─" * (box_width - 2) + "┘")
+            
             # Show what user is typing (masked if password)
             display_value = "*" * len(value) if password else value
-            input_line = f"> {display_value}"
-            stdscr.addstr(5, 2, input_line[:w-4])
+            stdscr.addstr(box_y + 1, box_x + 1, display_value[:box_width - 2])
             
             # Position cursor right after the input text
-            cursor_x = min(2 + len(input_line), w - 1)
-            stdscr.move(5, cursor_x)
+            cursor_x = min(box_x + 1 + len(display_value), box_x + box_width - 2)
+            stdscr.move(box_y + 1, cursor_x)
             
             # Help text
             stdscr.addstr(h-1, 2, "Press ENTER to confirm, CTRL+C to cancel"[:w-4])
