@@ -239,7 +239,7 @@ body {
 
 .features-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
 }
 
@@ -408,6 +408,52 @@ body {
 @keyframes blink {
     0%, 49%, 100% { opacity: 1; }
     50%, 99% { opacity: 0; }
+}
+
+/* REPO STATS */
+.repo-stats-section {
+    padding: 5rem 1.5rem;
+    background: var(--background);
+    border-top: 2px solid var(--primary-color);
+}
+
+.repo-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.repo-stat-card {
+    background-color: var(--surface-bg);
+    border: 1px solid rgba(var(--primary-rgb), 0.5);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+}
+.repo-link-style{
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+.repo-link-style:hover {
+    color: var(--primary-dark);
+}
+.repo-stat-card-wide {
+    grid-column: span 2;
+}
+
+.repo-stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+}
+
+.repo-stat-value {
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.2;
 }
 
 /* CTA SECTION */
@@ -605,6 +651,14 @@ body {
         padding: 2.5rem 1.25rem;
     }
 
+    .repo-stats-section {
+        padding: 2.5rem 1.25rem;
+    }
+
+    .repo-stat-value {
+        font-size: 1.2rem;
+    }
+
     .small-print {
         margin-top: -1.2rem;
         margin-bottom: 1.5rem;
@@ -756,6 +810,14 @@ body {
 
     .install-section {
         padding: 2rem 1rem;
+    }
+
+    .repo-stats-section {
+        padding: 2rem 1rem;
+    }
+
+    .repo-stat-card-wide {
+        grid-column: span 1;
     }
 
     .small-print {
@@ -963,6 +1025,19 @@ body {
 
     .install-section {
         padding: 1.5rem 0.75rem;
+    }
+
+    .repo-stats-section {
+        padding: 1.5rem 0.75rem;
+        border-top: 1px solid var(--primary-color);
+    }
+
+    .repo-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .repo-stat-value {
+        font-size: 1.15rem;
     }
 
     .small-print {
