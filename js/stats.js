@@ -19,7 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
         commits: document.querySelector('[data-stat="commits"]'),
         watchers: document.querySelector('[data-stat="watchers"]'),
         license: document.querySelector('[data-stat="license"]'),
-        installerStatus: document.getElementById("installer-status"),
         linesAdded: document.querySelector('[data-stat="lines-added"]'),
         linesDeleted: document.querySelector('[data-stat="lines-deleted"]'),
         lastCommit: document.querySelector('[data-stat="last-commit"]'),
@@ -337,9 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (statEls.license) {
                 statEls.license.textContent = data.license ? data.license.spdx_id : PLACEHOLDER;
             }
-            if (statEls.installerStatus && !rateLimitNoticeShown) {
-                statEls.installerStatus.textContent = "Working × {✓}";
-            }
+            
             
             loadCodeFrequency();
         } catch (error) {
