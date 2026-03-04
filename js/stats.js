@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 statEls.license.textContent = data.license ? data.license.spdx_id : PLACEHOLDER;
             }
             if (statEls.installerStatus && !rateLimitNoticeShown) {
-                statEls.installerStatus.textContent = "Working ✓";
+                statEls.installerStatus.textContent = "Borked {×} ✓";
             }
             
             loadCodeFrequency();
