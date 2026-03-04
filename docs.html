@@ -29,11 +29,17 @@ EMIN — EMInstaller
     <meta name="twitter:title" content="EMInstaller - Documentation">
     <meta name="twitter:description" content="Official EMInstaller setup and usage documentation.">
     <meta name="twitter:image" content="https://imemix.github.io/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/navbar.css">
-    <link rel="stylesheet" href="css/footer.css">
-    <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/docs.css">
+    <link rel="preload" href="css/footer.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="css/responsive.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="css/footer.css">
+        <link rel="stylesheet" href="css/responsive.css">
+    </noscript>
 
 </head>
 
@@ -364,7 +370,8 @@ sudo bash install --offline</code></pre>
     </div>
 </footer>
 
-<script src="js/docs.js"></script>
+<script src="js/perf.js" defer></script>
+<script src="js/docs.js" defer></script>
 
 </body>
 </html>

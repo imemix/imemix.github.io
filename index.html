@@ -29,15 +29,25 @@ EMIN — EMInstaller
     <meta name="twitter:title" content="EMInstaller - Arch Linux Terminal Installer">
     <meta name="twitter:description" content="Simplify Arch Linux installation with an intuitive terminal-based installer.">
     <meta name="twitter:image" content="https://imemix.github.io/images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/hero.css">
-    <link rel="stylesheet" href="css/features.css">
-    <link rel="stylesheet" href="css/install.css">
-    <link rel="stylesheet" href="css/cta.css">
-    <link rel="stylesheet" href="css/footer.css">
-    <link rel="stylesheet" href="css/responsive.css">
-    <link rel="stylesheet" href="css/crt_terminal.css">
+    <link rel="preload" href="css/features.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="css/install.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="css/cta.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="css/footer.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="css/responsive.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="css/crt_terminal.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="css/features.css">
+        <link rel="stylesheet" href="css/install.css">
+        <link rel="stylesheet" href="css/cta.css">
+        <link rel="stylesheet" href="css/footer.css">
+        <link rel="stylesheet" href="css/responsive.css">
+        <link rel="stylesheet" href="css/crt_terminal.css">
+    </noscript>
 </head>
 
 <body>
@@ -158,7 +168,8 @@ EMIN — EMInstaller
     </div>
 </footer>
 
-<script src="js/main.js"></script>
+<script src="js/perf.js" defer></script>
+<script src="js/main.js" defer></script>
 
 <script>
 function copyToClipboard() {

@@ -13,12 +13,19 @@ EMIN — EMInstaller
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EMInstaller - GitHub Repo Stats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/repo-stats.css">
-    <link rel="stylesheet" href="css/footer.css">
-    <link rel="stylesheet" href="css/responsive.css">
-    <link rel="stylesheet" href="css/crt_terminal.css">
+    <link rel="preload" href="css/footer.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="css/responsive.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="css/crt_terminal.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="css/footer.css">
+        <link rel="stylesheet" href="css/responsive.css">
+        <link rel="stylesheet" href="css/crt_terminal.css">
+    </noscript>
     <link rel="icon" type="image/x-icon" href="images/favicon.ico">
 
 </head>
@@ -105,5 +112,6 @@ EMIN — EMInstaller
         <p>**Newer content may take time to appear</p>
     </div>
 </footer>
-<script src="js/stats.js"></script>
+<script src="js/perf.js" defer></script>
+<script src="js/stats.js" defer></script>
 </html>
