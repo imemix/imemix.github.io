@@ -153,4 +153,4 @@ else
 fi
 
 succ "Done."
-banner "INSTALLATION COMPLETE!"
+

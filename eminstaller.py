@@ -656,7 +656,7 @@ def print_summary(cfg, assume_yes=False):
     
     if not assume_yes:
         # Show a final warning/confirmation before proceeding
-        console.print(f"[bold red]⚠️  WARNING: This will erase ALL data on {cfg['disk']}.[/bold red]")
+        console.print(f"[bold red]⚠ WARNING: This will erase ALL data on {cfg['disk']}.[/bold red]")
         response = prompt_input("Type 'YES' to proceed or press Enter to cancel: ")
         if response.upper() != "YES":
             console.print("[yellow]Installation cancelled.[/yellow]")
@@ -874,7 +874,7 @@ def main():
     arch_chroot("umount -R /mnt", "Unmounting partitions")
 
     console.print()
-    banner("INSTALLATION COMPLETE! 🚀")
+    banner("INSTALLATION COMPLETE!")
     console.print(f"[bold green]Arch Linux has been successfully installed on {disk}![/bold green]\n")
 
     console.print("[cyan]Final Configuration Summary:[/cyan]")
