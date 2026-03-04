@@ -1,7 +1,7 @@
 
 <p align="center">
     <a href="https://imemix.github.io/">
-        <img src="https://imemix.github.io/images/eminstaller.png" width="125"/>
+        <img width="200" src="https://imemix.github.io/images/eminstaller.png" width="125"/>
     </a>
 </p>
 
@@ -10,7 +10,6 @@
 <p align="center">$\textcolor{red} {\text{NOT WORKING }}$</p>
 
 [comment]: <> (DO NOT CHANGE ABOVE TEXT)
-<br />
 <br />
 
 <p align="center">$\textcolor{blue} {\text{Installer could break at any time with being only one person maintaining the installer things will go wrong very frequently please check the}}$</p>
