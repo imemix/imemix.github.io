@@ -1,20 +1,30 @@
-# EMInstaller
-this is Emix's testing ground for archlinux installer
+
 <p align="center">
     <a href="https://imemix.github.io/">
         <img src="https://imemix.github.io/images/eminstaller.png" width="125"/>
     </a>
 </p>
-# ✓ CURRENTLY WORKING ✓
 
 
-> **This project is a work in progress.**
-> Not all features are complete, and the script may change frequently.
-> # Future updates may break the installer.
-> **Always read and test before running.**
----
+<p align="center">$\textcolor{green} {\text{CURRENTLY WORKING ✓}}$</p>
+<p align="center">$\textcolor{red} {\text{NOT WORKING }}$</p>
+
+[comment]: <> (DO NOT CHANGE ABOVE TEXT)
+<br />
+<br />
+
+<p align="center">$\textcolor{blue} {\text{Installer could break at any time with being only one person maintaining the installer things will go wrong very frequently please check the documentation or stats page on mainsite}}$</p>
+<p align="center">$\textcolor{blue} {\text{documentation or stats page on mainsite}}$</p>
+<p align="center">$\textcolor{orange} {\text{Any issues found please make a issue and I will try and fix it.}}$</p>
 
 
+
+
+
+<br />
+<br />
+<br />
+<br />
 
 
 # [MENU] Navigation
