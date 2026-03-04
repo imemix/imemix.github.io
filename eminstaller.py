@@ -558,9 +558,24 @@ def arch_chroot(cmd, description=None, duration=1, verbose=False):
     return run_stage(description, full_cmd, duration, verbose)
 
 
+def recover_chroot_pacman_lock(wait_seconds=12):
+    """Recover from stale pacman DB locks inside chroot safely."""
+    run_command(
+        f"arch-chroot /mnt bash -lc \"for i in $(seq 1 {int(wait_seconds)}); do [ ! -e /var/lib/pacman/db.lck ] && exit 0; sleep 1; done; exit 0\""
+    )
+    run_command(
+        "arch-chroot /mnt bash -lc \"for p in pacman pacman-key makepkg yay paru; do pkill -x $p >/dev/null 2>&1 || true; done\""
+    )
+    run_command(
+        "arch-chroot /mnt bash -lc \"for i in $(seq 1 10); do pgrep -x pacman >/dev/null 2>&1 || break; sleep 1; done; [ -e /var/lib/pacman/db.lck ] && rm -f /var/lib/pacman/db.lck || true\""
+    )
+
+
 def arch_chroot_pacman_install(packages, description, duration=3, retries=3):
     """Install packages in chroot with retry logic for pacman DB lock issues."""
-    install_cmd = f"arch-chroot /mnt pacman -S --noconfirm {packages}"
+    install_cmd = f"arch-chroot /mnt pacman -S --needed --noconfirm {packages}"
+
+    recover_chroot_pacman_lock(wait_seconds=8)
 
     for attempt in range(1, retries + 1):
         ok, stdout, stderr = run_command(install_cmd, description if attempt == 1 else f"{description} (retry {attempt}/{retries})")
@@ -577,10 +592,8 @@ def arch_chroot_pacman_install(packages, description, duration=3, retries=3):
 
         if lock_error and attempt < retries:
             console.print("[yellow]pacman database is locked in chroot; attempting recovery and retry...[/yellow]")
-            run_command(
-                "arch-chroot /mnt bash -lc \"for i in $(seq 1 10); do [ ! -e /var/lib/pacman/db.lck ] && exit 0; sleep 1; done; rm -f /var/lib/pacman/db.lck\""
-            )
-            time.sleep(1)
+            recover_chroot_pacman_lock(wait_seconds=12)
+            time.sleep(attempt)
             continue
 
         short_err = (stderr or stdout or "Unknown pacman error").strip().splitlines()
