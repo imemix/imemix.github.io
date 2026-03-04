@@ -1,13 +1,10 @@
 # EMInstaller
 this is Emix's testing ground for archlinux installer
-```
-    _______  _______    ________   _______ 
-  //       \/       \\ /        \//   /   \
- //        /        //_/       ///        /
-/        _/         //         /         / 
-\________/\__/__/__/ \\_______/\__/_____/  
-EMIN — EMInstaller
-```
+<p align="center">
+    <a href="https://imemix.github.io/">
+        <img src="https://imemix.github.io/images/eminstaller.png" width="125"/>
+    </a>
+</p>
 # ✓ CURRENTLY WORKING ✓
 
 
