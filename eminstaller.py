@@ -557,6 +557,14 @@ def arch_chroot(cmd, description=None, duration=1, verbose=False):
     full_cmd = f"arch-chroot /mnt {cmd}"
     return run_stage(description, full_cmd, duration, verbose)
 
+
+def ensure_chroot_alpm_user():
+    """Ensure pacman's DownloadUser exists inside chroot before pacman -S runs."""
+    arch_chroot(
+        "bash -lc \"id -u alpm >/dev/null 2>&1 || useradd -r -M -s /usr/bin/nologin -d /var/lib/pacman alpm\"",
+        "Ensuring pacman DownloadUser",
+    )
+
 def detect_gpu():
     """Detect GPU in system"""
     try:
@@ -851,6 +859,8 @@ def main():
 
     arch_chroot("grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB", "Installing GRUB", duration=2)
     arch_chroot("grub-mkconfig -o /boot/grub/grub.cfg", "Generating GRUB config")
+
+    ensure_chroot_alpm_user()
 
     # GPU & VM drivers
     if gpu == "nvidia":
