@@ -47,11 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
 }); 
 
 
-function copyToClipboard() {
-    const text = 'curl -s https://imemix.github.io/install | sudo bash';
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Command copied to clipboard!');
-});
+
+
 
 
 
