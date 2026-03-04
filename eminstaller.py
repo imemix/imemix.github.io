@@ -482,7 +482,45 @@ def run_command(cmd, description="", verbose=False):
     except Exception as e:
         return False, "", str(e)
 
-def run_stage(stage_name, cmd, duration=3, verbose=False):
+
+def _is_kernel_partition_notify_warning(output):
+    text = (output or "").lower()
+    return (
+        "unable to inform the kernel" in text
+        or "have been unable to inform the kernel" in text
+        or "device or resource busy" in text
+    )
+
+
+def _refresh_kernel_partition_table(disk):
+    """Try multiple methods to force kernel partition table reload."""
+    q_disk = shlex.quote(disk)
+    attempts = []
+
+    if shutil.which("partprobe"):
+        attempts.append(f"partprobe {q_disk}")
+    if shutil.which("partx"):
+        attempts.append(f"partx -u {q_disk}")
+    if shutil.which("blockdev"):
+        attempts.append(f"blockdev --rereadpt {q_disk}")
+
+    for cmd in attempts:
+        run_command(cmd)
+
+    if shutil.which("udevadm"):
+        run_command("udevadm settle")
+
+
+def wait_for_block_device(device_path, timeout=15):
+    """Wait until the kernel exposes a block device node."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if os.path.exists(device_path):
+            return True
+        time.sleep(0.25)
+    return False
+
+def run_stage(stage_name, cmd, duration=3, verbose=False, disk_for_rescan=None):
     
     console.print(f"\n[bold yellow]==> {stage_name}[/bold yellow]")
     if DRY_RUN:
@@ -544,6 +582,11 @@ def run_stage(stage_name, cmd, duration=3, verbose=False):
 
     if success or "error" not in stderr.lower():
         console.print(f"[green]✓ {stage_name} completed[/green]")
+        return True
+    elif disk_for_rescan and _is_kernel_partition_notify_warning(stderr):
+        console.print("[yellow]Kernel did not immediately reload partition table, attempting rescan...[/yellow]")
+        _refresh_kernel_partition_table(disk_for_rescan)
+        console.print(f"[green]✓ {stage_name} completed (after rescan)[/green]")
         return True
     else:
         console.print(f"[yellow]⚠ {stage_name} warning: {stderr[:100]}[/yellow]")
@@ -819,10 +862,19 @@ def main():
     q_fs = shlex.quote(fs)
 
     run_stage("Wiping disk", f"wipefs -af {q_disk}", duration=2)
-    run_stage("Creating GPT partition table", f"parted -s {q_disk} mklabel gpt", duration=1)
-    run_stage("Creating EFI partition (512MB)", f"parted -s {q_disk} mkpart primary fat32 1MiB 513MiB", duration=1)
-    run_stage("Setting EFI boot flag", f"parted -s {q_disk} set 1 esp on", duration=1)
-    run_stage("Creating root partition", f"parted -s {q_disk} mkpart primary {q_fs} 513MiB 100%", duration=1)
+    run_stage("Creating GPT partition table", f"parted -s {q_disk} mklabel gpt", duration=1, disk_for_rescan=disk)
+    run_stage("Creating EFI partition (512MB)", f"parted -s {q_disk} mkpart primary fat32 1MiB 513MiB", duration=1, disk_for_rescan=disk)
+    run_stage("Setting EFI boot flag", f"parted -s {q_disk} set 1 esp on", duration=1, disk_for_rescan=disk)
+    run_stage("Creating root partition", f"parted -s {q_disk} mkpart primary {q_fs} 513MiB 100%", duration=1, disk_for_rescan=disk)
+
+    _refresh_kernel_partition_table(disk)
+    if not wait_for_block_device(efi_part, timeout=20):
+        console.print(f"[red]EFI partition device did not appear: {efi_part}[/red]")
+        sys.exit(1)
+    if not wait_for_block_device(root_part, timeout=20):
+        console.print(f"[red]Root partition device did not appear: {root_part}[/red]")
+        sys.exit(1)
+
     run_stage("Formatting EFI partition", f"mkfs.fat -F32 -n EFI {q_efi_part}", duration=1)
     run_stage(f"Formatting root partition ({fs})", f"{fs_tool} -L arch {q_root_part}", duration=3)
     run_stage("Creating mount directories", f"mkdir -p /mnt/boot /mnt", duration=1)
