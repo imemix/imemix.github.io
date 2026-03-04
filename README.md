@@ -11,13 +11,9 @@
 
 [comment]: <> (DO NOT CHANGE ABOVE TEXT)
 <br />
-
-<p align="center">$\textcolor{blue} {\text{Installer could break at any time with being only one person maintaining the installer things will go wrong very frequently please check the}}$</p>
-<p align="center">$\textcolor{blue} {\text{documentation or stats page on mainsite}}$</p>
+<p align="center">$\textcolor{blue} {\text{Installer could break at any time, with only one person maintaining the installer.}}$</p>
+<p align="center">$\textcolor{blue} {\text{Things can break frequently please check the main website for more information}}$</p>
 <p align="center">$\textcolor{orange} {\text{Any issues found please make a issue and I will try and fix it.}}$</p>
-
-
-
 
 
 <br />
