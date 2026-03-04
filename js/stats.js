@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const repoOwner = "imemix";
     const repoName = "imemix.github.io";
+    const repoApiBase = `https://api.github.com/repos/${repoOwner}/${repoName}`;
+    const PLACEHOLDER = "--";
+    const LOADING = "Loading...";
 
     const githubHeaders = {
         Accept: "application/vnd.github+json",
@@ -13,9 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const statEls = {
         stars: document.querySelector('[data-stat="stars"]'),
         forks: document.querySelector('[data-stat="forks"]'),
-        issues: document.querySelector('[data-stat="issues"]'),
+        commits: document.querySelector('[data-stat="commits"]'),
         watchers: document.querySelector('[data-stat="watchers"]'),
-        updated: document.querySelector('[data-stat="updated"]'),
         license: document.querySelector('[data-stat="license"]'),
         installerStatus: document.getElementById("installer-status"),
         linesAdded: document.querySelector('[data-stat="lines-added"]'),
@@ -24,13 +26,26 @@ document.addEventListener("DOMContentLoaded", () => {
         lastCommitMessage: document.querySelector('[data-stat="last-commit-message"]')
     };
 
+    const setText = (el, text) => {
+        if (el) {
+            el.textContent = text;
+        }
+    };
+
+    const resetLinkAttrs = (el) => {
+        if (!el) {
+            return;
+        }
+        el.removeAttribute("href");
+        el.removeAttribute("aria-label");
+    };
+
     const setAllStats = (value) => {
         Object.values(statEls).forEach((el) => {
             if (el) {
                 el.textContent = value;
                 if (el === statEls.lastCommit) {
-                    el.removeAttribute("href");
-                    el.removeAttribute("aria-label");
+                    resetLinkAttrs(el);
                 }
                 if (el === statEls.lastCommitMessage) {
                     el.removeAttribute("title");
@@ -40,6 +55,20 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const formatNumber = (value) => new Intl.NumberFormat().format(value);
+
+    const getLastPageFromLinkHeader = (linkHeader) => {
+        if (!linkHeader) {
+            return null;
+        }
+
+        const lastPageMatch = linkHeader.match(/[?&]page=(\d+)>;\s*rel="last"/);
+        if (!lastPageMatch) {
+            return null;
+        }
+
+        const parsed = Number(lastPageMatch[1]);
+        return Number.isFinite(parsed) ? parsed : null;
+    };
 
     const formatUpdatedDate = (isoDate) => {
         const parsed = new Date(isoDate);
@@ -56,23 +85,18 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const updateLineStats = (addedText, deletedText) => {
-        if (statEls.linesAdded) {
-            statEls.linesAdded.textContent = addedText;
-        }
-        if (statEls.linesDeleted) {
-            statEls.linesDeleted.textContent = deletedText;
-        }
+        setText(statEls.linesAdded, addedText);
+        setText(statEls.linesDeleted, deletedText);
     };
 
     const updateLastCommit = (isoDate, sha, url, message) => {
         const lastCommitEl = statEls.lastCommit;
         const messageEl = statEls.lastCommitMessage;
 
-        const resetLastCommit = (text = "--") => {
+        const resetLastCommit = (text = PLACEHOLDER) => {
             if (lastCommitEl) {
                 lastCommitEl.textContent = text;
-                lastCommitEl.removeAttribute("href");
-                lastCommitEl.removeAttribute("aria-label");
+                resetLinkAttrs(lastCommitEl);
             }
             if (messageEl) {
                 messageEl.textContent = text;
@@ -90,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const formatted = formatUpdatedDate(isoDate);
-        if (formatted === "--") {
+        if (formatted === PLACEHOLDER) {
             resetLastCommit();
             return;
         }
@@ -108,15 +132,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     lastCommitEl.removeAttribute("aria-label");
                 }
             } else {
-                lastCommitEl.removeAttribute("href");
-                lastCommitEl.removeAttribute("aria-label");
+                resetLinkAttrs(lastCommitEl);
             }
         }
 
         if (messageEl) {
             const trimmedMessage = typeof message === "string" ? message.trim() : "";
             const summary = trimmedMessage ? trimmedMessage.split("\n")[0].trim() : "";
-            messageEl.textContent = summary || "--";
+            messageEl.textContent = summary || PLACEHOLDER;
 
             if (trimmedMessage) {
                 messageEl.setAttribute("title", trimmedMessage);
@@ -185,22 +208,27 @@ document.addEventListener("DOMContentLoaded", () => {
             updateLineStats("Loading latest...", "Loading latest...");
             if (statEls.lastCommit) {
                 statEls.lastCommit.textContent = "Loading latest...";
-                statEls.lastCommit.removeAttribute("href");
-                statEls.lastCommit.removeAttribute("aria-label");
+                resetLinkAttrs(statEls.lastCommit);
             }
             if (statEls.lastCommitMessage) {
                 statEls.lastCommitMessage.textContent = "Loading latest...";
                 statEls.lastCommitMessage.removeAttribute("title");
             }
 
-            const commitsResponse = await githubFetch(`https://api.github.com/repos/${repoOwner}/${repoName}/commits?per_page=1`);
+            const commitsResponse = await githubFetch(`${repoApiBase}/commits?per_page=1`);
             if (!commitsResponse.ok) {
                 throw new Error("Failed to fetch latest commit list" + ` (status: ${commitsResponse.status})`);
             }
 
             const commits = await commitsResponse.json();
+            if (statEls.commits) {
+                const commitsFromHeader = getLastPageFromLinkHeader(commitsResponse.headers.get("Link"));
+                const totalCommits = commitsFromHeader ?? (Array.isArray(commits) ? commits.length : 0);
+                statEls.commits.textContent = formatNumber(totalCommits);
+            }
+
             if (!Array.isArray(commits) || commits.length === 0 || !commits[0]?.url) {
-                updateLineStats("Checking...", "--");
+                updateLineStats("Checking...", PLACEHOLDER);
                 updateLastCommit(null);
                 return;
             }
@@ -222,13 +250,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (stats) {
                 updateLineStats(`+${formatNumber(stats.additions || 0)}`, `-${formatNumber(stats.deletions || 0)}`);
             } else {
-                updateLineStats("--", "--");
+                updateLineStats(PLACEHOLDER, PLACEHOLDER);
             }
         } catch (error) {
             if (rateLimitNoticeShown) {
                 updateLineStats("Rate limited", "Rate limited");
             } else {
-                updateLineStats("--", "--");
+                updateLineStats(PLACEHOLDER, PLACEHOLDER);
                 updateLastCommit(null);
             }
         }
@@ -243,7 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await githubFetch(`https://api.github.com/repos/${repoOwner}/${repoName}/stats/code_frequency`);
+            const response = await githubFetch(`${repoApiBase}/stats/code_frequency`);
 
             if (response.status === 202) {
                 updateLineStats("Loading...", "Loading...");
@@ -288,11 +316,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const loadRepoStats = async () => {
         try {
-            setAllStats("Loading...");
+            setAllStats(LOADING);
 
-            const response = await githubFetch(`https://api.github.com/repos/${repoOwner}/${repoName}`);
+            const response = await githubFetch(repoApiBase);
             if (!response.ok) {
-                throw new Error("Failed to fetch repository stats"+` (status: ${response.status})`);
+                throw new Error("Failed to fetch repository stats" + ` (status: ${response.status})`);
             }
 
             const data = await response.json();
@@ -303,17 +331,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (statEls.forks) {
                 statEls.forks.textContent = formatNumber(data.forks_count || 0);
             }
-            if (statEls.issues) {
-                statEls.issues.textContent = formatNumber(data.open_issues_count || 0);
-            }
             if (statEls.watchers) {
                 statEls.watchers.textContent = formatNumber(data.subscribers_count || 0);
             }
-            if (statEls.updated) {
-                statEls.updated.textContent = formatUpdatedDate(data.updated_at);
-            }
             if (statEls.license) {
-                statEls.license.textContent = data.license ? data.license.spdx_id : "--";
+                statEls.license.textContent = data.license ? data.license.spdx_id : PLACEHOLDER;
             }
             if (statEls.installerStatus && !rateLimitNoticeShown) {
                 statEls.installerStatus.textContent = "Working ✓";
