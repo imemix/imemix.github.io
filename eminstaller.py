@@ -7,6 +7,7 @@ import getpass
 import os
 import re
 import shutil
+import shlex
 from rich.console import Console
 from rich.progress import (
     Progress,
@@ -27,6 +28,35 @@ try:
     import curses
 except ImportError:
     curses = None
+
+
+CURSES_COLORS_READY = False
+COLOR_TITLE = 1
+COLOR_HIGHLIGHT = 2
+COLOR_HELP = 3
+COLOR_LABEL = 4
+
+
+def _curses_init_colors():
+    """Initialize curses color pairs when terminal supports colors."""
+    global CURSES_COLORS_READY
+    if curses is None:
+        CURSES_COLORS_READY = False
+        return
+
+    try:
+        if not curses.has_colors():
+            CURSES_COLORS_READY = False
+            return
+        curses.start_color()
+        curses.use_default_colors()
+        curses.init_pair(COLOR_TITLE, curses.COLOR_CYAN, -1)
+        curses.init_pair(COLOR_HIGHLIGHT, curses.COLOR_BLACK, curses.COLOR_CYAN)
+        curses.init_pair(COLOR_HELP, curses.COLOR_MAGENTA, -1)
+        curses.init_pair(COLOR_LABEL, curses.COLOR_YELLOW, -1)
+        CURSES_COLORS_READY = True
+    except curses.error:
+        CURSES_COLORS_READY = False
 
 
 def _open_tty_streams():
@@ -77,9 +107,13 @@ def curses_menu(stdscr, title, options):
         
         # Title
         try:
+            if CURSES_COLORS_READY:
+                stdscr.attron(curses.color_pair(COLOR_TITLE))
             stdscr.attron(curses.A_BOLD)
             stdscr.addstr(1, 2, title)
             stdscr.attroff(curses.A_BOLD)
+            if CURSES_COLORS_READY:
+                stdscr.attroff(curses.color_pair(COLOR_TITLE))
         except curses.error:
             pass
         
@@ -89,9 +123,15 @@ def curses_menu(stdscr, title, options):
             if y < h - 1:  # Stay within bounds
                 if idx == current:
                     try:
-                        stdscr.attron(curses.A_REVERSE)
+                        if CURSES_COLORS_READY:
+                            stdscr.attron(curses.color_pair(COLOR_HIGHLIGHT))
+                        else:
+                            stdscr.attron(curses.A_REVERSE)
                         stdscr.addstr(y, 4, str(opt)[:w-6])
-                        stdscr.attroff(curses.A_REVERSE)
+                        if CURSES_COLORS_READY:
+                            stdscr.attroff(curses.color_pair(COLOR_HIGHLIGHT))
+                        else:
+                            stdscr.attroff(curses.A_REVERSE)
                     except curses.error:
                         pass
                 else:
@@ -102,7 +142,11 @@ def curses_menu(stdscr, title, options):
         
         # Help text
         try:
+            if CURSES_COLORS_READY:
+                stdscr.attron(curses.color_pair(COLOR_HELP))
             stdscr.addstr(h-1, 2, "Use UP/DN arrows, press ENTER to select"[:w-4])
+            if CURSES_COLORS_READY:
+                stdscr.attroff(curses.color_pair(COLOR_HELP))
         except curses.error:
             pass
         
@@ -137,13 +181,25 @@ def curses_input(stdscr, prompt, default="", password=False):
         input_y = 5
 
         try:
+            if CURSES_COLORS_READY:
+                stdscr.attron(curses.color_pair(COLOR_TITLE))
             stdscr.addstr(2, 2, prompt[:w-4])
+            if CURSES_COLORS_READY:
+                stdscr.attroff(curses.color_pair(COLOR_TITLE))
             default_text = f" (default: {default})" if default else ""
+            if CURSES_COLORS_READY:
+                stdscr.attron(curses.color_pair(COLOR_LABEL))
             stdscr.addstr(3, 2, f"Enter value{default_text}:"[:w-4])
+            if CURSES_COLORS_READY:
+                stdscr.attroff(curses.color_pair(COLOR_LABEL))
             stdscr.attron(curses.A_REVERSE)
             stdscr.addstr(input_y, input_x, " " * input_width)
             stdscr.attroff(curses.A_REVERSE)
+            if CURSES_COLORS_READY:
+                stdscr.attron(curses.color_pair(COLOR_HELP))
             stdscr.addstr(h-1, 2, "Press ENTER to confirm, CTRL+C to cancel"[:w-4])
+            if CURSES_COLORS_READY:
+                stdscr.attroff(curses.color_pair(COLOR_HELP))
             stdscr.move(input_y, input_x)
             stdscr.refresh()
         except curses.error:
@@ -197,6 +253,7 @@ def collect_configuration_curses():
 
     def _inner(stdscr):
         try:
+            _curses_init_colors()
             curses.cbreak()
             curses.noecho()
             stdscr.keypad(True)
@@ -204,14 +261,22 @@ def collect_configuration_curses():
             # Show intro
             stdscr.erase()
             try:
+                if CURSES_COLORS_READY:
+                    stdscr.attron(curses.color_pair(COLOR_TITLE))
                 stdscr.attron(curses.A_BOLD)
                 stdscr.addstr(2, 2, "EMInstaller - GUI Setup")
                 stdscr.attroff(curses.A_BOLD)
+                if CURSES_COLORS_READY:
+                    stdscr.attroff(curses.color_pair(COLOR_TITLE))
             except curses.error:
                 pass
             try:
+                if CURSES_COLORS_READY:
+                    stdscr.attron(curses.color_pair(COLOR_HELP))
                 stdscr.addstr(4, 2, "Use arrow keys to move, Enter to select")
                 stdscr.addstr(5, 2, "Type to enter text, CTRL+C to cancel")
+                if CURSES_COLORS_READY:
+                    stdscr.attroff(curses.color_pair(COLOR_HELP))
             except curses.error:
                 pass
             stdscr.refresh()
@@ -386,6 +451,7 @@ def ensure_tools(*names):
         sys.exit(1)
 
 console = Console()
+DRY_RUN = False
 
 def banner(text="EMInstaller v0.1.3"):
     ascii_art = rf"""
@@ -419,6 +485,11 @@ def run_command(cmd, description="", verbose=False):
 def run_stage(stage_name, cmd, duration=3, verbose=False):
     
     console.print(f"\n[bold yellow]==> {stage_name}[/bold yellow]")
+    if DRY_RUN:
+        console.print(f"[blue][dry-run][/blue] {cmd}")
+        console.print(f"[green]✓ {stage_name} completed (dry-run)[/green]")
+        return True
+
     max_runtime_seconds = 300
     stdout = ""
     stderr = ""
@@ -517,6 +588,46 @@ def get_available_disks():
     except:
         return []
 
+
+def validate_configuration(cfg):
+    """Validate user-provided configuration values before destructive steps."""
+    errors = []
+
+    disk = cfg.get("disk", "")
+    if not re.fullmatch(r"/dev/[A-Za-z0-9._-]+", disk):
+        errors.append(f"Invalid disk path: {disk}")
+
+    hostname = cfg.get("hostname", "")
+    if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?", hostname):
+        errors.append("Hostname must be 1-63 chars and contain only letters, numbers, and hyphens (no leading/trailing hyphen).")
+
+    username = cfg.get("username", "")
+    if not re.fullmatch(r"[a-z_][a-z0-9_-]{0,31}", username):
+        errors.append("Username must start with a lowercase letter/underscore and contain only lowercase letters, numbers, '_' or '-'.")
+
+    timezone = cfg.get("timezone", "")
+    if not re.fullmatch(r"[A-Za-z0-9._+-]+(?:/[A-Za-z0-9._+-]+)*", timezone):
+        errors.append("Timezone contains invalid characters.")
+
+    language = cfg.get("language", "")
+    if not re.fullmatch(r"[A-Za-z]{2,3}_[A-Za-z]{2,3}", language):
+        errors.append("Language must be in format like en_US.")
+
+    locale_encoding = cfg.get("locale_encoding", "")
+    if locale_encoding not in {"UTF-8", "ISO-8859-1"}:
+        errors.append(f"Unsupported locale encoding: {locale_encoding}")
+
+    if not cfg.get("userpass"):
+        errors.append("User password cannot be empty.")
+    if not cfg.get("rootpass"):
+        errors.append("Root password cannot be empty.")
+
+    if errors:
+        console.print("[red]Configuration validation failed:[/red]")
+        for error in errors:
+            console.print(f"  - {error}")
+        sys.exit(1)
+
 # summary & confirmation (called from main)
 
 def print_summary(cfg, assume_yes=False):
@@ -556,15 +667,31 @@ def print_summary(cfg, assume_yes=False):
 
 
 def main():
+    global DRY_RUN
     check_platform()
     check_root()
     # verify we have the external commands we rely on
-    ensure_tools("lsblk", "parted", "mkfs.fat", "pacstrap", "genfstab", "grub-install", "arch-chroot")
+    ensure_tools(
+        "lsblk",
+        "parted",
+        "mkfs.fat",
+        "pacstrap",
+        "genfstab",
+        "grub-install",
+        "arch-chroot",
+        "wipefs",
+        "mount",
+        "umount",
+        "dd",
+        "mkswap",
+    )
 
     parser = argparse.ArgumentParser(description="EMInstaller - interactive Arch installer")
     parser.add_argument("-y", "--yes", action="store_true", help="Assume yes for all confirmations")
     parser.add_argument("--no-gui", action="store_true", help="Use text prompts instead of curses GUI")
+    parser.add_argument("--dry-run", action="store_true", help="Print planned commands without executing them")
     args = parser.parse_args()
+    DRY_RUN = args.dry_run
 
     # Prefer GUI by default; fall back to text mode only when GUI is unavailable.
     try:
@@ -576,6 +703,7 @@ def main():
             except RuntimeError as gui_error:
                 console.print(f"[yellow]GUI unavailable, falling back to text mode: {gui_error}[/yellow]")
                 cfg = collect_configuration_text()
+        validate_configuration(cfg)
         print_summary(cfg, assume_yes=args.yes)
     except EOFError as e:
         console.print(f"[red]Input error: {e}[/red]")
@@ -604,6 +732,24 @@ def main():
     gpu = cfg['gpu']
     vm_graphics = cfg['vm_graphics']
 
+    fs_tool_map = {
+        "ext4": "mkfs.ext4",
+        "btrfs": "mkfs.btrfs",
+        "xfs": "mkfs.xfs",
+    }
+    fs_tool = fs_tool_map.get(fs)
+    if fs_tool is None:
+        console.print(f"[red]Unsupported filesystem: {fs}[/red]")
+        sys.exit(1)
+    ensure_tools(fs_tool)
+
+    q_disk = shlex.quote(disk)
+    q_hostname = shlex.quote(hostname)
+    q_username = shlex.quote(username)
+    q_rootpass_entry = shlex.quote(f"root:{rootpass}")
+    q_userpass_entry = shlex.quote(f"{username}:{userpass}")
+    q_timezone_path = shlex.quote(f"/usr/share/zoneinfo/{timezone}")
+
     console.print("\n[bold green]Starting installation to disk...[/bold green]\n")
 
     # partition naming
@@ -614,16 +760,20 @@ def main():
         efi_part = f"{disk}1"
         root_part = f"{disk}2"
 
-    run_stage("Wiping disk", f"wipefs -af {disk}", duration=2)
-    run_stage("Creating GPT partition table", f"parted -s {disk} mklabel gpt", duration=1)
-    run_stage("Creating EFI partition (512MB)", f"parted -s {disk} mkpart primary fat32 1MiB 513MiB", duration=1)
-    run_stage("Setting EFI boot flag", f"parted -s {disk} set 1 esp on", duration=1)
-    run_stage("Creating root partition", f"parted -s {disk} mkpart primary {fs} 513MiB 100%", duration=1)
-    run_stage("Formatting EFI partition", f"mkfs.fat -F32 -n EFI {efi_part}", duration=1)
-    run_stage(f"Formatting root partition ({fs})", f"mkfs.{fs} -L arch {root_part}", duration=3)
+    q_efi_part = shlex.quote(efi_part)
+    q_root_part = shlex.quote(root_part)
+    q_fs = shlex.quote(fs)
+
+    run_stage("Wiping disk", f"wipefs -af {q_disk}", duration=2)
+    run_stage("Creating GPT partition table", f"parted -s {q_disk} mklabel gpt", duration=1)
+    run_stage("Creating EFI partition (512MB)", f"parted -s {q_disk} mkpart primary fat32 1MiB 513MiB", duration=1)
+    run_stage("Setting EFI boot flag", f"parted -s {q_disk} set 1 esp on", duration=1)
+    run_stage("Creating root partition", f"parted -s {q_disk} mkpart primary {q_fs} 513MiB 100%", duration=1)
+    run_stage("Formatting EFI partition", f"mkfs.fat -F32 -n EFI {q_efi_part}", duration=1)
+    run_stage(f"Formatting root partition ({fs})", f"{fs_tool} -L arch {q_root_part}", duration=3)
     run_stage("Creating mount directories", f"mkdir -p /mnt/boot /mnt", duration=1)
-    run_stage("Mounting root partition", f"mount {root_part} /mnt", duration=1)
-    run_stage("Mounting EFI partition", f"mkdir -p /mnt/boot/efi && mount {efi_part} /mnt/boot/efi", duration=1)
+    run_stage("Mounting root partition", f"mount {q_root_part} /mnt", duration=1)
+    run_stage("Mounting EFI partition", f"mkdir -p /mnt/boot/efi && mount {q_efi_part} /mnt/boot/efi", duration=1)
 
     if create_swap:
         run_stage("Creating swapfile (2GB)", f"dd if=/dev/zero of=/mnt/swapfile bs=1M count=2048 && chmod 600 /mnt/swapfile && mkswap /mnt/swapfile", duration=3)
@@ -641,16 +791,16 @@ def main():
     if desktop != "cli-only":
         packages.add("xorg")
         if desktop == "gnome":
-            packages.update({"gnome", "gdm", "networkmanager", "network-manager-applet"})
+            packages.update({"gnome", "gdm", "networkmanager", "network-manager-applet", "konsole"})
         elif desktop == "kde":
-            packages.update({"plasma", "sddm", "networkmanager"})
+            packages.update({"plasma", "sddm", "networkmanager", "konsole"})
         elif desktop == "hyprland":
             # lightweight Wayland compositor
-            packages.update({"hyprland", "wayland", "xorg-xwayland", "lightdm", "lightdm-gtk-greeter"})
+            packages.update({"hyprland", "kitty", "dolphin", "wayland", "xorg-xwayland", "lightdm", "lightdm-gtk-greeter"})
         elif desktop == "xfce":
-            packages.update({"xfce4", "xfce4-goodies", "lightdm", "lightdm-gtk-greeter"})
+            packages.update({"xfce4", "xfce4-goodies", "lightdm", "lightdm-gtk-greeter", "konsole"})
         elif desktop == "i3":
-            packages.update({"i3", "i3status", "lightdm", "lightdm-gtk-greeter"})
+            packages.update({"i3", "i3status", "lightdm", "lightdm-gtk-greeter", "konsole"})
 
     if gaming:
         packages.update({"steam", "wine", "lutris"})
@@ -659,31 +809,38 @@ def main():
     if custom_packages:
         packages.update(custom_packages)
 
-    run_stage("Installing base packages", f"pacstrap /mnt {' '.join(sorted(packages))}", duration=10)
+    package_args = " ".join(shlex.quote(pkg) for pkg in sorted(packages))
+    run_stage("Installing base packages", f"pacstrap /mnt {package_args}", duration=10)
     run_stage("Generating fstab", "genfstab -U /mnt >> /mnt/etc/fstab", duration=1)
 
     console.print("\n[bold green]Configuring system in chroot...[/bold green]\n")
     # timezone/locale/hostname/hosts/passwords/users
-    arch_chroot(f"ln -sf /usr/share/zoneinfo/{timezone} /etc/localtime", "Setting timezone")
+    arch_chroot(f"ln -sf {q_timezone_path} /etc/localtime", "Setting timezone")
     locale_string = f"{language}.{locale_encoding}"
-    arch_chroot(f"bash -c \"echo '{locale_string} {locale_encoding}' >> /etc/locale.gen && locale-gen\"", "Generating locale", duration=2)
-    arch_chroot(f"bash -c \"echo 'LANG={locale_string}' > /etc/locale.conf\"", "Setting LANG")
-    arch_chroot(f"bash -c \"echo '{hostname}' > /etc/hostname\"", "Setting hostname")
+    q_locale_line = shlex.quote(f"{locale_string} {locale_encoding}")
+    q_lang_line = shlex.quote(f"LANG={locale_string}")
+    q_host_line = shlex.quote(f"127.0.1.1 {hostname}.localdomain {hostname}")
+    q_sudoers_line = shlex.quote(f"{username} ALL=(ALL) ALL")
+    q_sudoers_file = shlex.quote(f"/etc/sudoers.d/{username}")
+
+    arch_chroot(f"bash -lc \"printf '%s\\n' {q_locale_line} >> /etc/locale.gen && locale-gen\"", "Generating locale", duration=2)
+    arch_chroot(f"bash -lc \"printf '%s\\n' {q_lang_line} > /etc/locale.conf\"", "Setting LANG")
+    arch_chroot(f"bash -lc \"printf '%s\\n' {q_hostname} > /etc/hostname\"", "Setting hostname")
     arch_chroot(
-        f"bash -c \"echo '127.0.0.1 localhost' >> /etc/hosts && echo '::1 localhost' >> /etc/hosts && echo '127.0.1.1 {hostname}.localdomain {hostname}' >> /etc/hosts\"",
+        f"bash -lc \"printf '%s\\n' '127.0.0.1 localhost' '::1 localhost' {q_host_line} >> /etc/hosts\"",
         "Configuring hosts",
     )
-    arch_chroot(f"bash -c \"echo -e '{rootpass}\\n{rootpass}' | passwd\"", "Setting root password")
-    arch_chroot(f"useradd -m -s /bin/bash {username}", "Creating user")
-    arch_chroot(f"bash -c \"echo -e '{userpass}\\n{userpass}' | passwd {username}\"", "Setting user password")
+    arch_chroot(f"bash -lc \"printf '%s\\n' {q_rootpass_entry} | chpasswd\"", "Setting root password")
+    arch_chroot(f"useradd -m -s /bin/bash {q_username}", "Creating user")
+    arch_chroot(f"bash -lc \"printf '%s\\n' {q_userpass_entry} | chpasswd\"", "Setting user password")
 
     arch_chroot("systemctl enable NetworkManager", "Enabling NetworkManager")
     arch_chroot("mkdir -p /etc/sudoers.d", "Creating sudoers directory")
     arch_chroot(
-        f"bash -c \"echo '{username} ALL=(ALL) ALL' > /etc/sudoers.d/{username} && chmod 0440 /etc/sudoers.d/{username}\"",
+        f"bash -lc \"printf '%s\\n' {q_sudoers_line} > {q_sudoers_file} && chmod 0440 {q_sudoers_file}\"",
         "Configuring sudoers",
     )
-    arch_chroot(f"test -f /etc/sudoers.d/{username} && echo 'sudoers configured'", "Verifying sudoers configuration")
+    arch_chroot(f"test -f {q_sudoers_file} && echo 'sudoers configured'", "Verifying sudoers configuration")
 
     if desktop == "gnome":
         arch_chroot("systemctl enable gdm", "Enabling GNOME Display Manager (GDM)")
