@@ -558,6 +558,39 @@ def arch_chroot(cmd, description=None, duration=1, verbose=False):
     return run_stage(description, full_cmd, duration, verbose)
 
 
+def arch_chroot_pacman_install(packages, description, duration=3, retries=3):
+    """Install packages in chroot with retry logic for pacman DB lock issues."""
+    install_cmd = f"arch-chroot /mnt pacman -S --noconfirm {packages}"
+
+    for attempt in range(1, retries + 1):
+        ok, stdout, stderr = run_command(install_cmd, description if attempt == 1 else f"{description} (retry {attempt}/{retries})")
+        if ok:
+            console.print(f"[green]✓ {description} completed[/green]")
+            return True
+
+        combined = f"{stdout}\n{stderr}".lower()
+        lock_error = (
+            "unable to lock database" in combined
+            or "could not lock database" in combined
+            or "db.lck" in combined
+        )
+
+        if lock_error and attempt < retries:
+            console.print("[yellow]pacman database is locked in chroot; attempting recovery and retry...[/yellow]")
+            run_command(
+                "arch-chroot /mnt bash -lc \"for i in $(seq 1 10); do [ ! -e /var/lib/pacman/db.lck ] && exit 0; sleep 1; done; rm -f /var/lib/pacman/db.lck\""
+            )
+            time.sleep(1)
+            continue
+
+        short_err = (stderr or stdout or "Unknown pacman error").strip().splitlines()
+        msg = short_err[0] if short_err else "Unknown pacman error"
+        console.print(f"[yellow]⚠ {description} warning: {msg[:140]}[/yellow]")
+        return False
+
+    return False
+
+
 def ensure_chroot_alpm_user():
     """Ensure pacman's DownloadUser exists inside chroot before pacman -S runs."""
     arch_chroot(
@@ -864,22 +897,22 @@ def main():
 
     # GPU & VM drivers
     if gpu == "nvidia":
-        arch_chroot("pacman -S --noconfirm nvidia nvidia-utils", "Installing NVIDIA drivers", duration=5)
+        arch_chroot_pacman_install("nvidia nvidia-utils", "Installing NVIDIA drivers", duration=5)
     elif gpu == "nvidia-legacy":
-        arch_chroot("pacman -S --noconfirm xf86-video-nouveau", "Installing Nouveau (Legacy NVIDIA fallback)", duration=3)
+        arch_chroot_pacman_install("xf86-video-nouveau", "Installing Nouveau (Legacy NVIDIA fallback)", duration=3)
     elif gpu == "amd":
-        arch_chroot("pacman -S --noconfirm xf86-video-amdgpu", "Installing AMD drivers", duration=5)
+        arch_chroot_pacman_install("xf86-video-amdgpu", "Installing AMD drivers", duration=5)
     elif gpu == "intel":
-        arch_chroot("pacman -S --noconfirm xf86-video-intel", "Installing Intel drivers", duration=3)
+        arch_chroot_pacman_install("xf86-video-intel", "Installing Intel drivers", duration=3)
 
     if vm_graphics == "qemu":
-        arch_chroot("pacman -S --noconfirm xf86-video-qxl spice-vdagent", "Installing QEMU graphics drivers", duration=3)
+        arch_chroot_pacman_install("xf86-video-qxl spice-vdagent", "Installing QEMU graphics drivers", duration=3)
     elif vm_graphics == "vmware":
-        arch_chroot("pacman -S --noconfirm xf86-video-vmware open-vm-tools", "Installing VMware graphics drivers", duration=3)
+        arch_chroot_pacman_install("xf86-video-vmware open-vm-tools", "Installing VMware graphics drivers", duration=3)
     elif vm_graphics == "virtualbox":
-        arch_chroot("pacman -S --noconfirm virtualbox-guest-utils", "Installing VirtualBox graphics drivers", duration=3)
+        arch_chroot_pacman_install("virtualbox-guest-utils", "Installing VirtualBox graphics drivers", duration=3)
     elif vm_graphics == "hyper-v":
-        arch_chroot("pacman -S --noconfirm xf86-video-fbdev", "Installing Hyper-V graphics drivers", duration=3)
+        arch_chroot_pacman_install("xf86-video-fbdev", "Installing Hyper-V graphics drivers", duration=3)
 
     arch_chroot("umount -R /mnt", "Unmounting partitions")
 
