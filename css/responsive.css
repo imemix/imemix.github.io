@@ -58,6 +58,7 @@
     }
 
     .nav-container {
+        width: 100%;
         padding: 0 1rem;
     }
 
@@ -159,6 +160,7 @@
         max-height: 150px;
     }
 
+    
     .progress-text {
         font-size: 0.85rem;
     }
