@@ -24,12 +24,14 @@ The following distributions have been tested and are officially supported for EM
 
 | Distro    | Version | Status      |
 | --------- | ------- | ----------- |
-| Archlinux | Latest  | ✓ Supported |
-| Manjaro | Latest  | ~ Untested |
-| EndeavourOS | Latest  | ~ Untested |
+| Archlinux | Latest  | ✓ |
+| Manjaro | Latest  | ~ |
+| EndeavourOS | Latest  | ~ |
 
 
-
+- ✓ Supported
+- ~ Untested
+- x Not supported
 
 
 ### Testing on Other Distributions
