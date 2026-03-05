@@ -1,3 +1,5 @@
+// for install-section terminal-container animations
+
 document.addEventListener("DOMContentLoaded", () => {
     const progress_bar = document.getElementById("progress-bar");
     const log = document.getElementById("boot-log");
@@ -44,16 +46,21 @@ document.addEventListener("DOMContentLoaded", () => {
     
     
 
-}); 
+});
 
-function copyToClipboard() {
-    const text = 'curl -s https://imemix.github.io/install | sudo bash';
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Command copied to clipboard!');
+// for cta-section code 'curl -s' for copying
+
+function copyToClipboard(button) {
+    const codeBlock = button.previousElementSibling;
+    const code = codeBlock.textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        setTimeout(() => {
+            button.textContent = originalText;
+        }, 2000);
     });
 }
-
-
 
 
 
