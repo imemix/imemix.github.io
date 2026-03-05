@@ -7,7 +7,7 @@
 
 
 <p align="center">$\textcolor{green} {\text{CURRENTLY WORKING ✓}}$</p>
-<p align="center">$\textcolor{red} {\text{NOT WORKING }}$</p>
+
 
 [comment]: <> (DO NOT CHANGE ABOVE TEXT)
 <br />
