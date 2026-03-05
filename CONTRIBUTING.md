@@ -1,15 +1,12 @@
 # Contributing to EMInstaller & imemix.github.io
-
-```
-    _______  _______    ________   _______ 
-  //       \/       \\ /        \//   /   \
- //        /        //_/       ///        /
-/        _/         //         /         / 
-\________/\__/__/__/ \\_______/\__/_____/  
-EMIN — EMInstaller
-```
-
-Thank you for your interest in contributing.
+<div style="margin: 1px;">
+    <p align="center">
+        <a href="https://imemix.github.io/">
+            <img width="200" height="200"  src="https://imemix.github.io/images/eminstaller.png" width="125"/>
+        </a>
+    </p>
+</div>
+<p align="center">$\textcolor{green}{\text{Thank you for your interest in contributing.}}$ </p>
 
 ---
 

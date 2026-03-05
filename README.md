@@ -4,12 +4,10 @@
         <img width="200" src="https://imemix.github.io/images/eminstaller.png" width="125"/>
     </a>
 </p>
-
-
 <p align="center">$\textcolor{green} {\text{CURRENTLY WORKING ✓}}$</p>
-<p align="center">$\textcolor{red} {\text{NOT WORKING }}$</p>
 
 [comment]: <> (DO NOT CHANGE ABOVE TEXT)
+
 <br />
 <p align="center">$\textcolor{blue} {\text{Installer could break at any time, with only one person maintaining the installer.}}$</p>
 <p align="center">$\textcolor{blue} {\text{Things can break frequently please check the main website for more information.}}$</p>
