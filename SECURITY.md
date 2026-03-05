@@ -22,9 +22,15 @@ EMIN — EMInstaller
 
 The following distributions have been tested and are officially supported for EMInstaller:
 
-| Distro    | Version | Status     |
-| --------- | ------- | ---------- |
+| Distro    | Version | Status      |
+| --------- | ------- | ----------- |
 | Archlinux | Latest  | ✓ Supported |
+| Manjaro | Latest  | ~ Untested |
+| EndeavourOS | Latest  | ~ Untested |
+
+
+
+
 
 ### Testing on Other Distributions
 
