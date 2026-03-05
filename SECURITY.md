@@ -28,7 +28,7 @@ The following distributions have been tested and are officially supported for EM
 | Manjaro | Latest  | ~ |
 | EndeavourOS | Latest  | ~ |
 
-
+***
 - ✓ Supported
 - ~ Untested
 - x Not supported
