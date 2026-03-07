@@ -250,6 +250,7 @@ This project is provided **as‑is** for Arch Linux installation tasks. See LICE
 
 Need help? Try the following:
 
+1. Join the [Support Discord](https://discord.com/invite/your-server-code).
 1. Consult the [online documentation](https://imemix.github.io/documentation.html).
 2. Refer to the FAQ below.
 3. Open an issue in the GitHub repository.

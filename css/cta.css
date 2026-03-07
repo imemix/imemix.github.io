@@ -51,3 +51,50 @@
     background-color: var(--primary-dark);
     transform: translateY(-2px);
 }
+
+.discord-support-section {
+    padding: 4.5rem 1.5rem;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(var(--primary-rgb), 0.08) 0%, rgba(21, 21, 21, 1) 100%);
+    border-top: 2px solid var(--primary-dark);
+}
+
+.discord-support-section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 0.75rem;
+}
+
+.discord-support-section p {
+    max-width: 760px;
+    margin: 0 auto;
+    color: var(--text-secondary);
+}
+
+.discord-join-btn {
+    display: inline-block;
+    margin-top: 1.4rem;
+    padding: 0.85rem 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--primary-dark);
+    color: #fff;
+    background-color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.discord-join-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.discord-note {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+.discord-note code {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-primary);
+}
