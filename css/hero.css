@@ -53,7 +53,7 @@
 .cta-button:hover {
     background-color: var(--primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(var(--primary-rgb), 0.3);
+    box-shadow: 0 2px 10px rgba(var(--primary-rgb), 0.3);
 }
 
 /* HERO VISUAL */
