@@ -1,7 +1,7 @@
 
 <p align="center">
     <a href="https://imemix.github.io/">
-        <img width="200" src="https://imemix.github.io/images/eminstaller.png" width="125"/>
+        <img width="200" src="https://imemix.github.io/assets/images/eminstaller.png" width="125"/>
     </a>
 </p>
 <p align="center">$\textcolor{green} {\text{CURRENTLY WORKING ✓}}$</p>
