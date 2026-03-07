@@ -69,7 +69,7 @@
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-lg);
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--text-secondary);
 }
 
 .terminal-bar {
@@ -86,15 +86,15 @@
 }
 
 .dot-red {
-    background-color: #ef4444;
+    background-color: var(--primary-color);
 }
 
 .dot-yellow {
-    background-color: #eab308;
+    background-color: var(--text-primary);
 }
 
 .dot-green {
-    background-color: #22c55e;
+    background-color: var(--secondary-color);
 }
 
 .terminal-code {

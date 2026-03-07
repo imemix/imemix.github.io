@@ -14,7 +14,7 @@
 
 .terminal-container {
     background-color: var(--background);
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--text-secondary);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-lg);
@@ -89,7 +89,7 @@
 
 .progress-bar {
     height: 8px;
-    background: linear-gradient(90deg, #ef4444, #eab308, #22c55e);
+    background: linear-gradient(90deg, var(--text-secondary), var(--primary-color));
     border-radius: 4px;
     width: 0%;
     transition: width 0.4s ease;

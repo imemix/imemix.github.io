@@ -855,4 +855,7 @@ body{
     .warning-box strong {
         font-weight: 600;
     }
+    .video-container video{
+        height: 250px;
+    }
 }
