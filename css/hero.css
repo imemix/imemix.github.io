@@ -33,7 +33,7 @@
 }
 
 .cta-button {
-    padding: 0.9rem 2rem;
+    padding: 5px 10px;
     font-size: 1rem;
     font-weight: 600;
     background-color: var(--primary-color);
@@ -44,7 +44,10 @@
     transition: all 0.3s ease;
     box-shadow: var(--shadow-lg);
     text-decoration: none;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 0.5rem;
 }
 
 .cta-button:hover {
