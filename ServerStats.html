@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Conflict Roleplay | GTA 5 RP Server</title>
+    <title>Conflict Roleplay | Server Stats</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Conflict Roleplay is a serious GTA 5 FiveM roleplay server focused on realism, immersive storytelling, and community-driven gameplay.">
 
-    <meta property="og:title" content="Conflict Roleplay | GTA 5 RP Server">
+    <meta property="og:title" content="Conflict Roleplay | Server Stats">
     <meta property="og:description" content="Serious GTA 5 Roleplay | Realistic | Immersive | Community-Driven">
     <meta property="og:image" content="images/favicon.png">
     <meta property="og:type" content="website">
@@ -23,39 +23,73 @@
     <noscript><link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet"></noscript>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/navigation.css">
-    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/server-stats.css">
 </head>
-<body class="home-page">
+<body class="inner-page no-scroll-page">
 <nav class="navbar">
     <div class="nav-logo"><a href="/index.html">Conflict RP</a></div>
-    
+
     <ul class="nav-links" id="nav-links">
-        <li class="active-link"><a href="/index.html#about">Home</a></li>
+        <li><a href="/index.html#about">Home</a></li>
         <li><a href="/features.html">Features</a></li>
         <li><a href="/departments.html">Departments</a></li>
-        <li><a href="/ServerStats.html">ServerStats</a></li>
+        <li class="active-link"><a href="/ServerStats.html">ServerStats</a></li>
     </ul>
+
+
+    
 
     <div class="hamburger" id="hamburger">
         ☰
     </div>
 </nav>
-<header>
-    <div class="hero-content">
-        
-        <h1>CONFLICT ROLEPLAY</h1>
-        <h2>Realistic, immersive, and community-driven storytelling in Los Santos.</h2>
-        <p class="about-text">
-            Conflict Roleplay is a serious GTA 5 FiveM roleplay server focused on realism, immersive storytelling, and community-driven gameplay.
-            Whether you want to protect the city, save lives, run businesses, or build a criminal empire — your story starts here.
-        </p>
-        <div class="hero-actions">
-            <a href="/ServerStats.html" class="btn btn-primary">Join The Server</a>
-            <a href="https://discord.gg/_blank" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Join Discord</a>
+
+<section id="join" class="join-section">
+
+    <div class="join-panel">
+        <div class="server-ip">
+            <span class="join-label">Server IP</span>
+            <span id="ip-text">play.conflictrp.com</span>
+            <button type="button" class="copy-btn">Copy</button>
+        </div>
+        <div class="join-meta">
+            <div class="server-status">
+                <span class="status-indicator" id="status-dot"></span>
+                <span id="server-status-text">
+                    Checking server...
+                </span>
+                <button id="refresh-btn" class="refresh-btn" type="button" title="Refresh server status">Refresh</button>
+            </div>
+
+            <div class="player-count">
+                Players Online: <span id="player-count">0</span> / <span id="max-players">0</span>
+            </div>
         </div>
     </div>
+</section>
+
+<section id="stats">
     
-</header>
+    <div class="stats">
+        <div class="stat">
+            <h2 class="counter" data-target="100">0</h2>
+            <p>Discord Members</p>
+        </div>
+        <div class="stat">
+            <h2 class="counter" data-target="99">0</h2>
+            <p>Server Uptime %</p>
+        </div>
+        <div class="stat">
+            <h2 class="counter" data-target="30">0</h2>
+            <p>Peak Concurrent Players</p>
+        </div>
+        <div class="stat">
+            <h2 class="counter" data-target="50">0</h2>
+            <p>Custom Assets</p>
+        </div>
+    </div>
+</section>
+
 
 <footer>
     <p>© 2026 Conflict Roleplay. All Rights Reserved.</p>
@@ -63,6 +97,5 @@
 </footer>
 <script src="js/main.js" defer></script>
 <a href="https://conflict-roleplay.tebex.io/" class="floating-store" target="_blank" rel="noopener noreferrer">Store</a>
-
 </body>
 </html>
